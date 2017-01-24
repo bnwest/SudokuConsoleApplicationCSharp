@@ -27,6 +27,19 @@ namespace Sudoko
             possible[i] = value;
         }
 
+        public void setExclusivePossibles(int[] possibles)
+        {
+            for (int i= 0; i<possible.GetLength(0); i++)
+            {
+                possible[i] = false;
+            }
+            for (int i=0;i<possibles.GetLength(0); i++)
+            {
+                int value = possibles[i];
+                possible[value] = true;
+            }
+        }
+
         public SudokuCell()
         {
             // allocate sudoku call
@@ -254,10 +267,12 @@ namespace Sudoko
 
         public bool removeNeighbors(int i, int j, int k)
         {
+            //display(String.Format("before remove neighbors for {0} at cell({1},{2})", k+1, i+1, j+1));
             bool foundRemoval = false;
             foundRemoval |= removeHorizontalNeighbors(i, j, k);
             foundRemoval |= removeVerticalNeighbors(i, j, k);
             foundRemoval |= removeGridNeighbors(i, j, k);
+            //display(String.Format("after remove neighbors for {0} at cell({1},{2})", k + 1, i + 1, j + 1));
             return foundRemoval;
         }
 
@@ -270,12 +285,8 @@ namespace Sudoko
             int iNumPossibilities;
             bool foundSingle;
             bool foundSingles;
-            bool foundRemoval;
-            bool didSomething;
             int iLastFound;
             int[,] Singles = new int[9,9];
-
-            didSomething = false;
 
             foundSingles = false;
             for (int i = 0; i < 9; i++)
@@ -300,7 +311,6 @@ namespace Sudoko
                         {
                             foundSingles = true;
                             Singles[i, j] = iLastFound;
-                            Console.WriteLine("found naked single {0} at cell({1},{2})", iLastFound + 1, i + 1, j + 1);
                         }
                         else
                         {
@@ -315,7 +325,6 @@ namespace Sudoko
                 }
             }
 
-            foundRemoval = false;
             if ( foundSingles )
             {
                 for (int i = 0; i < 9; i++)
@@ -325,40 +334,180 @@ namespace Sudoko
                         foundSingle = ( Singles[i, j] != SudokuCell.NOTFOUND );
                         if ( foundSingle )
                         {
-                            int iValue = Singles[i, j];
+                            int k = Singles[i, j];
                             // mark cell as a single
-                            puzzle[i, j].Found = iValue;
-                            foundRemoval = removeNeighbors(i, j, iValue);
-                            //display(String.Format("after neighbor removal for value {0} and cell({1}, {2})", iValue+1, i+1, j+1));
+                            Console.WriteLine("found naked single {0} at cell({1},{2})", k + 1, i + 1, j + 1);
+                            solveCell(i, j, k);
                         }
                     }
                 }
-                didSomething = foundRemoval;
             }
 
-            return didSomething;
+            return foundSingles;
+        }
+
+        public bool findHiddenSinglesHorizonatlNeighbors()
+        {
+            bool foundHiddenSingle = false;
+
+            for (int row = 0; row < 9; row++)
+            {
+                for (int k = 0; k < 9; k++)
+                {
+                    int numPossibilities = 0;
+                    int lastFoundColumn = SudokuCell.NOTFOUND;
+                    for (int column = 0; column < 9; column++)
+                    {
+                        if ( puzzle[row, column].isPossible(k) )
+                        {
+                            numPossibilities++;
+                            lastFoundColumn = column;
+                            if ( numPossibilities > 1 ) break;
+                        }
+                    }
+                    bool hiddenSingle = ( numPossibilities == 1 );
+                    if ( hiddenSingle )
+                    {
+                        Boolean isSingleAlready = ( puzzle[row, lastFoundColumn].IsSolved );
+                        if (!isSingleAlready)
+                        {
+                            foundHiddenSingle = true;
+                            Console.WriteLine("found hidden single {0} in row {1}", k + 1, row + 1);
+                            solveCell(row, lastFoundColumn, k);
+                        }
+                    }
+                }
+            }
+
+            return foundHiddenSingle;
+        }
+
+        public bool findHiddenSinglesVerticalNeighbors()
+        {
+            bool foundHiddenSingle = false;
+
+            for (int column = 0; column < 9; column++)
+            {
+                for (int k = 0; k < 9; k++)
+                {
+                    int numPossibilities = 0;
+                    int lastRowFound = SudokuCell.NOTFOUND;
+                    for (int row = 0; row < 9; row++)
+                    {
+                        if (puzzle[row, column].isPossible(k))
+                        {
+                            numPossibilities++;
+                            lastRowFound = row;
+                            if ( numPossibilities > 1 ) break;
+                        }
+                    }
+                    bool hiddenSingle = ( numPossibilities == 1 );
+                    if (hiddenSingle)
+                    {
+                        Boolean isSingleAlready = (puzzle[lastRowFound, column].IsSolved);
+                        if ( !isSingleAlready )
+                        {
+                            foundHiddenSingle = true;
+                            Console.WriteLine("found hidden single {0} in column {1}", k+1, column+1);
+                            solveCell(lastRowFound, column, k);
+                        }
+                    }
+                }
+            }
+
+            return foundHiddenSingle;
+        }
+
+        public bool findHiddenSinglesGridNeighbors()
+        {
+            bool foundHiddenSingle = false;
+
+            for (int gridi = 0; gridi < 3; gridi++)
+            {
+                for (int gridj = 0; gridj < 3; gridj++)
+                {
+                    int starti = gridi * 3;
+                    int startj = gridj * 3;
+                    for (int k = 0; k < 9; k++)
+                    {
+                        int lastRowFound    = SudokuCell.NOTFOUND;
+                        int lastCoulmnFound = SudokuCell.NOTFOUND;
+                        int numPossibilities = 0;
+                        for (int row = starti; row < starti + 3; row++)
+                        {
+                            for (int column = startj; column < startj + 3; column++)
+                            {
+                                if ( puzzle[row, column].isPossible(k) )
+                                {
+                                    numPossibilities++;
+                                    lastRowFound = row;
+                                    lastCoulmnFound = column;
+                                    if ( numPossibilities > 1 ) break;
+                                }
+                            }
+                            if ( numPossibilities > 1 ) break;
+                        }
+                        bool foundSingle = ( numPossibilities == 1 );
+                        if ( foundSingle )
+                        {
+                            bool isSingleAlready = ( puzzle[lastRowFound,lastCoulmnFound].IsSolved );
+                            if ( !isSingleAlready )
+                            {
+                                foundHiddenSingle = true;
+                                Console.WriteLine("found hidden single {0} in cell({1},{2}) in grid({3}...{4},{5}...{6})",
+                                    k + 1, lastRowFound + 1, lastCoulmnFound + 1, starti + 1, starti + 3, startj + 1, startj + 3);
+                                solveCell(lastRowFound, lastCoulmnFound, k);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return foundHiddenSingle;
+        }
+
+        //
+        // find a single occurence of value in row, column or grid
+        // where the value is not the only possibility in its cell (aka it is hidden)
+        //
+
+        public bool findHiddenSingles()
+        {
+            bool foundHiddenSingle;
+            foundHiddenSingle = false;
+            foundHiddenSingle |= findHiddenSinglesHorizonatlNeighbors();
+            foundHiddenSingle |= findHiddenSinglesVerticalNeighbors();
+            foundHiddenSingle |= findHiddenSinglesGridNeighbors();
+            return foundHiddenSingle;
+        }
+
+        public void solveCell(int i, int j, int k)
+        {
+            puzzle[i, j].Found = k;
+            puzzle[i, j].setExclusivePossibles(new int[] { k }); // cell may need to remove other possibilites
+            removeNeighbors(i, j, k);
         }
 
         public void solve()
         {
             bool didSomething;
 
-            //do
-            //{
+            do
+            {
                 didSomething = findNakedSingles();
-/*                if (!didSomething)
+                if (!didSomething)
                 {
-                    didSomething = findHiddenSingle();
+                    didSomething = findHiddenSingles();
                     if (!didSomething)
                     {
-                        didSomething = findNakedPairs();
+/*                        didSomething = findNakedPairs();
                         if (!didSomething)
                         {
                             didSomething |= findLockedCandidate();
-                        }
+                        } */
                     }
-                } */
-            //} while ( didSomething );
+                } 
+            } while ( didSomething );
         }
 
         public void execute()
