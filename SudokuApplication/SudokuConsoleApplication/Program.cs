@@ -10,10 +10,10 @@ namespace Sudoko
     {
         public const int NOTFOUND = -1;  // a const object is always static by definition
 
-        private int found;               // field
+        //private int found;               // field
         public int Found { get; set; }   // property
 
-        public bool IsSolved { get { return (Found != SudokuCell.NOTFOUND); } }
+        public bool IsSolved { get { return ( Found != SudokuCell.NOTFOUND ); } }  // derived property
 
         private bool[] possible = new bool[9];
 
@@ -36,7 +36,7 @@ namespace Sudoko
         {
             // initialize sudoku call
 
-            found = NOTFOUND;
+            Found = NOTFOUND;
 
             for (int i = 0; i < possible.GetLength(0); i++)
             {
@@ -87,10 +87,13 @@ namespace Sudoko
                 }
             }
 
+            //
             // read input string
+            //
+
             String input = getInput();
 
-            // string contains rows that are either contiguous or separated bya '+'
+            // string contains rows that are either contiguous or separated by a '+'
             int inputIncrement = (input[9] == '+' ? 10 : 9);
             int inputIndex = 0;
 
@@ -109,7 +112,8 @@ namespace Sudoko
                         {
                             puzzle[row, column].setPossible(i, false);
                         }
-                        puzzle[row, column].Found = cellDigit;
+                        // Know that this cell has a solution, 
+                        // but will let findNakedSingles() discover it and clean up neighbors
                         puzzle[row, column].setPossible(cellDigit, true);
                     }
                 }
@@ -117,7 +121,7 @@ namespace Sudoko
             }
         }
 
-        public void displayPuzzle()
+        public void display()
         {
             //      "+-------+ +-------+ +-------+  +-------+ +-------+ +-------+  +-------+ +-------+ +-------+\n"
             //      "| 1 2 3 | | 1 2 3 | | 1 2 3 |  | 1 2 3 | | 1 2 3 | | 1 2 3 |  | 1 2 3 | | 1 2 3 | | 1 2 3 |\n"
@@ -162,7 +166,199 @@ namespace Sudoko
         public void display(String header)
         {
             Console.WriteLine(header);
-            displayPuzzle();
+            display();
+        }
+
+        //
+        // puzzle[i, column] solved with value k
+        // remove horizonal neighbors as a possibility for k
+        //
+
+        public bool removeHorizontalNeighbors(int i, int j, int k)
+        {
+            bool foundRemoval;
+
+            foundRemoval = false;
+            for (int column = 0; column < 9; column++)
+            {
+                bool isCellToChange = ( column != j );
+                bool isChangeNeeded = puzzle[i, column].isPossible(k);
+                if ( isCellToChange && isChangeNeeded )
+                {
+                    foundRemoval = true;
+                    puzzle[i, column].setPossible(k, false);
+                }
+            }
+
+            return foundRemoval;
+        }
+
+        //
+        // puzzle[i, column] solved with value k
+        // remove vertical neighbors as a possibility for k
+        //
+
+        public bool removeVerticalNeighbors(int i, int j, int k)
+        {
+            bool foundRemoval;
+
+            foundRemoval = false;
+            for (int row = 0; row < 9; row++)
+            {
+                bool isCellToChange = ( row != i );
+                bool isChangeNeeded = puzzle[row, j].isPossible(k);
+                if ( isCellToChange && isChangeNeeded )
+                {
+                    foundRemoval = true;
+                    puzzle[row, j].setPossible(k, false);
+                }
+            }
+
+            return foundRemoval;
+        }
+
+        //
+        // puzzle[i, column] solved with value k
+        // remove grid neighbors as a possibility for k
+        //
+
+        public bool removeGridNeighbors(int i, int j, int k)
+        {
+            int starti, startj;
+            bool foundRemoval;
+
+            foundRemoval = false;
+            starti = i / 3 * 3;
+            startj = j / 3 * 3;
+            for (int ii = starti; ii < starti + 3; ii++)
+            {
+                for (int jj = startj; jj < startj + 3; jj++)
+                {
+                    bool isCellToChange = ( ii != i || jj != j );
+                    bool isChangeNeeded = puzzle[ii, jj].isPossible(k);
+                    if ( isCellToChange && isChangeNeeded )
+                    {
+                        foundRemoval = true;
+                        puzzle[ii, jj].setPossible(k, false);
+                    }
+                }
+            }
+
+            return foundRemoval;
+        }
+
+        //
+        // puzzle[i, column] solved with value k
+        // remove all neighbors as a possibility for k
+        //
+
+        public bool removeNeighbors(int i, int j, int k)
+        {
+            bool foundRemoval = false;
+            foundRemoval |= removeHorizontalNeighbors(i, j, k);
+            foundRemoval |= removeVerticalNeighbors(i, j, k);
+            foundRemoval |= removeGridNeighbors(i, j, k);
+            return foundRemoval;
+        }
+
+        //
+        // find cells where there is only one possible value left
+        //
+
+        public bool findNakedSingles()
+        {
+            int iNumPossibilities;
+            bool foundSingle;
+            bool foundSingles;
+            bool foundRemoval;
+            bool didSomething;
+            int iLastFound;
+            int[,] Singles = new int[9,9];
+
+            didSomething = false;
+
+            foundSingles = false;
+            for (int i = 0; i < 9; i++)
+            {
+                for (int j = 0; j < 9; j++)
+                {
+                    if ( !puzzle[i, j].IsSolved )
+                    {
+                        iNumPossibilities = 0;
+                        iLastFound = SudokuCell.NOTFOUND;
+                        for (int k = 0; k < 9; k++)
+                        {
+                            if ( puzzle[i, j].isPossible(k) )
+                            {
+                                iLastFound = k;
+                                iNumPossibilities++;
+                                if (iNumPossibilities > 1) break;
+                            }
+                        }
+                        foundSingle = ( iNumPossibilities == 1 );
+                        if ( foundSingle )
+                        {
+                            foundSingles = true;
+                            Singles[i, j] = iLastFound;
+                            Console.WriteLine("found naked single {0} at cell({1},{2})", iLastFound + 1, i + 1, j + 1);
+                        }
+                        else
+                        {
+                            Singles[i, j] = SudokuCell.NOTFOUND;
+                        }
+
+                    }
+                    else
+                    {
+                        Singles[i, j] = SudokuCell.NOTFOUND;
+                    }
+                }
+            }
+
+            foundRemoval = false;
+            if ( foundSingles )
+            {
+                for (int i = 0; i < 9; i++)
+                {
+                    for (int j = 0; j < 9; j++)
+                    {
+                        foundSingle = ( Singles[i, j] != SudokuCell.NOTFOUND );
+                        if ( foundSingle )
+                        {
+                            int iValue = Singles[i, j];
+                            // mark cell as a single
+                            puzzle[i, j].Found = iValue;
+                            foundRemoval = removeNeighbors(i, j, iValue);
+                            //display(String.Format("after neighbor removal for value {0} and cell({1}, {2})", iValue+1, i+1, j+1));
+                        }
+                    }
+                }
+                didSomething = foundRemoval;
+            }
+
+            return didSomething;
+        }
+
+        public void solve()
+        {
+            bool didSomething;
+
+            //do
+            //{
+                didSomething = findNakedSingles();
+/*                if (!didSomething)
+                {
+                    didSomething = findHiddenSingle();
+                    if (!didSomething)
+                    {
+                        didSomething = findNakedPairs();
+                        if (!didSomething)
+                        {
+                            didSomething |= findLockedCandidate();
+                        }
+                    }
+                } */
+            //} while ( didSomething );
         }
 
         public void execute()
@@ -172,7 +368,8 @@ namespace Sudoko
 
             initialize();
             display("Start of Puzzle:");
-            // solve();
+            solve();
+            display("End of Puzzle:");
         }
     }
 }
@@ -183,7 +380,6 @@ namespace Sudoku.ConsoleApplication
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World");
             Sudoko.SudokuPuzzle puzzle = new Sudoko.SudokuPuzzle();
             puzzle.execute();
         }
