@@ -78,56 +78,131 @@ namespace Sudoko
         private String getInput()
         {
             return
-              // hidden single in row, column, grid; naked pair in row;
-              // type 1 and 2 locked candidate in row and column
-               "563700000002000947040100000030050209020000080409010050000004010254000600000006495"
-              // aka
-              /*
-                     "5637....." +
-                     "..2...947" +
-                     ".4.1....." +
-                     ".3..5.2.9" +
-                     ".2.....8." +
-                     "4.9.1..5." +
-                     ".....4.1." +
-                     "254...6.." +
-                     ".....6495";
-               */
+                // hidden single in row, column, grid; naked pair in row;
+                // type 1 and 2 locked candidate in row and column
+                // "563700000002000947040100000030050209020000080409010050000004010254000600000006495"
+                // aka
+                /*
+                       "5637....." +
+                       "..2...947" +
+                       ".4.1....." +
+                       ".3..5.2.9" +
+                       ".2.....8." +
+                       "4.9.1..5." +
+                       ".....4.1." +
+                       "254...6.." +
+                       ".....6495";
+                 */
 
-              // http://www.palmsudoku.com trivky
-              //  "700000093800003020030500806620008001000109000100600084306001050070400008910000007"
-              //  "100000000059102000007800029005300604000060000304008500510004800000201950000000007"
-              //  "563700000002000947040100000030050209020000080409010050000004010254000600000006495"
-              //  "000730085000000006081040230128090070000000000070080642014070850500000000830051000"
-              //  "013000060020800001900600700302008006060903020500100803001006009700004080080000610" // 6600
-              //  "080403009000000137503700000070000002009806700800000060000009403495000000200507090" // 7500
-              //  "500000080700500060060010700309700000200301005000005403002050010030009002090000006" // 7800
-              //  "208053700900000000000406008504810200100000007009024105600208000000000009007540302" // 9150
-              //  "106000002000080090398005000580302000000090000000408023000200756070040000200000804" // 6850
-              //  "019058000503201000700000005040900008000060000800004030900000006000406209000390750" // 6900
-              //  "000070520083560000000002080002000004050603010900000200010700000000086740064010000" // 8150
-              // found a naked pair in row, column and grid
-              //  "000085400050003027000000008402007050608000704070300206500000000940500060001920000" // 6750
-              //  "502714008060000000700000300001070000090802070000050400007000009000000060400193807" // 8750
-              //  "009300000000080401710400060030000002008209100100000030080001075401050000000003600" // 7850
+                // http://www.palmsudoku.com tricky
+                //  "700000093800003020030500806620008001000109000100600084306001050070400008910000007"
+                //  "100000000059102000007800029005300604000060000304008500510004800000201950000000007"
+                //  "563700000002000947040100000030050209020000080409010050000004010254000600000006495"
+                //  "000730085000000006081040230128090070000000000070080642014070850500000000830051000"
+                //  "013000060020800001900600700302008006060903020500100803001006009700004080080000610" // 6600
+                //  "080403009000000137503700000070000002009806700800000060000009403495000000200507090" // 7500
+                //  "500000080700500060060010700309700000200301005000005403002050010030009002090000006" // 7800
+                // did not solve
+                //  "208053700900000000000406008504810200100000007009024105600208000000000009007540302" // 9150
+                //  "106000002000080090398005000580302000000090000000408023000200756070040000200000804" // 6850
+                //  "019058000503201000700000005040900008000060000800004030900000006000406209000390750" // 6900
+                //  "000070520083560000000002080002000004050603010900000200010700000000086740064010000" // 8150
+                // found a naked pair in row, column and grid
+                //  "000085400050003027000000008402007050608000704070300206500000000940500060001920000" // 6750
+                //  "502714008060000000700000300001070000090802070000050400007000009000000060400193807" // 8750
+                //  "009300000000080401710400060030000002008209100100000030080001075401050000000003600" // 7850
 
-             // http://mypuzzle.org/sudoku/ moderate
-             //  "300040598029100000000000004000002903000090000207400000700000000000005870856070002"
-             // hidden triple (3,6,7) at cell(2, 7..9)
-             // "300040598029100000000000004000002903000090000207400000700000000000005870856070002"
+                // http://mypuzzle.org/sudoku/ moderate
+                //  "300040598029100000000000004000002903000090000207400000700000000000005870856070002"
+                // hidden triple (3,6,7) at cell(2, 7..9)
+                // "300040598029100000000000004000002903000090000207400000700000000000005870856070002"
+                //  "100000058250100000079000400000092005500678034000051009014000600860900000900000081"
+                // "100000058250100000079000400000092005500678034000051009014000600860900000900000081"
 
-             // moderate: naked triple, simple coloring
-             // triple at cell(4..6, 6)
-             //  "007065009160000070400080006000200040600000003090003000800040007020000068900870300"
-             // naked pair in column: (2 6) at cell(1,1) and cell (8,1); triple at cell(7,4..6)
-             //  "050170304300002000409000000160300008000000000800006032000000405000900007705021080"
-             // naked pair in column: (3 5) at cell(5,3) and cell(8,3)
-             // "001007309300020400000008060107080604680204010904070508000006040700010800006005102"
+                // moderate: naked triple, simple coloring
+                // triple at cell(4..6, 6)
+                //  "007065009160000070400080006000200040600000003090003000800040007020000068900870300"
+                // naked pair in column: (2 6) at cell(1,1) and cell (8,1); triple at cell(7,4..6)
+                //  "050170304300002000409000000160300008000000000800006032000000405000900007705021080"
+                // naked pair in column: (3 5) at cell(5,3) and cell(8,3)
+                // "001007309300020400000008060107080604680204010904070508000006040700010800006005102"
 
-             // http://mypuzzle.org/sudoku/ hard
-             //  "045200007100059200000000000400600030700000008090004006000000000004830001500001960"
+                // http://mypuzzle.org/sudoku/ hard
+                //  "045200007100059200000000000400600030700000008090004006000000000004830001500001960"
+                // xwing
+                //  "010346090300000006000105000120000047800407005004000900000020000700968003086030720"
 
-             ;
+                // Simple Sudoku
+                // http://www.angusj.com/sudoku/
+                // hard
+                // 2 x naked triples
+                // hidden pair ( 6 8 ) at cell(6,5) and cell(6,8), row 6
+                // "5..8.......8..91...69..4...8.61....47...9...39....75.2...9..43...26..9.......3..7"
+                // "........547.......85..42...64.58......79.41......73.96...85..34.......673........"
+                // "46...1.....2.96....3.....68.......37...6.7...51.......84.....5....71.9.....3...24"
+                // "1....89...5..9..32.9.7..6..83.9...2.....4...6.....53..5..1.94...6..5...84...8..1."
+                // "...7..1...81..2..595...1..7.......73..3...8..54.......2..6...594..8..76...7..4..."
+                // "73...46...94..28...2..........43.2.7.........3.2.78..........5...89..73...61...84"
+
+                // triples
+                // "4....961...56...79.1.42.3...51.6.................1.83...7.83.6.53...67...692....3"
+                // "4....8.....753...8.9..6.41353....2.7.........7.6....81954.1..3.3...751.....9....5"
+
+                // https://kjell.haxx.se/sudoku/
+                //"....3......8..1.2.2....9......5..9.6.2......4..738...2..2.7..3.936..5...4..1....."
+                //"4....5.83...........28...9.7.....469.6.41..2.85..6.3..9.......7..32.........9.8.5"
+                //"4...........8..2.93.1....5.....4..1.5.....3..69.52.....5.79...8........72...3...."
+                //"5....1...9.......8....6.7.........19...........3.7......68.......7...3.....9.5..2"
+
+                // http://www.angusj.com/sudoku/ -- Advanced Puzzle Pack 2 -- puzzle001.ss to puzzle046.ss 
+                // hidden pair ( 1 6 ) at cell(2,4) and cell(3,4), column 4
+                // "2...578.37.....4...43.......7.54....32.876.49....13.5.......61...1.....44.736...2"
+                // "7..42..6..435..2...1..3.59......4321....9....1643......71.6..3...9..361..2..41..9"
+                // ".8..7..9...5..2...2.....4.8..7..61.5..2.3.6..1.82..9..3.1.....9...4..7...2..9..3."
+                 "6.94..1...87.1......38.7....16.2...8..5...6..8...6.97....3.68......7.43...1..57.6"
+                // "...9.61....3......2.9.5..48.5..1.3.7..8...4..1.7.3..2.73..2.5.4......7....43.5..."
+                // "54..219..........5..695..1298...62.............27...6979..385..6..........856..71"
+                // ".....7.21...6.8.......5..8693.7..4....6.4.5....4..9.6367..3.......1.6...14.9....."
+                // "...8.6.4.5..7..31..43...8....5.....19..2.1..66.....9....2...63..69..2..8.5.1.7..."
+                // "9.....3.1...21......8..6....659.82...4.....6...94.318....6..5......85...5.7.....3"
+                // "65..4328..2.8.65.........648...24......198......76...878.........54.9.3..3458..26"
+                // ".98..4..6.7..6....6.29.....9....6.21...4.8...56.1....9.....74.2....1..5.2..5..68."
+                // "...1.....8...652.....47...8359.27.6..4.....5..2.54.7939...16.....428...7.....4..."
+                // "5...9..6....5..1.7..4..1.9...14.765...........381.57...4.3..5..1.7..4....2..7...4"
+                // ".32.9...5.....48....763...46....9.8...3...4...2.5....39...673....64.....2...8.15."
+                // "..6..3.214.....6...98.7....6.31.........3.........54.6....4.16...1.....224.7..5.."
+                // ".65...19.8..1.53..3.......575..2.......548.......1..245.......3..34.6..9.42...68."
+                // "2.39.54......4.573...3.......7.....69..583..74.....8.......9...875.3......94.73.5"
+                // "...5......469.853..8..32...82...41...94.2.86...18...43...24..5..721.568......3..."
+                // "..2.4...13.5.69...47.1........7..13...14.27...63..8........1.78...68.9.38...7.5.."
+                // "38..2.19...7...528..5..9.........8.4...4.7...5.2.........3..4..631...2...28.6..75"
+                // ".3..2...67.....4..2.1.76....231...6.....5.....9...735....28.6.5..6.....19...1..4."
+                // "4....268.8....1..2..9..6...29..8.4....4...3....6.4..18...7..1..6..9....4.416....7"
+                // "2....5.986..8792.....2..7..3.54...8.4.......3.7...85.2..1..4.....8712..652.9....7"
+                // ".46.9....3....8.7...8....32.2.1..6..8...3...9..1..9.5.41....8...8.6....4....7.12."
+                // "2..59..43...........8327....76.....45.3.1.2.68.....93....1746...........69..53..1"
+                // "..9..8.4.8.....3.7.3.9.2...49..7.2...7.....8...2.1..34...1.5.2.3.5.....8.6.3..5.."
+                // ".....5.16174..2...65......9.....8.3...2.4.8...6.3.....4......68...5..27121.8....."
+                // "..4.....9.2.5.......6.91.4......2.6.64..1..87.9.8......3.64.7.......7.5.1.....8.."
+                // "..794...1....32..6...1...7...5.2..6996.....5882..9.4...4...1...6..27....5...697.."
+                // ".2.1...3.45..32....3.7.54..1...78.....5...7.....25...1..24.7.1....58..94.8...1.6."
+                // "..651..9.4.3..8.6..89..64......65.....41398.....24......56..12..3.4..5.9.4..526.."
+                // ".974.6............1...5..9.4..9.2.5.2.18.59.7.5.3.1..6.4..1...5............6.931."
+                // "8...65.9....2...57.2.8.....2.....7.5.6.....8.3.4.....9.....3.2.74...8....8.94...1"
+                // ".54.7...8.2.8.5....7....35.7...286.....9.7.....241...9.98....1....3.4.8.5...8.96."
+                // "......5..2..6....798..154..6..1..9.5..9.2.1..7.8..4..2..657..498....2..1..4......"
+                // ".2.6..7.5.......1.9..17..8.5..2....8.1.9.7.5.7....6..2.8..94..3.5.......2.9..1.6."
+                // ".53...1.44.....97.1..9....8.4.1........742........5.3.6....1..7.87.....12.1...64."
+                // "5...6..7.431.7.......1..2....7..65...8..1..6...29..1....4..7.......5.723.5..2...9"
+                // ".57.2..86..........1..8.47....4...595...9...373...6....78.5..9..........19..3.82."
+                // "..8...1....5..2.647....1...5...4..9..39...42..7..3...6...8....921.4..6....6...5.."
+                // ".5192..........32..2...3..59.658...1.386.295.2...198.47..2...1..13..........3467."
+                // "1....4..2..3.7..4..8..6..7....7....654.....218....2....1..3..6..6..1.4..4..6....9"
+                // "......1...1.....49..9.27.655..38.7.6.........2.7.64..317.83.9..95.....8...2......"
+                // "7.9.3.8.....2.....4....8.6525...4...3..672..4...3...8794.8....3.....3.....3.1.7.8"
+                // "4..2..89..96.8.2.1.......54...42.....5.9.1.8.....65...17.......6.2.4.51..39..2..8"
+                // ".......5..5.9..3..3..754..8..8.4.6..17..2..45..5.7.2..5..867..4..9..5.8..6......."
+               ;
         }
 
         public void initialize()
@@ -893,7 +968,7 @@ namespace Sudoko
         }
 
         //
-        // find pair cells in row, column, or grid where both cells only have the exact two possibilities.
+        // find naked pair cells in row, column, or grid where both cells only have the exact two possibilities.
         // other cells in the row, column, or grid can then eliminate those two possibilities
         //
 
@@ -903,6 +978,306 @@ namespace Sudoko
             foundPair |= findNakedPairsHorizontalNeighbors();
             foundPair |= findNakedPairsVerticalNeighbors();
             foundPair |= findNakedPairsGridNeighbors();
+            return foundPair;
+        }
+
+        public bool findHiddenPairsHorizontalNeighbors()
+        {
+            int NumChanges;
+            bool[] PossiblePairs = new bool[9];
+            int[,] PossiblePairLocations = new int[9, 2];
+
+            NumChanges = 0;
+            for (int row = 0; row<9; row++)
+            {
+                for (int k = 0; k < 9; k++)
+                {
+                    PossiblePairs[k] = false;
+                    PossiblePairLocations[k, 0] = SudokuCell.NOTFOUND;
+                    PossiblePairLocations[k, 1] = SudokuCell.NOTFOUND;
+                    int numMatches = 0;
+                    for (int column = 0; column < 9; column++)
+                    { 
+                        if ( !puzzle[row, column].IsSolved )
+                        {
+                            if ( puzzle[row, column].isPossible(k) )
+                            {
+                                if (numMatches < 2)
+                                {
+                                    PossiblePairLocations[k, numMatches] = column;
+                                }
+                                numMatches++;
+                                PossiblePairs[k] = ( numMatches == 2 );
+                            }
+                        }
+                    }
+                }
+
+                for (int p1 = 0; p1<9; p1++)
+                {
+                    if ( PossiblePairs[p1] )
+                    {
+                        for (int p2 = p1 + 1; p2 < 9; p2++)
+                        {
+                            if ( PossiblePairs[p2] )
+                            {
+                                bool shareSameTwoCells = (
+                                        PossiblePairLocations[p1, 0] == PossiblePairLocations[p2, 0] &&
+                                        PossiblePairLocations[p1, 1] == PossiblePairLocations[p2, 1]
+                                    );
+                                if ( shareSameTwoCells )
+                                {
+                                    int column1 = PossiblePairLocations[p1, 0];
+                                    int column2 = PossiblePairLocations[p1, 1];
+                                    int numChangesThisPair = 0;
+                                    for (int k = 0; k<9; k++)
+                                    {
+                                        bool notInPair = ( k != p1 && k != p2 );
+                                        if ( notInPair )
+                                        {
+                                            if ( puzzle[row, column1].isPossible(k) )
+                                            {
+                                                puzzle[row, column1].setPossible(k, false);
+                                                numChangesThisPair++;
+                                                NumChanges++;
+                                            }
+                                            if ( puzzle[row, column2].isPossible(k) )
+                                            {
+                                                puzzle[row, column2].setPossible(k, false);
+                                                numChangesThisPair++;
+                                                NumChanges++;
+                                            }
+                                        }
+                                    }
+                                    if ( numChangesThisPair > 0 )
+                                    {
+                                        Console.WriteLine("found a hidden pair ( {0} {1} ) at cell({2},{3}) and cell({4},{5}), row {6}",
+                                            p1 + 1, p2 + 1, row + 1, column1 + 1, row + 1, column2 + 1, row + 1);
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("xxx found a hidden pair ( {0} {1} ) at cell({2},{3}) and cell({4},{5}), row {6}",
+                                            p1 + 1, p2 + 1, row + 1, column1 + 1, row + 1, column2 + 1, row + 1);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return ( NumChanges > 0 );
+        }
+
+        public bool findHiddenPairsVerticalNeighbors()
+        {
+            int NumChanges;
+            bool[] PossiblePairs = new bool[9];
+            int[,] PossiblePairLocations = new int[9, 2];
+
+            NumChanges = 0;
+            for (int column = 0; column < 9; column++)
+            {
+                for (int k = 0; k < 9; k++)
+                {
+                    PossiblePairs[k] = false;
+                    PossiblePairLocations[k, 0] = SudokuCell.NOTFOUND;
+                    PossiblePairLocations[k, 1] = SudokuCell.NOTFOUND;
+                    int numMatches = 0;
+                    for (int row = 0; row < 9; row++)
+                    {
+                        if ( !puzzle[row, column].IsSolved )
+                        {
+                            if ( puzzle[row, column].isPossible(k ))
+                            {
+                                if ( numMatches < 2 )
+                                {
+                                    PossiblePairLocations[k, numMatches] = row;
+                                }
+                                numMatches++;
+                                PossiblePairs[k] = (numMatches == 2);
+                            }
+                        }
+                    }
+                }
+
+                for (int p1 = 0; p1 < 9; p1++)
+                {
+                    if ( PossiblePairs[p1] )
+                    {
+                        for (int p2 = p1 + 1; p2 < 9; p2++)
+                        {
+                            if ( PossiblePairs[p2] )
+                            {
+                                bool shareSameTwoCells = (
+                                      PossiblePairLocations[p1, 0] == PossiblePairLocations[p2, 0] &&
+                                      PossiblePairLocations[p1, 1] == PossiblePairLocations[p2, 1]
+                                    );
+                                if ( shareSameTwoCells )
+                                {
+                                    int row1 = PossiblePairLocations[p1, 0];
+                                    int row2 = PossiblePairLocations[p1, 1];
+                                    int numChangesThisPair = 0;
+                                    for (int k = 0; k < 9; k++)
+                                    {
+                                        bool notInPair = (k != p1 && k != p2);
+                                        if (notInPair)
+                                        {
+                                            if ( puzzle[row1, column].isPossible(k) )
+                                            {
+                                                puzzle[row1, column].setPossible(k, false);
+                                                numChangesThisPair++;
+                                                NumChanges++;
+                                            }
+                                            if ( puzzle[row2, column].isPossible(k) )
+                                            {
+                                                puzzle[row2, column].setPossible(k, false);
+                                                numChangesThisPair++;
+                                                NumChanges++;
+                                            }
+                                        }
+                                    }
+                                    if ( numChangesThisPair > 0 )
+                                    {
+                                        Console.WriteLine("found a hidden pair ( {0} {1} ) at cell({2},{3}) and cell({4},{5}), column {6}",
+                                            p1 + 1, p2 + 1, row1 + 1, column + 1, row2 + 1, column + 1, column + 1);
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("xxx found a hidden pair ( {0} {1} ) at cell({2},{3}) and cell({4},{5}), column {6}",
+                                            p1 + 1, p2 + 1, row1 + 1, column + 1, row2 + 1, column + 1, column + 1);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return ( NumChanges > 0 );
+        }
+
+        public bool findHiddenPairsGridNeighbors()
+        {
+            int NumChanges;
+            bool[] PossiblePairs = new bool[9];
+            int[,] PossiblePairRowLocations = new int[9, 2];
+            int[,] PossiblePairColumnLocations = new int[9, 2];
+
+            NumChanges = 0;
+
+            for (int gridi = 0; gridi < 3; gridi++)
+            {
+                for (int gridj = 0; gridj < 3; gridj++)
+                {
+                    for (int k = 0; k <9; k++)
+                    {
+                        PossiblePairs[k] = false;
+                        PossiblePairRowLocations[k, 0]    = SudokuCell.NOTFOUND;
+                        PossiblePairRowLocations[k, 1]    = SudokuCell.NOTFOUND;
+                        PossiblePairColumnLocations[k, 0] = SudokuCell.NOTFOUND;
+                        PossiblePairColumnLocations[k, 1] = SudokuCell.NOTFOUND;
+                        int numMatches = 0;
+
+                        // traverse a single grid(i,j) and populate PossiblePairs[k]
+
+                        int starti = gridi * 3;
+                        int startj = gridj * 3;
+                        for (int row = starti; row < starti+3; row++)
+                        {
+                            for (int column = startj; column < startj+3; column++)
+                            {
+                                if ( !puzzle[row, column].IsSolved )
+                                {
+                                    if ( puzzle[row, column].isPossible(k) )
+                                    {
+                                        if ( numMatches < 2 )
+                                        {
+                                            PossiblePairRowLocations[k, numMatches]    = row;
+                                            PossiblePairColumnLocations[k, numMatches] = column;
+                                        }
+                                        numMatches++;
+                                        PossiblePairs[k] = (numMatches == 2);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    for (int p1 = 0; p1 < 9; p1++)
+                    {
+                        if ( PossiblePairs[p1] )
+                        {
+                            for (int p2 = p1 + 1; p2 < 9; p2++)
+                            {
+                                if ( PossiblePairs[p2] )
+                                {
+                                    bool shareSameTwoCells = (
+                                            PossiblePairRowLocations[p1, 0] == PossiblePairRowLocations[p2, 0] &&
+                                            PossiblePairRowLocations[p1, 1] == PossiblePairRowLocations[p2, 1] &&
+                                            PossiblePairColumnLocations[p1, 0] == PossiblePairColumnLocations[p2, 0] &&
+                                            PossiblePairColumnLocations[p1, 1] == PossiblePairColumnLocations[p2, 1]
+                                        );
+                                    if  ( shareSameTwoCells )
+                                    {
+                                        int row1 = PossiblePairRowLocations[p1, 0];
+                                        int row2 = PossiblePairRowLocations[p1, 1];
+                                        int column1 = PossiblePairColumnLocations[p1, 0];
+                                        int column2 = PossiblePairColumnLocations[p1, 1];
+                                        int numChangesThisPair = 0;
+                                        for (int k = 0; k < 9; k++)
+                                        {
+                                            bool notInPair = (k != p1 && k != p2);
+                                            if ( notInPair )
+                                            {
+                                                if ( puzzle[row1, column1].isPossible(k) )
+                                                {
+                                                    puzzle[row1, column1].setPossible(k, false);
+                                                    numChangesThisPair++;
+                                                    NumChanges++;
+                                                }
+                                                if ( puzzle[row2, column2].isPossible(k) )
+                                                {
+                                                    puzzle[row2, column2].setPossible(k, false);
+                                                    numChangesThisPair++;
+                                                    NumChanges++;
+                                                }
+                                            }
+                                        }
+                                        if ( numChangesThisPair > 0 )
+                                        {
+                                            Console.WriteLine("found a hidden pair ( {0} {1} ) at grid({2},{3}) in cell({4},{5}) and cell({6},{7})",
+                                                p1 + 1, p2 + 1, gridi + 1, gridj + 1, row1 + 1, column1 + 1, row2 + 1, column2 + 1);
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("xxx found a hidden pair ( {0} {1} ) at grid({2},{3}) in cell({4},{5}) and cell({6},{7})",
+                                                p1 + 1, p2 + 1, gridi + 1, gridj + 1, row1 + 1, column1 + 1, row2 + 1, column2 + 1);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return (NumChanges > 0);
+        }
+
+        //
+        // find hidden pair cells in row, column, or grid where both cells only have other possibilities.
+        // from two hidden pair cells, remove possibilities from non-pairs
+        //
+
+        public bool findHiddenPairs()
+        {
+            bool foundPair = false;
+            //display("before find hidden pairs:");
+            foundPair |= findHiddenPairsHorizontalNeighbors();
+            foundPair |= findHiddenPairsVerticalNeighbors();
+            foundPair |= findHiddenPairsGridNeighbors();
+            //display("after find hidden pairs:");
             return foundPair;
         }
 
@@ -1251,15 +1626,19 @@ namespace Sudoko
             do
             {
                 didSomething = findNakedSingles();
-                if (!didSomething)
+                if ( !didSomething )
                 {
                     didSomething = findHiddenSingles();
-                    if (!didSomething)
+                    if ( !didSomething )
                     {
                         didSomething = findNakedPairs();
-                        if (!didSomething)
+                        if ( !didSomething )
                         {
-                            didSomething |= findLockedCandidate();
+                            didSomething = findHiddenPairs();
+                            if ( !didSomething )
+                            {
+                                didSomething = findLockedCandidate();
+                            }
                         }
                     }
                 }
