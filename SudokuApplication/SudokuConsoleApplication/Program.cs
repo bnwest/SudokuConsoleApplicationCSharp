@@ -78,8 +78,9 @@ namespace Sudoko
         private String getInput()
         {
             return
-              // hidden single in row, column, grid; naked pair in row; locked cndidate in ???
-              // "563700000002000947040100000030050209020000080409010050000004010254000600000006495"
+              // hidden single in row, column, grid; naked pair in row;
+              // type 1 and 2 locked candidate in row and column
+               "563700000002000947040100000030050209020000080409010050000004010254000600000006495"
               // aka
               /*
                      "5637....." +
@@ -106,7 +107,7 @@ namespace Sudoko
               //  "019058000503201000700000005040900008000060000800004030900000006000406209000390750" // 6900
               //  "000070520083560000000002080002000004050603010900000200010700000000086740064010000" // 8150
               // found a naked pair in row, column and grid
-                "000085400050003027000000008402007050608000704070300206500000000940500060001920000" // 6750
+              //  "000085400050003027000000008402007050608000704070300206500000000940500060001920000" // 6750
               //  "502714008060000000700000300001070000090802070000050400007000009000000060400193807" // 8750
               //  "009300000000080401710400060030000002008209100100000030080001075401050000000003600" // 7850
 
@@ -905,6 +906,337 @@ namespace Sudoko
             return foundPair;
         }
 
+        public bool findLockedCandidateHorizontal()
+        {
+            int numChanges;
+            bool[,,] Candidate = new bool[9,3,9];
+
+            numChanges = 0;
+
+            for (int row = 0; row < 9; row++)
+            {
+                for (int k = 0; k < 9; k++)
+                {
+                    Candidate[row, 0, k] = false;
+                    Candidate[row, 1, k] = false;
+                    Candidate[row, 2, k] = false;
+                }
+                for (int k = 0; k < 9; k++)
+                {
+                    for (int column = 0; column < 9; column++)
+                    {
+                        if ( !puzzle[row, column].IsSolved )
+                        {
+                            int gridj = column / 3;
+                            Candidate[row, gridj, k] |= puzzle[row, column].isPossible(k);
+                        }
+                    }
+                }
+            }
+
+            //
+            // Locked Candidate Type 1
+            // if single is in the grid's row/column but is not in the grid's other row/column, 
+            // then we can exclude the single from the rest of the row/column
+            //
+
+            for (int gridi = 0; gridi < 3; gridi++)
+            {
+                for (int gridj = 0; gridj < 3; gridj++)
+                {
+                    // Console.WriteLine("grid({0},{1})", gridi+1, gridj+1);
+                    int starti = gridi * 3;
+                    int startj = gridj * 3;
+                    for (int k = 0; k < 9; k++)
+                    {
+                        bool foundLockedCandidate = false;
+                        int lockedRow = SudokuCell.NOTFOUND; // C# quesses use below is "unassigned" and thus an error
+                        if ( Candidate[starti, gridj, k] && !Candidate[starti + 1, gridj, k] && !Candidate[starti + 2, gridj, k] )
+                        {
+                            foundLockedCandidate = true;
+                            lockedRow = starti;
+                        }
+                        if ( !Candidate[starti, gridj, k] && Candidate[starti + 1, gridj, k] && !Candidate[starti + 2, gridj, k] )
+                        {
+                            foundLockedCandidate = true;
+                            lockedRow = starti+1;
+                        }
+                        if ( !Candidate[starti, gridj, k] && !Candidate[starti + 1, gridj, k] && Candidate[starti + 2, gridj, k] )
+                        {
+                            foundLockedCandidate = true;
+                            lockedRow = starti+2;
+                        }
+                        if ( foundLockedCandidate )
+                        {
+                            // row includes Candidate[lockedRow, 0, k] + Candidate[lockedRow, 1, k] +  Candidate[lockedRow, 2, k]
+                            bool foundPossibilitiesToRemove = (
+                                  (gridj != 0 && Candidate[lockedRow, 0, k]) ||
+                                  (gridj != 1 && Candidate[lockedRow, 1, k]) ||
+                                  (gridj != 2 && Candidate[lockedRow, 2, k]) 
+                                );
+                            if ( foundPossibilitiesToRemove )
+                            {
+                                Console.WriteLine("found type 1 locked candidated {0} in row cells({1},{2}..{3}), exclude the rest of the row",
+                                                  k + 1, lockedRow + 1, startj + 1, startj + 3);
+                                for (int column = 0; column < 9; column++)
+                                {
+                                    int thisGridColumn = column / 3;
+                                    bool gridToExclude = ( thisGridColumn == gridj );
+                                    if ( !gridToExclude )
+                                    {
+                                        if ( puzzle[lockedRow, column].isPossible(k) )
+                                        {
+                                            numChanges++;
+                                            puzzle[lockedRow, column].setPossible(k, false);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 
+            // Locked Candidate Type 2
+            // if the single is in the grid's row/column but not in the rest of the row/column,
+            // then we can restrict the single from the rest of the grid
+            //
+
+            for (int row = 0; row < 9; row++)
+            {
+                for (int k = 0; k < 9; k++)
+                {
+                    bool foundLockedCandidate = false;
+                    int startj = SudokuCell.NOTFOUND; // C# guesses use below is "unassigned" and thus an error
+                    if ( Candidate[row, 0, k] && !Candidate[row, 1, k] && !Candidate[row, 2, k] )
+                    {
+                        foundLockedCandidate = true;
+                        startj = 0;
+                    }
+                    if ( !Candidate[row, 0, k] && Candidate[row, 1, k] && !Candidate[row, 2, k] )
+                    {
+                        foundLockedCandidate = true;
+                        startj = 3;
+                    }
+                    if ( !Candidate[row, 0, k] && !Candidate[row, 1, k] && Candidate[row, 2, k] )
+                    {
+                        foundLockedCandidate = true;
+                        startj = 6;
+                    }
+                    if ( foundLockedCandidate )
+                    {
+                        int gridj = startj / 3;
+                        int starti = row / 3 * 3;
+                        // grid includes Candidate[starti, gridj, k] + Candidate[starti+1, gridj, k] + Candidate[starti+2, gridj, k]
+                        bool foundPossibilitiesToRemove = (
+                              (starti   != row && Candidate[starti,   gridj, k]) ||
+                              (starti+1 != row && Candidate[starti+1, gridj, k]) ||
+                              (starti+2 != row && Candidate[starti+2, gridj, k])
+                            );
+                        if ( foundPossibilitiesToRemove )
+                        {
+                            Console.WriteLine("found type 2 locked candidated {0} in row cells({1},{2}..{3}), exclude the rest of the grid",
+                                              k + 1, row + 1, startj + 1, startj + 3);
+
+                            for (int i = starti; i < starti + 3; i++)
+                            {
+                                bool excludeLockedRow = (i == row);
+                                if (!excludeLockedRow)
+                                {
+                                    for (int j = startj; j < startj + 3; j++)
+                                    {
+                                        if (puzzle[i, j].isPossible(k) )
+                                        {
+                                            numChanges++;
+                                            puzzle[i, j].setPossible(k, false);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return ( numChanges > 0 );
+        }
+
+        public bool findLockedCandidateVertical()
+        {
+            int numChanges;
+            bool[,,] Candidate = new bool[9, 3, 9];
+
+            numChanges = 0;
+
+            for (int column = 0; column < 9; column++)
+            {
+                for (int k = 0; k < 9; k++)
+                {
+                    Candidate[column, 0, k] = false;
+                    Candidate[column, 1, k] = false;
+                    Candidate[column, 2, k] = false;
+                }
+                for (int k = 0; k < 9; k++)
+                {
+                    for (int row = 0; row < 9; row++)
+                    {
+                        if ( !puzzle[row, column].IsSolved )
+                        {
+                            int gridi = row / 3;
+                            Candidate[column, gridi, k] |= puzzle[row, column].isPossible(k);
+                        }
+                    }
+                }
+            }
+
+            //
+            // Locked Candidate Type 1
+            // if single is in the grid's row/column but is not in the grid's other row/column, 
+            // then we can exclude the single from the rest of the row/column
+            //
+
+            for (int gridi = 0; gridi < 3; gridi++)
+            {
+                for (int gridj = 0; gridj < 3; gridj++)
+                {
+                    // Console.WriteLine("grid({0},{1})", gridi+1, gridj+1);
+                    int starti = gridi * 3;
+                    int startj = gridj * 3;
+                    for (int k = 0; k < 9; k++)
+                    {
+                        bool foundLockedCandidate = false;
+                        int lockedColumn = SudokuCell.NOTFOUND; // C# guesses use below is "unassigned" and thus an error
+                        if ( Candidate[startj, gridi, k] && !Candidate[startj + 1, gridi, k] && !Candidate[startj + 2, gridi, k] )
+                        {
+                            foundLockedCandidate = true;
+                            lockedColumn = startj;
+                        }
+                        if ( !Candidate[startj, gridi, k] && Candidate[startj + 1, gridi, k] && !Candidate[startj + 2, gridi, k] )
+                        {
+                            foundLockedCandidate = true;
+                            lockedColumn = startj + 1;
+                        }
+                        if ( !Candidate[startj, gridi, k] && !Candidate[startj + 1, gridi, k] && Candidate[startj + 2, gridi, k] )
+                        {
+                            foundLockedCandidate = true;
+                            lockedColumn = startj + 2;
+                        }
+                        if ( foundLockedCandidate )
+                        {
+                            // row includes Candidate[lockedRow, 0, k] + Candidate[lockedRow, 1, k] +  Candidate[lockedRow, 2, k]
+                            bool foundPossibilitiesToRemove = (
+                                  (gridi != 0 && Candidate[lockedColumn, 0, k]) ||
+                                  (gridi != 1 && Candidate[lockedColumn, 1, k]) ||
+                                  (gridi != 2 && Candidate[lockedColumn, 2, k])
+                                );
+                            if ( foundPossibilitiesToRemove )
+                            {
+                                Console.WriteLine("found type 1 locked candidated {0} in column cells({1}..{2},{3}), exclude the rest of the column",
+                                                  k + 1, starti + 1, starti + 3, lockedColumn + 1);
+                                for (int row = 0; row < 9; row++)
+                                {
+                                    int thisGridRow = row / 3;
+                                    bool gridToExclude = (thisGridRow == gridi);
+                                    if (!gridToExclude)
+                                    {
+                                        if (puzzle[row, lockedColumn].isPossible(k))
+                                        {
+                                            numChanges++;
+                                            puzzle[row, lockedColumn].setPossible(k, false);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            //
+            // Locked Candidate Type 2
+            // if the single is in the grid's row/column but not in the rest of the row/column,
+            // then we can restrict the single from the rest of the grid
+            //
+
+            for (int column = 0; column < 9; column++)
+            {
+                for (int k = 0; k < 9; k++)
+                {
+                    bool foundLockedCandidate = false;
+                    int starti = SudokuCell.NOTFOUND; // C# quesses use below is "unassigned" and thus an error
+                    if ( Candidate[column, 0, k] && !Candidate[column, 1, k] && !Candidate[column, 2, k] )
+                    {
+                        foundLockedCandidate = true;
+                        starti = 0;
+                    }
+                    if ( !Candidate[column, 0, k] && Candidate[column, 1, k] && !Candidate[column, 2, k] )
+                    {
+                        foundLockedCandidate = true;
+                        starti = 3;
+                    }
+                    if ( !Candidate[column, 0, k] && !Candidate[column, 1, k] && Candidate[column, 2, k] )
+                    {
+                        foundLockedCandidate = true;
+                        starti = 6;
+                    }
+                    if ( foundLockedCandidate)
+                    {
+                        int gridi = starti / 3;
+                        int startj = column / 3 * 3;
+                        // grid includes Candidate[starti, gridj, k] + Candidate[starti+1, gridj, k] + Candidate[starti+2, gridj, k]
+                        bool foundPossibilitiesToRemove = (
+                              (startj     != column && Candidate[startj,     gridi, k]) ||
+                              (startj + 1 != column && Candidate[startj + 1, gridi, k]) ||
+                              (startj + 2 != column && Candidate[startj + 2, gridi, k])
+                            );
+                        if ( foundPossibilitiesToRemove )
+                        {
+                            Console.WriteLine("found type 2 locked candidated {0} in column cells({1}..{2},{3}), exclude the rest of the grid",
+                                              k + 1, starti + 1, starti + 3, column + 1);
+
+                            for (int j = startj; j < startj + 3; j++)
+                            {
+                                bool excludeLockedColumn = ( j == column );
+                                if ( !excludeLockedColumn)
+                                {
+                                    for (int i = starti; i < starti + 3; i++)
+                                    {
+                                        if ( puzzle[i, j].isPossible(k) )
+                                        {
+                                            numChanges++;
+                                            puzzle[i, j].setPossible(k, false);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return ( numChanges > 0 );
+        }
+
+        //
+        // Locked Candidate Type 1
+        // if single is in the grid's row/column but is not in the grid's other row/column, 
+        // then we can exclude the single from the rest of the row/column
+        //
+        // Locked Candidate Type 2
+        // if the single is in the grid's row/column but not in the rest of the row/column,
+        // then we can restrict the single from the rest of the grid
+        //
+
+        public bool findLockedCandidate()
+        {
+            bool didSomething = false;
+            didSomething |= findLockedCandidateHorizontal();
+            didSomething |= findLockedCandidateVertical();
+            return didSomething;
+        }
+
+
         public void solveCell(int i, int j, int k)
         {
             puzzle[i, j].Found = k;
@@ -927,7 +1259,7 @@ namespace Sudoko
                         didSomething = findNakedPairs();
                         if (!didSomething)
                         {
-                            //didSomething |= findLockedCandidate();
+                            didSomething |= findLockedCandidate();
                         }
                     }
                 }
