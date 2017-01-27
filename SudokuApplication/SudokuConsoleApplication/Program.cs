@@ -163,7 +163,7 @@ namespace Sudoko
      // "5.....7.3...1.4......8.....3....2....8.....9........1..9........18.....6....75..."
 
      // good one -- real grinder
-     // "5..7.6.....8....43.......1...1.4................6.27...2....9.....83....7........"
+      "5..7.6.....8....43.......1...1.4................6.27...2....9.....83....7........"
 
      // failed to solve - naked quad ( 2 3 5 8 ) for grid(2,3), exclude based on colors)
     // ".....7.....2...6......3......96..........5........4.1747....9..1...........85.3.."
@@ -190,7 +190,7 @@ namespace Sudoko
    // "..8.5...........2..4.....317.9..8...5...........3....4.1.2..........95........9.."
    // 17 l5
    // failed to solve - naked quad ( 1 3 4 7 ) for column 3 at start, Simple Sudoku fails to solve
-    "...7.....8.6.....1...29........3..2........79..5..4...........592........8...1..."
+   // "...7.....8.6.....1...29........3..2........79..5..4...........592........8...1..."
    // "1....6.5........3.....2..9.6.....7.....94........35........8..2..3.......94......"
    // "...8..2...39..4.........6.....29....3....7...14..............4.....1..3.6..5....."
    // ".....9...1.5..7.......48..6...5...4........8.2..3......89............1.3..4......"
@@ -724,724 +724,10 @@ namespace Sudoko
             return foundHiddenSingle;
         }
 
-        public bool findNakedPairsHorizontalNeighbors()
-        {
-            int numCandidatePairs;
-            int[,] CandidatePairs = new int[9,4];
-            int numNakedPairs;
-            int[,] NakedPairs = new int[9,6];
-
-            int numChanges = 0;
-            for (int row = 0; row<9; row++)
-            {
-                numCandidatePairs = 0;
-                numNakedPairs = 0;
-                for (int column = 0; column<9; column++)
-                {
-                    if ( !puzzle[row, column].IsSolved )
-                    {
-                        int value1 = SudokuCell.NOTFOUND;
-                        int value2 = SudokuCell.NOTFOUND;
-                        int numPossibilities = 0;
-                        for (int k =0; k<9; k++)
-                        {
-                            if ( puzzle[row, column].isPossible(k) )
-                            {
-                                numPossibilities++;
-                                if (numPossibilities > 2) break;
-                                if ( value1 == SudokuCell.NOTFOUND ) value1 = k;
-                                else                                 value2 = k;
-                            }
-                        }
-                        if ( numPossibilities == 2 )
-                        {
-                            CandidatePairs[numCandidatePairs, 0] = row;
-                            CandidatePairs[numCandidatePairs, 1] = column;
-                            CandidatePairs[numCandidatePairs, 2] = value1;
-                            CandidatePairs[numCandidatePairs, 3] = value2;
-                            numCandidatePairs++;
-                        }
-                    }
-                }
-                if ( numCandidatePairs > 0 )
-                {
-                    for (int pair = 0; pair<numCandidatePairs; pair++)
-                    {
-                        //Console.WriteLine("found candidate pair( {0} {1} ) at cell({2},{3})", 
-                        //    CandidatePairs[pair, 2]+1, CandidatePairs[pair, 3]+1,
-                        //    CandidatePairs[pair, 0]+1, CandidatePairs[pair, 1]+1);
-                    }
-                }
-                if ( numCandidatePairs > 1 )
-                {
-                    // look for matching candidate pairs
-                    for (int i = 0; i<numCandidatePairs; i++)
-                    {
-                        for (int j = i + 1; j<numCandidatePairs; j++)
-                        {
-                            bool foundMatch = ( CandidatePairs[i, 2] == CandidatePairs[j, 2] &&
-                                                CandidatePairs[i, 3] == CandidatePairs[j, 3]);
-                            if ( foundMatch )
-                            {
-                                // got a naked pair (p1,p2) at cell(i1,j1) and cell(i2,j2) where i1==i2
-                                int i1 = CandidatePairs[i, 0];
-                                int j1 = CandidatePairs[i, 1];
-                                int i2 = CandidatePairs[j, 0];
-                                int j2 = CandidatePairs[j, 1];
-                                int p1 = CandidatePairs[i, 2];
-                                int p2 = CandidatePairs[i, 3];
-
-                                NakedPairs[numNakedPairs, 0] = i1;
-                                NakedPairs[numNakedPairs, 1] = j1;
-                                NakedPairs[numNakedPairs, 2] = i2;
-                                NakedPairs[numNakedPairs, 3] = j2;
-                                NakedPairs[numNakedPairs, 4] = p1;
-                                NakedPairs[numNakedPairs, 5] = p2;
-                                numNakedPairs++;
-                            }
-                        }
-                    }
-                }
-                if ( numNakedPairs > 0 )
-                {
-                    for (int pair = 0; pair < numNakedPairs; pair++)
-                    {
-                        // got a naked pair (p1,p2) at cell(i1,j1) and cell(i2,j2) where i1==i2
-                        int p1 = NakedPairs[pair, 4];
-                        int p2 = NakedPairs[pair, 5];
-
-                        int i1 = NakedPairs[pair, 0];
-                        int j1 = NakedPairs[pair, 1];
-                        int i2 = NakedPairs[pair, 2];
-                        int j2 = NakedPairs[pair, 3];
-
-                        int numChangesForNakedPair = 0;
-                        for (int column = 0; column < 9; column++) 
-                        {
-                            bool lookingAtPairCell = ( column == j1 || column == j2 );
-                            if ( !lookingAtPairCell )
-                            {
-                                // pair (p1,p2) is no longer a possibility for this cell(row,column)
-                                if ( puzzle[row, column].isPossible(p1) )
-                                {
-                                    numChanges++;
-                                    numChangesForNakedPair++;
-                                    puzzle[row, column].setPossible(p1, false);
-                                }
-                                if ( puzzle[row, column].isPossible(p2) )
-                                {
-                                    numChanges++;
-                                    numChangesForNakedPair++;
-                                    puzzle[row, column].setPossible(p2, false);
-                                }
-                            }
-                        }
-                        if ( numChangesForNakedPair > 0 )
-                        {
-                            Console.WriteLine("found naked pair( {0} {1} ) at cell({2},{3}) and cell({4},{5}) row {6}",
-                                              p1 + 1, p2 + 1, i1 + 1, j1 + 1, i2 + 1, j2 + 1, row + 1);
-                        }
-                        else
-                        {
-                            Console.WriteLine("xxx found naked pair( {0} {1} ) at cell({2},{3}) and cell({4},{5}) row {6}",
-                                              p1 + 1, p2 + 1, i1 + 1, j1 + 1, i2 + 1, j2 + 1, row + 1);
-                        }
-                    }
-                }
-            }
-
-            return ( numChanges > 0 );
-        }
-
-        public bool findNakedPairsVerticalNeighbors()
-        {
-            int numCandidatePairs;
-            int[,] CandidatePairs = new int[9, 4];
-            int numNakedPairs;
-            int[,] NakedPairs = new int[9, 6];
-
-            int numChanges = 0;
-            for (int column = 0; column < 9; column++)
-            {
-                numCandidatePairs = 0;
-                numNakedPairs = 0;
-                for (int row = 0; row < 9; row++)
-                {
-                    if ( !puzzle[row, column].IsSolved )
-                    {
-                        int value1 = SudokuCell.NOTFOUND;
-                        int value2 = SudokuCell.NOTFOUND;
-                        int numPossibilities = 0;
-                        for (int k = 0; k < 9; k++)
-                        {
-                            if ( puzzle[row, column].isPossible(k) )
-                            {
-                                numPossibilities++;
-                                if (numPossibilities > 2) break;
-                                if (value1 == SudokuCell.NOTFOUND) value1 = k;
-                                else value2 = k;
-                            }
-                        }
-                        if ( numPossibilities == 2 )
-                        {
-                            CandidatePairs[numCandidatePairs, 0] = row;
-                            CandidatePairs[numCandidatePairs, 1] = column;
-                            CandidatePairs[numCandidatePairs, 2] = value1;
-                            CandidatePairs[numCandidatePairs, 3] = value2;
-                            numCandidatePairs++;
-                        }
-                    }
-                }
-                if ( numCandidatePairs > 0 )
-                {
-                    for (int pair = 0; pair < numCandidatePairs; pair++)
-                    {
-                        //Console.WriteLine("found candidate pair( {0} {1} ) at cell({2},{3})",
-                        //    CandidatePairs[pair, 2] + 1, CandidatePairs[pair, 3] + 1,
-                        //    CandidatePairs[pair, 0] + 1, CandidatePairs[pair, 1] + 1);
-                    }
-                }
-                if ( numCandidatePairs > 1 )
-                {
-                    // look for matching candidate pairs
-                    for (int i = 0; i < numCandidatePairs; i++)
-                    {
-                        for (int j = i + 1; j < numCandidatePairs; j++)
-                        {
-                            bool foundMatch = ( CandidatePairs[i, 2] == CandidatePairs[j, 2] &&
-                                                CandidatePairs[i, 3] == CandidatePairs[j, 3] );
-                            if ( foundMatch )
-                            {
-                                // got a naked pair (p1,p2) at cell(i1,j1) and cell(i2,j2) where i1==i2
-                                int i1 = CandidatePairs[i, 0];
-                                int j1 = CandidatePairs[i, 1];
-                                int i2 = CandidatePairs[j, 0];
-                                int j2 = CandidatePairs[j, 1];
-                                int p1 = CandidatePairs[i, 2];
-                                int p2 = CandidatePairs[i, 3];
-
-                                NakedPairs[numNakedPairs, 0] = i1;
-                                NakedPairs[numNakedPairs, 1] = j1;
-                                NakedPairs[numNakedPairs, 2] = i2;
-                                NakedPairs[numNakedPairs, 3] = j2;
-                                NakedPairs[numNakedPairs, 4] = p1;
-                                NakedPairs[numNakedPairs, 5] = p2;
-                                numNakedPairs++;
-                            }
-                        }
-                    }
-                }
-                if ( numNakedPairs > 0 )
-                {
-                    for (int pair = 0; pair < numNakedPairs; pair++) 
-                    {
-                        // got a naked pair (p1,p2) at cell(i1,j1) and cell(i2,j2) where i1==i2
-                        int p1 = NakedPairs[pair, 4];
-                        int p2 = NakedPairs[pair, 5];
-
-                        int i1 = NakedPairs[pair, 0];
-                        int j1 = NakedPairs[pair, 1];
-                        int i2 = NakedPairs[pair, 2];
-                        int j2 = NakedPairs[pair, 3];
-
-                        int numChangesForNakedPair = 0;
-                        for (int row = 0; row < 9; row++)
-                        {
-                            bool lookingAtPairCell = (row == i1 || row == i2);
-                            if (!lookingAtPairCell)
-                            {
-                                // pair (p1,p2) is no longer a possibility for this cell(row,column)
-                                if (puzzle[row, column].isPossible(p1))
-                                {
-                                    numChanges++;
-                                    numChangesForNakedPair++;
-                                    puzzle[row, column].setPossible(p1, false);
-                                }
-                                if (puzzle[row, column].isPossible(p2))
-                                {
-                                    numChanges++;
-                                    numChangesForNakedPair++;
-                                    puzzle[row, column].setPossible(p2, false);
-                                }
-                            }
-                        }
-                        if ( numChangesForNakedPair > 0 )
-                        {
-                            Console.WriteLine("found naked pair( {0} {1} ) at cell({2},{3}) and cell({4},{5}) column {6}",
-                                              p1 + 1, p2 + 1, i1 + 1, j1 + 1, i2 + 1, j2 + 1, column + 1);
-                        }
-                        else
-                        {
-                            Console.WriteLine("xxx found naked pair( {0} {1} ) at cell({2},{3}) and cell({4},{5}) column {6}",
-                                              p1 + 1, p2 + 1, i1 + 1, j1 + 1, i2 + 1, j2 + 1, column + 1);
-                        }
-                    }
-                }
-            }
-
-            return ( numChanges > 0 );
-        }
-
-        public bool findNakedPairsGridNeighbors()
-        {
-            int numCandidatePairs;
-            int[,] CandidatePairs = new int[9, 4];
-            int numNakedPairs;
-            int[,] NakedPairs = new int[9, 6];
-
-            int numChanges = 0;
-            for (int gridi = 0; gridi < 3; gridi++)
-            {
-                for (int gridj = 0; gridj < 3; gridj++)
-                {
-                    int starti = gridi * 3;
-                    int startj = gridj * 3;
-                    numCandidatePairs = 0;
-                    numNakedPairs = 0;
-                    for (int row = starti; row < starti + 3; row++)
-                    {
-                        for (int column = startj; column < startj + 3; column++)
-                        {
-                            int numPossibilities = 0;
-                            if ( !puzzle[row, column].IsSolved )
-                            {
-                                int value1 = SudokuCell.NOTFOUND;
-                                int value2 = SudokuCell.NOTFOUND;
-                                for (int k = 0; k < 9; k++)
-                                {
-                                    if ( puzzle[row, column].isPossible(k) )
-                                    {
-                                        numPossibilities++;
-                                        if ( numPossibilities > 2 ) break;
-                                        if ( value1 == SudokuCell.NOTFOUND ) value1 = k;
-                                        else                                 value2 = k;
-                                    }
-                                }
-                                if (numPossibilities == 2 )
-                                {
-                                    CandidatePairs[numCandidatePairs, 0] = row;
-                                    CandidatePairs[numCandidatePairs, 1] = column;
-                                    CandidatePairs[numCandidatePairs, 2] = value1;
-                                    CandidatePairs[numCandidatePairs, 3] = value2;
-                                    numCandidatePairs++;
-                                }
-                            }
-                        }
-                    }
-                    if ( numCandidatePairs > 0 )
-                    {
-                        for (int pair = 0; pair < numCandidatePairs; pair++)
-                        {
-                            //Console.WriteLine("found candidate pair( {0} {1} ) at cell({2},{3}) in grid({4},{5})",
-                            //                  CandidatePairs[pair, 2] + 1, CandidatePairs[pair, 3] + 1,
-                            //                  CandidatePairs[pair, 0] + 1, CandidatePairs[pair, 1] + 1,
-                            //                  gridi + 1, gridj + 1);
-                        }
-                    }
-                    if ( numCandidatePairs > 1 )
-                    {
-                        // look for matching candidate pairs
-                        for (int i = 0; i < numCandidatePairs; i++)
-                        {
-                            for (int j = i + 1; j < numCandidatePairs; j++)
-                            {
-                                bool foundMatch = ( CandidatePairs[i, 2] == CandidatePairs[j, 2] &&
-                                                    CandidatePairs[i, 3] == CandidatePairs[j, 3] );
-                                if ( foundMatch )
-                                {
-                                    // got a naked pair (p1,p2) at cell(i1,j1) and cell(i2,j2) where i1==i2
-                                    int i1 = CandidatePairs[i, 0];
-                                    int j1 = CandidatePairs[i, 1];
-                                    int i2 = CandidatePairs[j, 0];
-                                    int j2 = CandidatePairs[j, 1];
-                                    int p1 = CandidatePairs[i, 2];
-                                    int p2 = CandidatePairs[i, 3];
-
-                                    NakedPairs[numNakedPairs, 0] = i1;
-                                    NakedPairs[numNakedPairs, 1] = j1;
-                                    NakedPairs[numNakedPairs, 2] = i2;
-                                    NakedPairs[numNakedPairs, 3] = j2;
-                                    NakedPairs[numNakedPairs, 4] = p1;
-                                    NakedPairs[numNakedPairs, 5] = p2;
-                                    numNakedPairs++;
-                                }
-                            }
-                        }
-                    }
-                    if ( numNakedPairs > 0 )
-                    {
-                        for (int pair = 0; pair < numNakedPairs; pair++)
-                        {
-                            // got a naked pair (p1,p2) at cell(i1,j1) and cell(i2,j2)
-                            int p1 = NakedPairs[pair, 4];
-                            int p2 = NakedPairs[pair, 5];
-
-                            int i1 = NakedPairs[pair, 0];
-                            int j1 = NakedPairs[pair, 1];
-                            int i2 = NakedPairs[pair, 2];
-                            int j2 = NakedPairs[pair, 3];
-
-                            int numChangesForNakedPair = 0;
-                            for (int row = starti; row < starti + 3; row++)
-                            {
-                                for (int column = startj; column < startj + 3; column++)
-                                {
-                                    bool lookingAtPairCell = ( (row == i1 && column == j1) || 
-                                                               (row == i2 && column == j2) );
-                                    if ( !lookingAtPairCell )
-                                    {
-                                        // pair (p1,p2) is no longer a possibility for this cell(row,column)
-                                        if (puzzle[row, column].isPossible(p1))
-                                        {
-                                            numChanges++;
-                                            numChangesForNakedPair++;
-                                            puzzle[row, column].setPossible(p1, false);
-                                        }
-                                        if (puzzle[row, column].isPossible(p2))
-                                        {
-                                            numChanges++;
-                                            numChangesForNakedPair++;
-                                            puzzle[row, column].setPossible(p2, false);
-                                        }
-                                    }
-                                }
-                            }
-                            if (numChangesForNakedPair > 0 )
-                            {
-                                Console.WriteLine("found naked pair( {0} {1} ) at cell({2},{3}) and cell({4},{5}) in grid({6},{7})",
-                                                  p1 + 1, p2 + 1, i1 + 1, j1 + 1, i2 + 1, j2 + 1, gridi + 1, gridj + 1);
-                            }
-                            else
-                            {
-                                Console.WriteLine("xxx found naked pair( {0} {1} ) at cell({2},{3}) and cell({4},{5}) in grid({6},{7})",
-                                                  p1 + 1, p2 + 1, i1 + 1, j1 + 1, i2 + 1, j2 + 1, gridi + 1, gridj + 1);
-                            }
-                        }
-                    }
-                }
-            }
-
-            return ( numChanges > 0 );
-        }
-
-        //
-        // find naked pair cells in row, column, or grid where both cells only have the exact two possibilities.
-        // other cells in the row, column, or grid can then eliminate those two possibilities
-        //
-
-        public bool findNakedPairs()
-        {
-            bool foundPair = false;
-            foundPair |= findNakedPairsHorizontalNeighbors();
-            foundPair |= findNakedPairsVerticalNeighbors();
-            foundPair |= findNakedPairsGridNeighbors();
-            return foundPair;
-        }
-
-        public bool findHiddenPairsHorizontalNeighbors()
-        {
-            int NumChanges;
-            bool[] PossiblePairs = new bool[9];
-            int[,] PossiblePairLocations = new int[9, 2];
-
-            NumChanges = 0;
-            for (int row = 0; row<9; row++)
-            {
-                for (int k = 0; k < 9; k++)
-                {
-                    PossiblePairs[k] = false;
-                    PossiblePairLocations[k, 0] = SudokuCell.NOTFOUND;
-                    PossiblePairLocations[k, 1] = SudokuCell.NOTFOUND;
-                    int numMatches = 0;
-                    for (int column = 0; column < 9; column++)
-                    { 
-                        if ( !puzzle[row, column].IsSolved )
-                        {
-                            if ( puzzle[row, column].isPossible(k) )
-                            {
-                                if (numMatches < 2)
-                                {
-                                    PossiblePairLocations[k, numMatches] = column;
-                                }
-                                numMatches++;
-                                PossiblePairs[k] = ( numMatches == 2 );
-                            }
-                        }
-                    }
-                }
-
-                for (int p1 = 0; p1<9; p1++)
-                {
-                    if ( PossiblePairs[p1] )
-                    {
-                        for (int p2 = p1 + 1; p2 < 9; p2++)
-                        {
-                            if ( PossiblePairs[p2] )
-                            {
-                                bool shareSameTwoCells = (
-                                        PossiblePairLocations[p1, 0] == PossiblePairLocations[p2, 0] &&
-                                        PossiblePairLocations[p1, 1] == PossiblePairLocations[p2, 1]
-                                    );
-                                if ( shareSameTwoCells )
-                                {
-                                    int column1 = PossiblePairLocations[p1, 0];
-                                    int column2 = PossiblePairLocations[p1, 1];
-                                    int numChangesThisPair = 0;
-                                    for (int k = 0; k<9; k++)
-                                    {
-                                        bool notInPair = ( k != p1 && k != p2 );
-                                        if ( notInPair )
-                                        {
-                                            if ( puzzle[row, column1].isPossible(k) )
-                                            {
-                                                puzzle[row, column1].setPossible(k, false);
-                                                numChangesThisPair++;
-                                                NumChanges++;
-                                            }
-                                            if ( puzzle[row, column2].isPossible(k) )
-                                            {
-                                                puzzle[row, column2].setPossible(k, false);
-                                                numChangesThisPair++;
-                                                NumChanges++;
-                                            }
-                                        }
-                                    }
-                                    if ( numChangesThisPair > 0 )
-                                    {
-                                        Console.WriteLine("found hidden pair ( {0} {1} ) at cell({2},{3}) and cell({4},{5}), row {6}",
-                                            p1 + 1, p2 + 1, row + 1, column1 + 1, row + 1, column2 + 1, row + 1);
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("xxx found hidden pair ( {0} {1} ) at cell({2},{3}) and cell({4},{5}), row {6}",
-                                            p1 + 1, p2 + 1, row + 1, column1 + 1, row + 1, column2 + 1, row + 1);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            return ( NumChanges > 0 );
-        }
-
-        public bool findHiddenPairsVerticalNeighbors()
-        {
-            int NumChanges;
-            bool[] PossiblePairs = new bool[9];
-            int[,] PossiblePairLocations = new int[9, 2];
-
-            NumChanges = 0;
-            for (int column = 0; column < 9; column++)
-            {
-                for (int k = 0; k < 9; k++)
-                {
-                    PossiblePairs[k] = false;
-                    PossiblePairLocations[k, 0] = SudokuCell.NOTFOUND;
-                    PossiblePairLocations[k, 1] = SudokuCell.NOTFOUND;
-                    int numMatches = 0;
-                    for (int row = 0; row < 9; row++)
-                    {
-                        if ( !puzzle[row, column].IsSolved )
-                        {
-                            if ( puzzle[row, column].isPossible(k ))
-                            {
-                                if ( numMatches < 2 )
-                                {
-                                    PossiblePairLocations[k, numMatches] = row;
-                                }
-                                numMatches++;
-                                PossiblePairs[k] = (numMatches == 2);
-                            }
-                        }
-                    }
-                }
-
-                for (int p1 = 0; p1 < 9; p1++)
-                {
-                    if ( PossiblePairs[p1] )
-                    {
-                        for (int p2 = p1 + 1; p2 < 9; p2++)
-                        {
-                            if ( PossiblePairs[p2] )
-                            {
-                                bool shareSameTwoCells = (
-                                      PossiblePairLocations[p1, 0] == PossiblePairLocations[p2, 0] &&
-                                      PossiblePairLocations[p1, 1] == PossiblePairLocations[p2, 1]
-                                    );
-                                if ( shareSameTwoCells )
-                                {
-                                    int row1 = PossiblePairLocations[p1, 0];
-                                    int row2 = PossiblePairLocations[p1, 1];
-                                    int numChangesThisPair = 0;
-                                    for (int k = 0; k < 9; k++)
-                                    {
-                                        bool notInPair = (k != p1 && k != p2);
-                                        if (notInPair)
-                                        {
-                                            if ( puzzle[row1, column].isPossible(k) )
-                                            {
-                                                puzzle[row1, column].setPossible(k, false);
-                                                numChangesThisPair++;
-                                                NumChanges++;
-                                            }
-                                            if ( puzzle[row2, column].isPossible(k) )
-                                            {
-                                                puzzle[row2, column].setPossible(k, false);
-                                                numChangesThisPair++;
-                                                NumChanges++;
-                                            }
-                                        }
-                                    }
-                                    if ( numChangesThisPair > 0 )
-                                    {
-                                        Console.WriteLine("found hidden pair ( {0} {1} ) at cell({2},{3}) and cell({4},{5}), column {6}",
-                                            p1 + 1, p2 + 1, row1 + 1, column + 1, row2 + 1, column + 1, column + 1);
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("xxx found hidden pair ( {0} {1} ) at cell({2},{3}) and cell({4},{5}), column {6}",
-                                            p1 + 1, p2 + 1, row1 + 1, column + 1, row2 + 1, column + 1, column + 1);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            return ( NumChanges > 0 );
-        }
-
-        public bool findHiddenPairsGridNeighbors()
-        {
-            int NumChanges;
-            bool[] PossiblePairs = new bool[9];
-            int[,] PossiblePairRowLocations = new int[9, 2];
-            int[,] PossiblePairColumnLocations = new int[9, 2];
-
-            NumChanges = 0;
-
-            for (int gridi = 0; gridi < 3; gridi++)
-            {
-                for (int gridj = 0; gridj < 3; gridj++)
-                {
-                    for (int k = 0; k <9; k++)
-                    {
-                        PossiblePairs[k] = false;
-                        PossiblePairRowLocations[k, 0]    = SudokuCell.NOTFOUND;
-                        PossiblePairRowLocations[k, 1]    = SudokuCell.NOTFOUND;
-                        PossiblePairColumnLocations[k, 0] = SudokuCell.NOTFOUND;
-                        PossiblePairColumnLocations[k, 1] = SudokuCell.NOTFOUND;
-                        int numMatches = 0;
-
-                        // traverse a single grid(i,j) and populate PossiblePairs[k]
-
-                        int starti = gridi * 3;
-                        int startj = gridj * 3;
-                        for (int row = starti; row < starti+3; row++)
-                        {
-                            for (int column = startj; column < startj+3; column++)
-                            {
-                                if ( !puzzle[row, column].IsSolved )
-                                {
-                                    if ( puzzle[row, column].isPossible(k) )
-                                    {
-                                        if ( numMatches < 2 )
-                                        {
-                                            PossiblePairRowLocations[k, numMatches]    = row;
-                                            PossiblePairColumnLocations[k, numMatches] = column;
-                                        }
-                                        numMatches++;
-                                        PossiblePairs[k] = (numMatches == 2);
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    for (int p1 = 0; p1 < 9; p1++)
-                    {
-                        if ( PossiblePairs[p1] )
-                        {
-                            for (int p2 = p1 + 1; p2 < 9; p2++)
-                            {
-                                if ( PossiblePairs[p2] )
-                                {
-                                    bool shareSameTwoCells = (
-                                            PossiblePairRowLocations[p1, 0] == PossiblePairRowLocations[p2, 0] &&
-                                            PossiblePairRowLocations[p1, 1] == PossiblePairRowLocations[p2, 1] &&
-                                            PossiblePairColumnLocations[p1, 0] == PossiblePairColumnLocations[p2, 0] &&
-                                            PossiblePairColumnLocations[p1, 1] == PossiblePairColumnLocations[p2, 1]
-                                        );
-                                    if  ( shareSameTwoCells )
-                                    {
-                                        int row1 = PossiblePairRowLocations[p1, 0];
-                                        int row2 = PossiblePairRowLocations[p1, 1];
-                                        int column1 = PossiblePairColumnLocations[p1, 0];
-                                        int column2 = PossiblePairColumnLocations[p1, 1];
-                                        int numChangesThisPair = 0;
-                                        for (int k = 0; k < 9; k++)
-                                        {
-                                            bool notInPair = (k != p1 && k != p2);
-                                            if ( notInPair )
-                                            {
-                                                if ( puzzle[row1, column1].isPossible(k) )
-                                                {
-                                                    puzzle[row1, column1].setPossible(k, false);
-                                                    numChangesThisPair++;
-                                                    NumChanges++;
-                                                }
-                                                if ( puzzle[row2, column2].isPossible(k) )
-                                                {
-                                                    puzzle[row2, column2].setPossible(k, false);
-                                                    numChangesThisPair++;
-                                                    NumChanges++;
-                                                }
-                                            }
-                                        }
-                                        if ( numChangesThisPair > 0 )
-                                        {
-                                            Console.WriteLine("found hidden pair ( {0} {1} ) at grid({2},{3}) in cell({4},{5}) and cell({6},{7})",
-                                                p1 + 1, p2 + 1, gridi + 1, gridj + 1, row1 + 1, column1 + 1, row2 + 1, column2 + 1);
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("xxx found hidden pair ( {0} {1} ) at grid({2},{3}) in cell({4},{5}) and cell({6},{7})",
-                                                p1 + 1, p2 + 1, gridi + 1, gridj + 1, row1 + 1, column1 + 1, row2 + 1, column2 + 1);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            return (NumChanges > 0);
-        }
-
-        //
-        // find hidden pair cells in row, column, or grid where both cells only have two possibilities.
-        // from two hidden pair cells, remove possibilities from non-pairs
-        //
-
-        public bool findHiddenPairs()
-        {
-            bool foundPair = false;
-            //display("before find hidden pairs:");
-            foundPair |= findHiddenPairsHorizontalNeighbors();
-            foundPair |= findHiddenPairsVerticalNeighbors();
-            foundPair |= findHiddenPairsGridNeighbors();
-            //display("after find hidden pairs:");
-            return foundPair;
-        }
-
         public bool findLockedCandidateHorizontal()
         {
             int numChanges;
-            bool[,,] Candidate = new bool[9,3,9];
+            bool[,,] Candidate = new bool[9, 3, 9];
 
             numChanges = 0;
 
@@ -1457,7 +743,7 @@ namespace Sudoko
                 {
                     for (int column = 0; column < 9; column++)
                     {
-                        if ( !puzzle[row, column].IsSolved )
+                        if (!puzzle[row, column].IsSolved)
                         {
                             int gridj = column / 3;
                             Candidate[row, gridj, k] |= puzzle[row, column].isPossible(k);
@@ -1483,40 +769,40 @@ namespace Sudoko
                     {
                         bool foundLockedCandidate = false;
                         int lockedRow = SudokuCell.NOTFOUND; // C# quesses use below is "unassigned" and thus an error
-                        if ( Candidate[starti, gridj, k] && !Candidate[starti + 1, gridj, k] && !Candidate[starti + 2, gridj, k] )
+                        if (Candidate[starti, gridj, k] && !Candidate[starti + 1, gridj, k] && !Candidate[starti + 2, gridj, k])
                         {
                             foundLockedCandidate = true;
                             lockedRow = starti;
                         }
-                        if ( !Candidate[starti, gridj, k] && Candidate[starti + 1, gridj, k] && !Candidate[starti + 2, gridj, k] )
+                        if (!Candidate[starti, gridj, k] && Candidate[starti + 1, gridj, k] && !Candidate[starti + 2, gridj, k])
                         {
                             foundLockedCandidate = true;
-                            lockedRow = starti+1;
+                            lockedRow = starti + 1;
                         }
-                        if ( !Candidate[starti, gridj, k] && !Candidate[starti + 1, gridj, k] && Candidate[starti + 2, gridj, k] )
+                        if (!Candidate[starti, gridj, k] && !Candidate[starti + 1, gridj, k] && Candidate[starti + 2, gridj, k])
                         {
                             foundLockedCandidate = true;
-                            lockedRow = starti+2;
+                            lockedRow = starti + 2;
                         }
-                        if ( foundLockedCandidate )
+                        if (foundLockedCandidate)
                         {
                             // row includes Candidate[lockedRow, 0, k] + Candidate[lockedRow, 1, k] +  Candidate[lockedRow, 2, k]
                             bool foundPossibilitiesToRemove = (
                                   (gridj != 0 && Candidate[lockedRow, 0, k]) ||
                                   (gridj != 1 && Candidate[lockedRow, 1, k]) ||
-                                  (gridj != 2 && Candidate[lockedRow, 2, k]) 
+                                  (gridj != 2 && Candidate[lockedRow, 2, k])
                                 );
-                            if ( foundPossibilitiesToRemove )
+                            if (foundPossibilitiesToRemove)
                             {
                                 Console.WriteLine("found type 1 locked candidated {0} in row cells({1},{2}..{3}), exclude the rest of the row",
                                                   k + 1, lockedRow + 1, startj + 1, startj + 3);
                                 for (int column = 0; column < 9; column++)
                                 {
                                     int thisGridColumn = column / 3;
-                                    bool gridToExclude = ( thisGridColumn == gridj );
-                                    if ( !gridToExclude )
+                                    bool gridToExclude = (thisGridColumn == gridj);
+                                    if (!gridToExclude)
                                     {
-                                        if ( puzzle[lockedRow, column].isPossible(k) )
+                                        if (puzzle[lockedRow, column].isPossible(k))
                                         {
                                             numChanges++;
                                             puzzle[lockedRow, column].setPossible(k, false);
@@ -1541,32 +827,32 @@ namespace Sudoko
                 {
                     bool foundLockedCandidate = false;
                     int startj = SudokuCell.NOTFOUND; // C# guesses use below is "unassigned" and thus an error
-                    if ( Candidate[row, 0, k] && !Candidate[row, 1, k] && !Candidate[row, 2, k] )
+                    if (Candidate[row, 0, k] && !Candidate[row, 1, k] && !Candidate[row, 2, k])
                     {
                         foundLockedCandidate = true;
                         startj = 0;
                     }
-                    if ( !Candidate[row, 0, k] && Candidate[row, 1, k] && !Candidate[row, 2, k] )
+                    if (!Candidate[row, 0, k] && Candidate[row, 1, k] && !Candidate[row, 2, k])
                     {
                         foundLockedCandidate = true;
                         startj = 3;
                     }
-                    if ( !Candidate[row, 0, k] && !Candidate[row, 1, k] && Candidate[row, 2, k] )
+                    if (!Candidate[row, 0, k] && !Candidate[row, 1, k] && Candidate[row, 2, k])
                     {
                         foundLockedCandidate = true;
                         startj = 6;
                     }
-                    if ( foundLockedCandidate )
+                    if (foundLockedCandidate)
                     {
                         int gridj = startj / 3;
                         int starti = row / 3 * 3;
                         // grid includes Candidate[starti, gridj, k] + Candidate[starti+1, gridj, k] + Candidate[starti+2, gridj, k]
                         bool foundPossibilitiesToRemove = (
-                              (starti   != row && Candidate[starti,   gridj, k]) ||
-                              (starti+1 != row && Candidate[starti+1, gridj, k]) ||
-                              (starti+2 != row && Candidate[starti+2, gridj, k])
+                              (starti != row && Candidate[starti, gridj, k]) ||
+                              (starti + 1 != row && Candidate[starti + 1, gridj, k]) ||
+                              (starti + 2 != row && Candidate[starti + 2, gridj, k])
                             );
-                        if ( foundPossibilitiesToRemove )
+                        if (foundPossibilitiesToRemove)
                         {
                             Console.WriteLine("found type 2 locked candidated {0} in row cells({1},{2}..{3}), exclude the rest of the grid",
                                               k + 1, row + 1, startj + 1, startj + 3);
@@ -1578,7 +864,7 @@ namespace Sudoko
                                 {
                                     for (int j = startj; j < startj + 3; j++)
                                     {
-                                        if (puzzle[i, j].isPossible(k) )
+                                        if (puzzle[i, j].isPossible(k))
                                         {
                                             numChanges++;
                                             puzzle[i, j].setPossible(k, false);
@@ -1590,8 +876,8 @@ namespace Sudoko
                     }
                 }
             }
-            
-            return ( numChanges > 0 );
+
+            return (numChanges > 0);
         }
 
         public bool findLockedCandidateVertical()
@@ -1613,7 +899,7 @@ namespace Sudoko
                 {
                     for (int row = 0; row < 9; row++)
                     {
-                        if ( !puzzle[row, column].IsSolved )
+                        if (!puzzle[row, column].IsSolved)
                         {
                             int gridi = row / 3;
                             Candidate[column, gridi, k] |= puzzle[row, column].isPossible(k);
@@ -1639,22 +925,22 @@ namespace Sudoko
                     {
                         bool foundLockedCandidate = false;
                         int lockedColumn = SudokuCell.NOTFOUND; // C# guesses use below is "unassigned" and thus an error
-                        if ( Candidate[startj, gridi, k] && !Candidate[startj + 1, gridi, k] && !Candidate[startj + 2, gridi, k] )
+                        if (Candidate[startj, gridi, k] && !Candidate[startj + 1, gridi, k] && !Candidate[startj + 2, gridi, k])
                         {
                             foundLockedCandidate = true;
                             lockedColumn = startj;
                         }
-                        if ( !Candidate[startj, gridi, k] && Candidate[startj + 1, gridi, k] && !Candidate[startj + 2, gridi, k] )
+                        if (!Candidate[startj, gridi, k] && Candidate[startj + 1, gridi, k] && !Candidate[startj + 2, gridi, k])
                         {
                             foundLockedCandidate = true;
                             lockedColumn = startj + 1;
                         }
-                        if ( !Candidate[startj, gridi, k] && !Candidate[startj + 1, gridi, k] && Candidate[startj + 2, gridi, k] )
+                        if (!Candidate[startj, gridi, k] && !Candidate[startj + 1, gridi, k] && Candidate[startj + 2, gridi, k])
                         {
                             foundLockedCandidate = true;
                             lockedColumn = startj + 2;
                         }
-                        if ( foundLockedCandidate )
+                        if (foundLockedCandidate)
                         {
                             // row includes Candidate[lockedRow, 0, k] + Candidate[lockedRow, 1, k] +  Candidate[lockedRow, 2, k]
                             bool foundPossibilitiesToRemove = (
@@ -1662,7 +948,7 @@ namespace Sudoko
                                   (gridi != 1 && Candidate[lockedColumn, 1, k]) ||
                                   (gridi != 2 && Candidate[lockedColumn, 2, k])
                                 );
-                            if ( foundPossibilitiesToRemove )
+                            if (foundPossibilitiesToRemove)
                             {
                                 Console.WriteLine("found type 1 locked candidated {0} in column cells({1}..{2},{3}), exclude the rest of the column",
                                                   k + 1, starti + 1, starti + 3, lockedColumn + 1);
@@ -1697,44 +983,44 @@ namespace Sudoko
                 {
                     bool foundLockedCandidate = false;
                     int starti = SudokuCell.NOTFOUND; // C# quesses use below is "unassigned" and thus an error
-                    if ( Candidate[column, 0, k] && !Candidate[column, 1, k] && !Candidate[column, 2, k] )
+                    if (Candidate[column, 0, k] && !Candidate[column, 1, k] && !Candidate[column, 2, k])
                     {
                         foundLockedCandidate = true;
                         starti = 0;
                     }
-                    if ( !Candidate[column, 0, k] && Candidate[column, 1, k] && !Candidate[column, 2, k] )
+                    if (!Candidate[column, 0, k] && Candidate[column, 1, k] && !Candidate[column, 2, k])
                     {
                         foundLockedCandidate = true;
                         starti = 3;
                     }
-                    if ( !Candidate[column, 0, k] && !Candidate[column, 1, k] && Candidate[column, 2, k] )
+                    if (!Candidate[column, 0, k] && !Candidate[column, 1, k] && Candidate[column, 2, k])
                     {
                         foundLockedCandidate = true;
                         starti = 6;
                     }
-                    if ( foundLockedCandidate)
+                    if (foundLockedCandidate)
                     {
                         int gridi = starti / 3;
                         int startj = column / 3 * 3;
                         // grid includes Candidate[starti, gridj, k] + Candidate[starti+1, gridj, k] + Candidate[starti+2, gridj, k]
                         bool foundPossibilitiesToRemove = (
-                              (startj     != column && Candidate[startj,     gridi, k]) ||
+                              (startj != column && Candidate[startj, gridi, k]) ||
                               (startj + 1 != column && Candidate[startj + 1, gridi, k]) ||
                               (startj + 2 != column && Candidate[startj + 2, gridi, k])
                             );
-                        if ( foundPossibilitiesToRemove )
+                        if (foundPossibilitiesToRemove)
                         {
                             Console.WriteLine("found type 2 locked candidated {0} in column cells({1}..{2},{3}), exclude the rest of the grid",
                                               k + 1, starti + 1, starti + 3, column + 1);
 
                             for (int j = startj; j < startj + 3; j++)
                             {
-                                bool excludeLockedColumn = ( j == column );
-                                if ( !excludeLockedColumn)
+                                bool excludeLockedColumn = (j == column);
+                                if (!excludeLockedColumn)
                                 {
                                     for (int i = starti; i < starti + 3; i++)
                                     {
-                                        if ( puzzle[i, j].isPossible(k) )
+                                        if (puzzle[i, j].isPossible(k))
                                         {
                                             numChanges++;
                                             puzzle[i, j].setPossible(k, false);
@@ -1747,7 +1033,7 @@ namespace Sudoko
                 }
             }
 
-            return ( numChanges > 0 );
+            return (numChanges > 0);
         }
 
         //
@@ -1772,6 +1058,229 @@ namespace Sudoko
         {
             public int row;
             public int column;
+        }
+
+        public int findNakedPairsAssist(ref CellCoordinate[] cells, string description)
+        {
+            int numChanges;
+            int numCandidatePairs;
+            int[,] CandidatePairs = new int[9, 3];
+            int numNakedPairs;
+            int[,] NakedPairs = new int[9, 4];
+
+            numChanges = 0;
+
+            numCandidatePairs = 0;
+            for (int c = 0; c < cells.Length; c++)
+            {
+                int row    = cells[c].row;
+                int column = cells[c].column;
+
+                int p1 = SudokuCell.NOTFOUND;
+                int p2 = SudokuCell.NOTFOUND;
+                int numPossibilities = 0;
+
+                for (int k = 0; k < 9; k++)
+                {
+                    if ( !puzzle[row, column].IsSolved )
+                    {
+                        if ( puzzle[row, column].isPossible(k) )
+                        {
+                            numPossibilities++;
+                            if ( numPossibilities > 2 ) break;
+                            if ( p1 == SudokuCell.NOTFOUND ) p1 = k;
+                            else                             p2 = k;
+                        }
+                    }
+                }
+
+                if ( numPossibilities == 2 )
+                {
+                    // we have found a pair candidate
+                    CandidatePairs[numCandidatePairs, 0] = p1;
+                    CandidatePairs[numCandidatePairs, 1] = p2;
+                    CandidatePairs[numCandidatePairs, 2] = c;
+                    numCandidatePairs++;
+                }
+            }
+
+            numNakedPairs = 0;
+            if ( numCandidatePairs >= 2 )
+            {
+                for (int c1 = 0; c1 < numCandidatePairs; c1++)
+                {
+                    for (int c2 = c1 + 1; c2 < numCandidatePairs; c2++)
+                    {
+                        int p1, p2;
+                        bool[] PossiblesForPair = new bool[9] { false, false, false, false, false, false, false, false, false };
+
+                        p1 = CandidatePairs[c1, 0];
+                        p2 = CandidatePairs[c1, 1];
+                        PossiblesForPair[p1] = true;
+                        PossiblesForPair[p2] = true;
+
+                        p1 = CandidatePairs[c2, 0];
+                        p2 = CandidatePairs[c2, 1];
+                        PossiblesForPair[p1] = true;
+                        PossiblesForPair[p2] = true;
+
+                        int numPossiblesForPair = 0;
+                        // alernative implementation: lamba
+                        numPossiblesForPair = PossiblesForPair.Count(k => k == true);
+
+                        numPossiblesForPair = 0;
+                        p1 = SudokuCell.NOTFOUND;
+                        p2 = SudokuCell.NOTFOUND;
+                        for (int k = 0; k < 9; k++)
+                        {
+                            if ( PossiblesForPair[k] )
+                            {
+                                numPossiblesForPair++;
+                                if ( p1 == SudokuCell.NOTFOUND )      p1 = k;
+                                else if ( p2 == SudokuCell.NOTFOUND ) p2 = k;
+                            }
+                        }
+                        if ( numPossiblesForPair == 2 )
+                        {
+                            // we have a pair ( p1 p2 )
+                            NakedPairs[numNakedPairs, 0] = p1;
+                            NakedPairs[numNakedPairs, 1] = p2;
+                            NakedPairs[numNakedPairs, 2] = CandidatePairs[c1, 2]; // index into cells[]
+                            NakedPairs[numNakedPairs, 3] = CandidatePairs[c2, 2];
+                            numNakedPairs++;
+                        }
+                    }
+                }
+            }
+
+            if ( numNakedPairs > 0 )
+            {
+                for (int t = 0; t < numNakedPairs; t++)
+                {
+                    int p1 = NakedPairs[t, 0];
+                    int p2 = NakedPairs[t, 1];
+                    int c1 = NakedPairs[t, 2];
+                    int c2 = NakedPairs[t, 3];
+
+                    int numChangesForPair = 0;
+                    for (int c = 0; c < cells.Length; c++)
+                    {
+                        bool cellOutsideOfTriple = ( c != c1 && c != c2 );
+                        if (cellOutsideOfTriple)
+                        {
+                            int row    = cells[c].row;
+                            int column = cells[c].column;
+                            if ( !puzzle[row, column].IsSolved )
+                            {
+                                if ( puzzle[row, column].isPossible(p1) )
+                                {
+                                    puzzle[row, column].setPossible(p1, false);
+                                    numChangesForPair++;
+                                    numChanges++;
+                                }
+                                if ( puzzle[row, column].isPossible(p2) )
+                                {
+                                    puzzle[row, column].setPossible(p2, false);
+                                    numChangesForPair++;
+                                    numChanges++;
+                                }
+                            }
+                        }
+                    }
+                    if ( numChangesForPair > 0 )
+                    {
+                        Console.WriteLine("found naked pair ( {0} {1} ) {2}", p1 + 1, p2 + 1, description);
+                    }
+                    else
+                    {
+                        Console.WriteLine("xxx found naked pair ( {0} {1} ) {2}", p1 + 1, p2 + 1, description);
+                    }
+                }
+            }
+
+            return numChanges;
+        }
+
+        public bool findNakedPairsHorizontalNeighbors()
+        {
+            int numChanges;
+            CellCoordinate[] cells = new CellCoordinate[9];
+
+            numChanges = 0;
+
+            for (int row = 0; row < 9; row++)
+            {
+                for (int column = 0; column < 9; column++)
+                {
+                    cells[column] = new CellCoordinate { row = row, column = column };
+                }
+                numChanges += findNakedPairsAssist(ref cells, String.Format("for row {0}", row + 1));
+            }
+
+            return (numChanges > 0);
+        }
+
+
+        public bool findNakedPairsVerticalNeighbors()
+        {
+            int numChanges;
+            CellCoordinate[] cells = new CellCoordinate[9];
+
+            numChanges = 0;
+
+            for (int column = 0; column < 9; column++)
+            {
+                for (int row = 0; row < 9; row++)
+                {
+                    cells[row] = new CellCoordinate { row = row, column = column };
+                }
+                numChanges += findNakedPairsAssist(ref cells, String.Format("for column {0}", column + 1));
+            }
+
+            return (numChanges > 0);
+        }
+
+        public bool findNakedPairsGridNeighbors()
+        {
+            int numChanges;
+            CellCoordinate[] cells = new CellCoordinate[9];
+
+            numChanges = 0;
+
+            for (int gridi = 0; gridi < 3; gridi++)
+            {
+                for (int gridj = 0; gridj < 3; gridj++)
+                {
+                    int starti = gridi * 3;
+                    int startj = gridj * 3;
+
+                    int gridIndex = 0;
+                    for (int row = starti; row < starti + 3; row++)
+                    {
+                        for (int column = startj; column < startj + 3; column++)
+                        {
+                            cells[gridIndex++] = new CellCoordinate { row = row, column = column };
+                        }
+                    }
+                    numChanges += findNakedPairsAssist(ref cells, String.Format("for grid({0},{1})", gridi + 1, gridj + 1));
+                }
+            }
+
+            return (numChanges > 0);
+        }
+
+        //
+        // find naked pair cells in row, column, or grid where both cells only have the exact two possibilities.
+        // other cells in the row, column, or grid can then eliminate those two possibilities
+        //
+
+        public bool findNakedPairs()
+        {
+            bool foundPair = false;
+            foundPair |= findNakedPairsHorizontalNeighbors();
+            foundPair |= findNakedPairsVerticalNeighbors();
+            foundPair |= findNakedPairsGridNeighbors();
+            return foundPair;
         }
 
         public int findNakedTriplesAssist(ref CellCoordinate[] cells, string description)
@@ -2340,6 +1849,185 @@ namespace Sudoko
             didSomething |= this.findNakedQuadsVerticalNeighbors();
             didSomething |= this.findNakedQuadsGridNeighbors();
             return didSomething;
+        }
+
+        public int findHiddenPairsAssist(ref CellCoordinate[] cells, string description)
+        {
+            int NumChanges;
+            bool[] PossiblePairs = new bool[9];
+            int[] NumPossiblePairs = new int[9];
+            int[,] PossiblePairLocations = new int[9, 2];
+
+            NumChanges = 0;
+
+            for (int c = 0; c<cells.Length; c++)
+            {
+                int row    = cells[c].row;
+                int column = cells[c].column;
+
+                if ( !puzzle[row, column].IsSolved )
+                {
+                    for (int k = 0; k < 9; k++)
+                    {
+                        if ( puzzle[row, column].isPossible(k) )
+                        {
+                            if ( NumPossiblePairs[k] < 2 )
+                            {
+                                PossiblePairLocations[k, NumPossiblePairs[k]] = c; // index into cells[]
+                            }
+                            NumPossiblePairs[k]++;
+                            PossiblePairs[k] = ( NumPossiblePairs[k] == 2 );
+                        }
+                    }
+                }
+            }
+
+            for (int p1 = 0; p1 < 9; p1++)
+            {
+                if ( PossiblePairs[p1] )
+                {
+                    for (int p2 = p1 + 1; p2 < 9; p2++)
+                    {
+                        if ( PossiblePairs[p2] )
+                        {
+                            bool shareSameTwoCells = (
+                                    PossiblePairLocations[p1, 0] == PossiblePairLocations[p2, 0] &&
+                                    PossiblePairLocations[p1, 1] == PossiblePairLocations[p2, 1]
+                                );
+                            if ( shareSameTwoCells )
+                            {
+                                int c1 = PossiblePairLocations[p1, 0];
+                                int c2 = PossiblePairLocations[p1, 1];
+
+                                // found a hidden pair ( p1 p2 ) in cells c1 and c2
+
+                                int row1    = cells[c1].row;
+                                int column1 = cells[c1].column;
+                                int row2    = cells[c2].row;
+                                int column2 = cells[c2].column;
+
+                                // cells outside of c1 and c2, exclude p1 and p2 as possibilities
+
+                                int numChangesThisPair = 0;
+                                for (int k = 0; k < 9; k++)
+                                {
+                                    bool notInPair = (k != p1 && k != p2);
+                                    if ( notInPair )
+                                    {
+                                        if ( puzzle[row1, column1].isPossible(k) )
+                                        {
+                                            puzzle[row1, column1].setPossible(k, false);
+                                            numChangesThisPair++;
+                                            NumChanges++;
+                                        }
+                                        if ( puzzle[row2, column2].isPossible(k) )
+                                        {
+                                            puzzle[row2, column2].setPossible(k, false);
+                                            numChangesThisPair++;
+                                            NumChanges++;
+                                        }
+                                    }
+                                }
+                                if ( numChangesThisPair > 0 )
+                                {
+                                    Console.WriteLine("found hidden pair ( {0} {1} ) at cell({2},{3}) and cell({4},{5}), {6}",
+                                        p1 + 1, p2 + 1, row1 + 1, column1 + 1, row2 + 1, column2 + 1, description);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("xxx found hidden pair ( {0} {1} ) at cell({2},{3}) and cell({4},{5}), {6}",
+                                        p1 + 1, p2 + 1, row1 + 1, column1 + 1, row2 + 1, column2 + 1, description);
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+
+            return NumChanges;
+
+        }
+
+        public bool findHiddenPairsHorizontalNeighbors()
+        {
+            int numChanges;
+            CellCoordinate[] cells = new CellCoordinate[9];
+
+            numChanges = 0;
+
+            for (int row = 0; row < 9; row++)
+            {
+                for (int column = 0; column < 9; column++)
+                {
+                    cells[column] = new CellCoordinate { row = row, column = column };
+                }
+                numChanges += findHiddenPairsAssist(ref cells, String.Format("for row {0}", row + 1));
+            }
+
+            return (numChanges > 0);
+        }
+
+        public bool findHiddenPairsVerticalNeighbors()
+        {
+            int numChanges;
+            CellCoordinate[] cells = new CellCoordinate[9];
+
+            numChanges = 0;
+
+            for (int column = 0; column < 9; column++)
+            {
+                for (int row = 0; row < 9; row++)
+                {
+                    cells[row] = new CellCoordinate { row = row, column = column };
+                }
+                numChanges += findHiddenPairsAssist(ref cells, String.Format("for column {0}", column + 1));
+            }
+
+            return (numChanges > 0);
+        }
+
+        public bool findHiddenPairsGridNeighbors()
+        {
+            int numChanges;
+            CellCoordinate[] cells = new CellCoordinate[9];
+
+            numChanges = 0;
+
+            for (int gridi = 0; gridi < 3; gridi++)
+            {
+                for (int gridj = 0; gridj < 3; gridj++)
+                {
+                    int starti = gridi * 3;
+                    int startj = gridj * 3;
+
+                    int gridIndex = 0;
+                    for (int row = starti; row < starti + 3; row++)
+                    {
+                        for (int column = startj; column < startj + 3; column++)
+                        {
+                            cells[gridIndex++] = new CellCoordinate { row = row, column = column };
+                        }
+                    }
+                    numChanges += findHiddenPairsAssist(ref cells, String.Format("for grid({0},{1})", gridi + 1, gridj + 1));
+                }
+            }
+
+            return (numChanges > 0);
+        }
+
+        //
+        // find hidden pair cells in row, column, or grid where both cells only have two possibilities.
+        // from two hidden pair cells, remove possibilities from non-pairs
+        //
+
+        public bool findHiddenPairs()
+        {
+            bool foundPair = false;
+            foundPair |= findHiddenPairsHorizontalNeighbors();
+            foundPair |= findHiddenPairsVerticalNeighbors();
+            foundPair |= findHiddenPairsGridNeighbors();
+            return foundPair;
         }
 
         public void solveCell(int i, int j, int k)
