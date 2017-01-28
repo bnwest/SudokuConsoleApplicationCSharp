@@ -82,7 +82,7 @@ namespace Sudoko
 
    // hidden triples
    // "4....961...56...79.1.42.3...51.6.................1.83...7.83.6.53...67...692....3"
-   // "4....8.....753...8.9..6.41353....2.7.........7.6....81954.1..3.3...751.....9....5"
+    "4....8.....753...8.9..6.41353....2.7.........7.6....81954.1..3.3...751.....9....5"
 
    // https://kjell.haxx.se/sudoku/ -- 26 is hard, 25 is harder, etc
    // 26
@@ -166,7 +166,7 @@ namespace Sudoko
    // "5.....7.3...1.4......8.....3....2....8.....9........1..9........18.....6....75..."
 
    // good one -- real grinder
-    "5..7.6.....8....43.......1...1.4................6.27...2....9.....83....7........"
+   // "5..7.6.....8....43.......1...1.4................6.27...2....9.....83....7........"
 
    // failed to solve - naked quad ( 2 3 5 8 ) for grid(2,3), exclude based on colors)
    // ".....7.....2...6......3......96..........5........4.1747....9..1...........85.3.."
@@ -592,141 +592,6 @@ namespace Sudoko
             return foundSingles;
         }
 
-        public bool findHiddenSinglesHorizonatlNeighbors()
-        {
-            bool foundHiddenSingle = false;
-
-            for (int row = 0; row < 9; row++)
-            {
-                for (int k = 0; k < 9; k++)
-                {
-                    int numPossibilities = 0;
-                    int lastFoundColumn = SudokuCell.NOTFOUND;
-                    for (int column = 0; column < 9; column++)
-                    {
-                        if ( puzzle[row, column].isPossible(k) )
-                        {
-                            numPossibilities++;
-                            lastFoundColumn = column;
-                            if ( numPossibilities > 1 ) break;
-                        }
-                    }
-                    bool hiddenSingle = ( numPossibilities == 1 );
-                    if ( hiddenSingle )
-                    {
-                        Boolean isSingleAlready = ( puzzle[row, lastFoundColumn].IsSolved );
-                        if (!isSingleAlready)
-                        {
-                            foundHiddenSingle = true;
-                            Console.WriteLine("found hidden single {0} in row {1}", k + 1, row + 1);
-                            solveCell(row, lastFoundColumn, k);
-                        }
-                    }
-                }
-            }
-
-            return foundHiddenSingle;
-        }
-
-        public bool findHiddenSinglesVerticalNeighbors()
-        {
-            bool foundHiddenSingle = false;
-
-            for (int column = 0; column < 9; column++)
-            {
-                for (int k = 0; k < 9; k++)
-                {
-                    int numPossibilities = 0;
-                    int lastRowFound = SudokuCell.NOTFOUND;
-                    for (int row = 0; row < 9; row++)
-                    {
-                        if (puzzle[row, column].isPossible(k))
-                        {
-                            numPossibilities++;
-                            lastRowFound = row;
-                            if ( numPossibilities > 1 ) break;
-                        }
-                    }
-                    bool hiddenSingle = ( numPossibilities == 1 );
-                    if (hiddenSingle)
-                    {
-                        Boolean isSingleAlready = (puzzle[lastRowFound, column].IsSolved);
-                        if ( !isSingleAlready )
-                        {
-                            foundHiddenSingle = true;
-                            Console.WriteLine("found hidden single {0} in column {1}", k+1, column+1);
-                            solveCell(lastRowFound, column, k);
-                        }
-                    }
-                }
-            }
-
-            return foundHiddenSingle;
-        }
-
-        public bool findHiddenSinglesGridNeighbors()
-        {
-            bool foundHiddenSingle = false;
-
-            for (int gridi = 0; gridi < 3; gridi++)
-            {
-                for (int gridj = 0; gridj < 3; gridj++)
-                {
-                    int starti = gridi * 3;
-                    int startj = gridj * 3;
-                    for (int k = 0; k < 9; k++)
-                    {
-                        int lastRowFound    = SudokuCell.NOTFOUND;
-                        int lastCoulmnFound = SudokuCell.NOTFOUND;
-                        int numPossibilities = 0;
-                        for (int row = starti; row < starti + 3; row++)
-                        {
-                            for (int column = startj; column < startj + 3; column++)
-                            {
-                                if ( puzzle[row, column].isPossible(k) )
-                                {
-                                    numPossibilities++;
-                                    lastRowFound = row;
-                                    lastCoulmnFound = column;
-                                    if ( numPossibilities > 1 ) break;
-                                }
-                            }
-                            if ( numPossibilities > 1 ) break;
-                        }
-                        bool foundSingle = ( numPossibilities == 1 );
-                        if ( foundSingle )
-                        {
-                            bool isSingleAlready = ( puzzle[lastRowFound,lastCoulmnFound].IsSolved );
-                            if ( !isSingleAlready )
-                            {
-                                foundHiddenSingle = true;
-                                Console.WriteLine("found hidden single {0} in cell({1},{2}) in grid({3},{4})",
-                                    k + 1, lastRowFound + 1, lastCoulmnFound + 1, gridi + 1, gridj + 1);
-                                solveCell(lastRowFound, lastCoulmnFound, k);
-                            }
-                        }
-                    }
-                }
-            }
-
-            return foundHiddenSingle;
-        }
-
-        //
-        // find a single occurence of value in row, column or grid
-        // where the value is not the only possibility in its cell (aka it is hidden)
-        //
-
-        public bool findHiddenSingles()
-        {
-            bool foundHiddenSingle;
-            foundHiddenSingle = false;
-            foundHiddenSingle |= findHiddenSinglesHorizonatlNeighbors();
-            foundHiddenSingle |= findHiddenSinglesVerticalNeighbors();
-            foundHiddenSingle |= findHiddenSinglesGridNeighbors();
-            return foundHiddenSingle;
-        }
-
         public bool findLockedCandidateHorizontal()
         {
             int numChanges;
@@ -1063,6 +928,84 @@ namespace Sudoko
             public int column;
         }
 
+        public delegate int SudokuAssist(ref CellCoordinate[] cells, string description);
+
+        public bool findHorizontalExclusions(SudokuAssist assist)
+        {
+            int numChanges;
+            CellCoordinate[] cells = new CellCoordinate[9];
+
+            numChanges = 0;
+
+            for (int row = 0; row < 9; row++)
+            {
+                for (int column = 0; column < 9; column++)
+                {
+                    cells[column] = new CellCoordinate { row = row, column = column };
+                }
+                numChanges += assist(ref cells, String.Format("for row {0}", row + 1));
+            }
+
+            return ( numChanges > 0 );
+        }
+
+        public bool findVerticalExclusions(SudokuAssist assist)
+        {
+            int numChanges;
+            CellCoordinate[] cells = new CellCoordinate[9];
+
+            numChanges = 0;
+
+            for (int column = 0; column < 9; column++)
+            {
+                for (int row = 0; row < 9; row++)
+                {
+                    cells[row] = new CellCoordinate { row = row, column = column };
+                }
+                numChanges += assist(ref cells, String.Format("for column {0}", column + 1));
+            }
+
+            return ( numChanges > 0 );
+        }
+
+        public bool findGridExclusions(SudokuAssist assist)
+        {
+            int numChanges;
+            CellCoordinate[] cells = new CellCoordinate[9];
+
+            numChanges = 0;
+
+            for (int gridi = 0; gridi < 3; gridi++)
+            {
+                for (int gridj = 0; gridj < 3; gridj++)
+                {
+                    int starti = gridi * 3;
+                    int startj = gridj * 3;
+
+                    int gridIndex = 0;
+                    for (int row = starti; row < starti + 3; row++)
+                    {
+                        for (int column = startj; column < startj + 3; column++)
+                        {
+                            cells[gridIndex++] = new CellCoordinate { row = row, column = column };
+                        }
+                    }
+                    numChanges += assist(ref cells, String.Format("for grid({0},{1})", gridi + 1, gridj + 1));
+                }
+            }
+
+            return ( numChanges > 0 );
+        }
+
+        public bool findExclusions(SudokuAssist assist)
+        {
+            bool foundExclusions = false;
+            foundExclusions |= findHorizontalExclusions(assist);
+            foundExclusions |= findVerticalExclusions(assist);
+            foundExclusions |= findGridExclusions(assist);
+            return foundExclusions;
+        }
+
         public int findNakedPairsAssist(ref CellCoordinate[] cells, string description)
         {
             int numChanges;
@@ -1204,74 +1147,6 @@ namespace Sudoko
             return numChanges;
         }
 
-        public bool findNakedPairsHorizontalNeighbors()
-        {
-            int numChanges;
-            CellCoordinate[] cells = new CellCoordinate[9];
-
-            numChanges = 0;
-
-            for (int row = 0; row < 9; row++)
-            {
-                for (int column = 0; column < 9; column++)
-                {
-                    cells[column] = new CellCoordinate { row = row, column = column };
-                }
-                numChanges += findNakedPairsAssist(ref cells, String.Format("for row {0}", row + 1));
-            }
-
-            return (numChanges > 0);
-        }
-
-
-        public bool findNakedPairsVerticalNeighbors()
-        {
-            int numChanges;
-            CellCoordinate[] cells = new CellCoordinate[9];
-
-            numChanges = 0;
-
-            for (int column = 0; column < 9; column++)
-            {
-                for (int row = 0; row < 9; row++)
-                {
-                    cells[row] = new CellCoordinate { row = row, column = column };
-                }
-                numChanges += findNakedPairsAssist(ref cells, String.Format("for column {0}", column + 1));
-            }
-
-            return (numChanges > 0);
-        }
-
-        public bool findNakedPairsGridNeighbors()
-        {
-            int numChanges;
-            CellCoordinate[] cells = new CellCoordinate[9];
-
-            numChanges = 0;
-
-            for (int gridi = 0; gridi < 3; gridi++)
-            {
-                for (int gridj = 0; gridj < 3; gridj++)
-                {
-                    int starti = gridi * 3;
-                    int startj = gridj * 3;
-
-                    int gridIndex = 0;
-                    for (int row = starti; row < starti + 3; row++)
-                    {
-                        for (int column = startj; column < startj + 3; column++)
-                        {
-                            cells[gridIndex++] = new CellCoordinate { row = row, column = column };
-                        }
-                    }
-                    numChanges += findNakedPairsAssist(ref cells, String.Format("for grid({0},{1})", gridi + 1, gridj + 1));
-                }
-            }
-
-            return (numChanges > 0);
-        }
-
         //
         // find naked pair cells in row, column, or grid where both cells only have the exact two possibilities.
         // other cells in the row, column, or grid can then eliminate those two possibilities
@@ -1279,11 +1154,7 @@ namespace Sudoko
 
         public bool findNakedPairs()
         {
-            bool foundPair = false;
-            foundPair |= findNakedPairsHorizontalNeighbors();
-            foundPair |= findNakedPairsVerticalNeighbors();
-            foundPair |= findNakedPairsGridNeighbors();
-            return foundPair;
+            return findExclusions(findNakedPairsAssist);
         }
 
         public int findNakedTriplesAssist(ref CellCoordinate[] cells, string description)
@@ -1465,73 +1336,6 @@ namespace Sudoko
             return numChanges;
         }
 
-        public bool findNakedTriplesHorizontalNeighbors()
-        {
-            int numChanges;
-            CellCoordinate[] cells = new CellCoordinate[9];
-
-            numChanges = 0;
-
-            for (int row = 0; row<9; row++)
-            {
-                for (int column = 0; column<9; column++)
-                {
-                    cells[column] = new CellCoordinate { row = row, column = column };
-                }
-                numChanges += findNakedTriplesAssist(ref cells, String.Format("for row {0}", row + 1));
-            }
-
-            return ( numChanges > 0 );
-        }
-
-        public bool findNakedTriplesVerticalNeighbors()
-        {
-            int numChanges;
-            CellCoordinate[] cells = new CellCoordinate[9];
-
-            numChanges = 0;
-
-            for (int column = 0; column < 9; column++)
-            {
-                for (int row = 0; row < 9; row++)
-                {
-                    cells[row] = new CellCoordinate { row = row, column = column };
-                }
-                numChanges += findNakedTriplesAssist(ref cells, String.Format("for column {0}", column + 1));
-            }
-
-            return (numChanges > 0);
-        }
-
-        public bool findNakedTriplesGridNeighbors()
-        {
-            int numChanges;
-            CellCoordinate[] cells = new CellCoordinate[9];
-
-            numChanges = 0;
-
-            for (int gridi = 0; gridi < 3; gridi++)
-            {
-                for (int gridj = 0; gridj < 3; gridj++)
-                {
-                    int starti = gridi * 3;
-                    int startj = gridj * 3;
-
-                    int gridIndex = 0;
-                    for (int row = starti; row < starti+3; row++)
-                    {
-                        for (int column = startj; column < startj+3; column++)
-                        { 
-                            cells[gridIndex++] = new CellCoordinate { row = row, column = column };
-                        }
-                    }
-                    numChanges += findNakedTriplesAssist(ref cells, String.Format("for grid({0},{1})", gridi + 1, gridj + 1));
-                }
-            }
-
-            return ( numChanges > 0 );
-        }
-
         //
         // find naked triple cells in row, column, or grid where both cells only have the a subset of three possibilities.
         // other cells in the row, column, or grid can then eliminate those three possibilities
@@ -1539,11 +1343,7 @@ namespace Sudoko
 
         public bool findNakedTriples()
         {
-            bool didSomething = false;
-            didSomething |= this.findNakedTriplesHorizontalNeighbors();
-            didSomething |= this.findNakedTriplesVerticalNeighbors();
-            didSomething |= this.findNakedTriplesGridNeighbors();
-            return didSomething;
+            return findExclusions(findNakedTriplesAssist);
         }
 
         public int findNakedQuadsAssist(ref CellCoordinate[] cells, string description)
@@ -1773,73 +1573,6 @@ namespace Sudoko
             return numChanges;
         }
 
-        public bool findNakedQuadsHorizontalNeighbors()
-        {
-            int numChanges;
-            CellCoordinate[] cells = new CellCoordinate[9];
-
-            numChanges = 0;
-
-            for (int row = 0; row < 9; row++)
-            {
-                for (int column = 0; column < 9; column++)
-                {
-                    cells[column] = new CellCoordinate { row = row, column = column };
-                }
-                numChanges += findNakedQuadsAssist(ref cells, String.Format("for row {0}", row + 1));
-            }
-
-            return (numChanges > 0);
-        }
-
-        public bool findNakedQuadsVerticalNeighbors()
-        {
-            int numChanges;
-            CellCoordinate[] cells = new CellCoordinate[9];
-
-            numChanges = 0;
-
-            for (int column = 0; column < 9; column++)
-            {
-                for (int row = 0; row < 9; row++)
-                {
-                    cells[row] = new CellCoordinate { row = row, column = column };
-                }
-                numChanges += findNakedQuadsAssist(ref cells, String.Format("for column {0}", column + 1));
-            }
-
-            return (numChanges > 0);
-        }
-
-        public bool findNakedQuadsGridNeighbors()
-        {
-            int numChanges;
-            CellCoordinate[] cells = new CellCoordinate[9];
-
-            numChanges = 0;
-
-            for (int gridi = 0; gridi < 3; gridi++)
-            {
-                for (int gridj = 0; gridj < 3; gridj++)
-                {
-                    int starti = gridi * 3;
-                    int startj = gridj * 3;
-
-                    int gridIndex = 0;
-                    for (int row = starti; row < starti + 3; row++)
-                    {
-                        for (int column = startj; column < startj + 3; column++)
-                        {
-                            cells[gridIndex++] = new CellCoordinate { row = row, column = column };
-                        }
-                    }
-                    numChanges += findNakedQuadsAssist(ref cells, String.Format("for grid({0},{1})", gridi + 1, gridj + 1));
-                }
-            }
-
-            return (numChanges > 0);
-        }
-
         //
         // find naked quad cells in row, column, or grid where four cells only have the a subset of four possibilities.
         // other cells in the row, column, or grid can then eliminate those three possibilities
@@ -1847,11 +1580,55 @@ namespace Sudoko
 
         public bool findNakedQuads()
         {
-            bool didSomething = false;
-            didSomething |= this.findNakedQuadsHorizontalNeighbors();
-            didSomething |= this.findNakedQuadsVerticalNeighbors();
-            didSomething |= this.findNakedQuadsGridNeighbors();
-            return didSomething;
+            return findExclusions(findNakedQuadsAssist);
+        }
+
+        public int findHiddenSinglesAssist(ref CellCoordinate[] cells, string description)
+        {
+            int numChanges;
+
+            numChanges = 0;
+
+            for (int k = 0; k < 9; k++)
+            {
+                int numPossibilities = 0;
+                int lastFound = SudokuCell.NOTFOUND;
+                for (int c = 0; c < cells.Length; c++)
+                {
+                    int row = cells[c].row;
+                    int column = cells[c].column;
+                    if (!puzzle[row, column].IsSolved)
+                    {
+                        if (puzzle[row, column].isPossible(k))
+                        {
+                            numPossibilities++;
+                            lastFound = c;
+                        }
+                    }
+                }
+
+                bool hiddenSingle = (numPossibilities == 1);
+                if (hiddenSingle)
+                {
+                    int row = cells[lastFound].row;
+                    int column = cells[lastFound].column;
+                    Console.WriteLine("found hidden single {0} in cell({1},{2}) {3}", k + 1, row + 1, column + 1, description);
+                    solveCell(row, column, k);
+                    numChanges++;
+                }
+            }
+
+            return numChanges;
+        }
+
+        //
+        // find a single occurence of value in row, column or grid
+        // where the value is not the only possibility in its cell (aka it is hidden)
+        //
+
+        public bool findHiddenSingles()
+        {
+            return findExclusions(findHiddenSinglesAssist);
         }
 
         public int findHiddenPairsAssist(ref CellCoordinate[] cells, string description)
@@ -1952,73 +1729,6 @@ namespace Sudoko
 
         }
 
-        public bool findHiddenPairsHorizontalNeighbors()
-        {
-            int numChanges;
-            CellCoordinate[] cells = new CellCoordinate[9];
-
-            numChanges = 0;
-
-            for (int row = 0; row < 9; row++)
-            {
-                for (int column = 0; column < 9; column++)
-                {
-                    cells[column] = new CellCoordinate { row = row, column = column };
-                }
-                numChanges += findHiddenPairsAssist(ref cells, String.Format("for row {0}", row + 1));
-            }
-
-            return (numChanges > 0);
-        }
-
-        public bool findHiddenPairsVerticalNeighbors()
-        {
-            int numChanges;
-            CellCoordinate[] cells = new CellCoordinate[9];
-
-            numChanges = 0;
-
-            for (int column = 0; column < 9; column++)
-            {
-                for (int row = 0; row < 9; row++)
-                {
-                    cells[row] = new CellCoordinate { row = row, column = column };
-                }
-                numChanges += findHiddenPairsAssist(ref cells, String.Format("for column {0}", column + 1));
-            }
-
-            return (numChanges > 0);
-        }
-
-        public bool findHiddenPairsGridNeighbors()
-        {
-            int numChanges;
-            CellCoordinate[] cells = new CellCoordinate[9];
-
-            numChanges = 0;
-
-            for (int gridi = 0; gridi < 3; gridi++)
-            {
-                for (int gridj = 0; gridj < 3; gridj++)
-                {
-                    int starti = gridi * 3;
-                    int startj = gridj * 3;
-
-                    int gridIndex = 0;
-                    for (int row = starti; row < starti + 3; row++)
-                    {
-                        for (int column = startj; column < startj + 3; column++)
-                        {
-                            cells[gridIndex++] = new CellCoordinate { row = row, column = column };
-                        }
-                    }
-                    numChanges += findHiddenPairsAssist(ref cells, String.Format("for grid({0},{1})", gridi + 1, gridj + 1));
-                }
-            }
-
-            return (numChanges > 0);
-        }
-
         //
         // find hidden pair cells in row, column, or grid where both cells only have two possibilities.
         // from two hidden pair cells, remove possibilities from non-pairs
@@ -2026,11 +1736,7 @@ namespace Sudoko
 
         public bool findHiddenPairs()
         {
-            bool foundPair = false;
-            foundPair |= findHiddenPairsHorizontalNeighbors();
-            foundPair |= findHiddenPairsVerticalNeighbors();
-            foundPair |= findHiddenPairsGridNeighbors();
-            return foundPair;
+            return findExclusions(findHiddenPairsAssist);
         }
 
         public int findHiddenTriplesAssist(ref CellCoordinate[] cells, string description)
@@ -2182,73 +1888,6 @@ namespace Sudoko
             return NumChanges;
         }
 
-        public bool findHiddenTriplesHorizontalNeighbors()
-        {
-            int numChanges;
-            CellCoordinate[] cells = new CellCoordinate[9];
-
-            numChanges = 0;
-
-            for (int row = 0; row < 9; row++)
-            {
-                for (int column = 0; column < 9; column++)
-                {
-                    cells[column] = new CellCoordinate { row = row, column = column };
-                }
-                numChanges += findHiddenTriplesAssist(ref cells, String.Format("for row {0}", row + 1));
-            }
-
-            return (numChanges > 0);
-        }
-
-        public bool findHiddenTriplesVerticalNeighbors()
-        {
-            int numChanges;
-            CellCoordinate[] cells = new CellCoordinate[9];
-
-            numChanges = 0;
-
-            for (int column = 0; column < 9; column++)
-            {
-                for (int row = 0; row < 9; row++)
-                {
-                    cells[row] = new CellCoordinate { row = row, column = column };
-                }
-                numChanges += findHiddenTriplesAssist(ref cells, String.Format("for column {0}", column + 1));
-            }
-
-            return (numChanges > 0);
-        }
-
-        public bool findHiddenTriplesGridNeighbors()
-        {
-            int numChanges;
-            CellCoordinate[] cells = new CellCoordinate[9];
-
-            numChanges = 0;
-
-            for (int gridi = 0; gridi < 3; gridi++)
-            {
-                for (int gridj = 0; gridj < 3; gridj++)
-                {
-                    int starti = gridi * 3;
-                    int startj = gridj * 3;
-
-                    int gridIndex = 0;
-                    for (int row = starti; row < starti + 3; row++)
-                    {
-                        for (int column = startj; column < startj + 3; column++)
-                        {
-                            cells[gridIndex++] = new CellCoordinate { row = row, column = column };
-                        }
-                    }
-                    numChanges += findHiddenTriplesAssist(ref cells, String.Format("for grid({0},{1})", gridi + 1, gridj + 1));
-                }
-            }
-
-            return (numChanges > 0);
-        }
-
         //
         // find hidden pair cells in row, column, or grid where both cells only have two possibilities.
         // from two hidden pair cells, remove possibilities from non-pairs
@@ -2256,11 +1895,7 @@ namespace Sudoko
 
         public bool findHiddenTriples()
         {
-            bool foundPair = false;
-            foundPair |= findHiddenTriplesHorizontalNeighbors();
-            foundPair |= findHiddenTriplesVerticalNeighbors();
-            foundPair |= findHiddenTriplesGridNeighbors();
-            return foundPair;
+            return findExclusions(findHiddenTriplesAssist);
         }
 
         public void solveCell(int i, int j, int k)
