@@ -582,7 +582,7 @@ namespace Sudoko
                         {
                             int k = Singles[i, j];
                             // mark cell as a single
-                            Console.WriteLine("found naked single {0} at cell({1},{2})", k + 1, i + 1, j + 1);
+                            log(String.Format("found naked single {0} at cell({1},{2})", k + 1, i + 1, j + 1));
                             solveCell(i, j, k);
                         }
                     }
@@ -662,8 +662,8 @@ namespace Sudoko
                                 );
                             if (foundPossibilitiesToRemove)
                             {
-                                Console.WriteLine("found type 1 locked candidated {0} in row cells({1},{2}..{3}), exclude the rest of the row",
-                                                  k + 1, lockedRow + 1, startj + 1, startj + 3);
+                                log(String.Format("found type 1 locked candidated {0} in row cells({1},{2}..{3}), exclude the rest of the row",
+                                                  k + 1, lockedRow + 1, startj + 1, startj + 3));
                                 for (int column = 0; column < 9; column++)
                                 {
                                     int thisGridColumn = column / 3;
@@ -722,8 +722,8 @@ namespace Sudoko
                             );
                         if (foundPossibilitiesToRemove)
                         {
-                            Console.WriteLine("found type 2 locked candidated {0} in row cells({1},{2}..{3}), exclude the rest of the grid",
-                                              k + 1, row + 1, startj + 1, startj + 3);
+                            log(String.Format("found type 2 locked candidated {0} in row cells({1},{2}..{3}), exclude the rest of the grid",
+                                              k + 1, row + 1, startj + 1, startj + 3));
 
                             for (int i = starti; i < starti + 3; i++)
                             {
@@ -818,8 +818,8 @@ namespace Sudoko
                                 );
                             if (foundPossibilitiesToRemove)
                             {
-                                Console.WriteLine("found type 1 locked candidated {0} in column cells({1}..{2},{3}), exclude the rest of the column",
-                                                  k + 1, starti + 1, starti + 3, lockedColumn + 1);
+                                log(String.Format("found type 1 locked candidated {0} in column cells({1}..{2},{3}), exclude the rest of the column",
+                                                  k + 1, starti + 1, starti + 3, lockedColumn + 1));
                                 for (int row = 0; row < 9; row++)
                                 {
                                     int thisGridRow = row / 3;
@@ -878,8 +878,8 @@ namespace Sudoko
                             );
                         if (foundPossibilitiesToRemove)
                         {
-                            Console.WriteLine("found type 2 locked candidated {0} in column cells({1}..{2},{3}), exclude the rest of the grid",
-                                              k + 1, starti + 1, starti + 3, column + 1);
+                            log(String.Format("found type 2 locked candidated {0} in column cells({1}..{2},{3}), exclude the rest of the grid",
+                                              k + 1, starti + 1, starti + 3, column + 1));
 
                             for (int j = startj; j < startj + 3; j++)
                             {
@@ -1135,11 +1135,11 @@ namespace Sudoko
                     }
                     if ( numChangesForPair > 0 )
                     {
-                        Console.WriteLine("found naked pair ( {0} {1} ) {2}", p1 + 1, p2 + 1, description);
+                        log(String.Format("found naked pair ( {0} {1} ) {2}", p1 + 1, p2 + 1, description));
                     }
                     else
                     {
-                        Console.WriteLine("xxx found naked pair ( {0} {1} ) {2}", p1 + 1, p2 + 1, description);
+                        log(String.Format("xxx found naked pair ( {0} {1} ) {2}", p1 + 1, p2 + 1, description));
                     }
                 }
             }
@@ -1324,11 +1324,11 @@ namespace Sudoko
                     }
                     if ( numChangesForTriple > 0 )
                     {
-                        Console.WriteLine("found naked triple ( {0} {1} {2} ) {3}", t1+1, t2+1, t3+1, description);
+                        log(String.Format("found naked triple ( {0} {1} {2} ) {3}", t1+1, t2+1, t3+1, description));
                     }
                     else
                     {
-                        Console.WriteLine("xxx found naked triple ( {0} {1} {2} ) {3}", t1+1, t2+1, t3+1, description);
+                        log(String.Format("xxx found naked triple ( {0} {1} {2} ) {3}", t1+1, t2+1, t3+1, description));
                     }
                 }
             }
@@ -1561,11 +1561,11 @@ namespace Sudoko
                     }
                     if ( numChangesForQuad > 0 )
                     {
-                        Console.WriteLine("found naked quad ( {0} {1} {2} {3} ) {4}", t1 + 1, t2 + 1, t3 + 1, t4 +1, description);
+                        log(String.Format("found naked quad ( {0} {1} {2} {3} ) {4}", t1 + 1, t2 + 1, t3 + 1, t4 +1, description));
                     }
                     else
                     {
-                        Console.WriteLine("xxx found naked quad ( {0} {1} {2} {3} ) {4}", t1 + 1, t2 + 1, t3 + 1, t4 +1, description);
+                        log(String.Format("xxx found naked quad ( {0} {1} {2} {3} ) {4}", t1 + 1, t2 + 1, t3 + 1, t4 +1, description));
                     }
                 }
             }
@@ -1612,7 +1612,7 @@ namespace Sudoko
                 {
                     int row = cells[lastFound].row;
                     int column = cells[lastFound].column;
-                    Console.WriteLine("found hidden single {0} in cell({1},{2}) {3}", k + 1, row + 1, column + 1, description);
+                    log(String.Format("found hidden single {0} in cell({1},{2}) {3}", k + 1, row + 1, column + 1, description));
                     solveCell(row, column, k);
                     numChanges++;
                 }
@@ -1710,13 +1710,13 @@ namespace Sudoko
                                 }
                                 if ( numChangesThisPair > 0 )
                                 {
-                                    Console.WriteLine("found hidden pair ( {0} {1} ) at cell({2},{3}) and cell({4},{5}), {6}",
-                                        p1 + 1, p2 + 1, row1 + 1, column1 + 1, row2 + 1, column2 + 1, description);
+                                    log(String.Format("found hidden pair ( {0} {1} ) at cell({2},{3}) and cell({4},{5}), {6}",
+                                        p1 + 1, p2 + 1, row1 + 1, column1 + 1, row2 + 1, column2 + 1, description));
                                 }
                                 else
                                 {
-                                    Console.WriteLine("xxx found hidden pair ( {0} {1} ) at cell({2},{3}) and cell({4},{5}), {6}",
-                                        p1 + 1, p2 + 1, row1 + 1, column1 + 1, row2 + 1, column2 + 1, description);
+                                    log(String.Format("xxx found hidden pair ( {0} {1} ) at cell({2},{3}) and cell({4},{5}), {6}",
+                                        p1 + 1, p2 + 1, row1 + 1, column1 + 1, row2 + 1, column2 + 1, description));
                                 }
 
                             }
@@ -1869,13 +1869,13 @@ namespace Sudoko
 
                                         if ( numChangesThisTriple > 0)
                                         {
-                                            Console.WriteLine("found hidden triple ( {0} {1} {2} ) at cell({3},{4}) and cell({5},{6}) and cell({7},{8}), {9}",
-                                                t1 + 1, t2 + 1, t3 + 1, row1 + 1, column1 + 1, row2 + 1, column2 + 1, row3 + 1, column3 + 1, description);
+                                            log(String.Format("found hidden triple ( {0} {1} {2} ) at cell({3},{4}) and cell({5},{6}) and cell({7},{8}), {9}",
+                                                t1 + 1, t2 + 1, t3 + 1, row1 + 1, column1 + 1, row2 + 1, column2 + 1, row3 + 1, column3 + 1, description));
                                         }
                                         else
                                         {
-                                            Console.WriteLine("xxx found hidden triple ( {0} {1} {2} ) at cell({3},{4}) and cell({5},{6}) and cell({7},{8}), {9}",
-                                                t1 + 1, t2 + 1, t3 + 1, row1 + 1, column1 + 1, row2 + 1, column2 + 1, row3 + 1, column3 + 1, description);
+                                            log(String.Format("xxx found hidden triple ( {0} {1} {2} ) at cell({3},{4}) and cell({5},{6}) and cell({7},{8}), {9}",
+                                                t1 + 1, t2 + 1, t3 + 1, row1 + 1, column1 + 1, row2 + 1, column2 + 1, row3 + 1, column3 + 1, description));
                                         }
                                     }
                                 }
@@ -1963,30 +1963,79 @@ namespace Sudoko
             } while ( didSomething );
         }
 
-        public void execute()
-        {
-            // Console defaults to a 80 character width???
-            //Console.SetBufferSize(width: 120, height: 100);
+        //
+        // event callbackup function declaration
+        //
 
+        public delegate void logCallback(string msg);
+
+        //
+        // fireLogEvent event
+        //
+
+        public event logCallback fireLogEvent;
+
+        //
+        // Need a wrapper method to call the fireLogEvent,
+        // to only fire event if there are subscribers.
+        //
+
+        public void log(string msg)
+        {
+            if ( fireLogEvent != null )
+            {
+                fireLogEvent(msg);
+            }
+        }
+
+        //
+        // This is how the console app will log its message.
+        //
+
+        public void logToConsole(string msg)
+        {
+            Console.WriteLine(msg);
+        }
+
+        //
+        // This is how the window form app will log its message.
+        //
+
+        public void logToOutputWindow(string msg)
+        {
+            System.Diagnostics.Debug.WriteLine(msg);
+        }
+
+        public void executeOnConsole()
+        {
             initialize();
 
             //
             // when we start, the naked singles are not yet discovered
             // so we find the naked single here which cleans up the puzzle
-            // and get the puzzle into the state where most games are displayed to start
+            // and gets the puzzle into the state where most games are displayed to start
             //
 
             bool didSomething;
-            do
-            {
-                didSomething = findNakedSingles();
-            } while (didSomething);
+            didSomething = findNakedSingles();
+
+            //
+            // Register a callbackup with the fireLogEvent event.
+            //
+
+            fireLogEvent += logToConsole;
 
             display("Start of Puzzle:");
 
             solve();
 
             display("End of Puzzle:");
+
+            //
+            // Unregister a callbackup with the fireLogEvent event.
+            //
+
+            fireLogEvent -= logToConsole;
         }
     }
 }
@@ -1998,7 +2047,7 @@ namespace Sudoku.ConsoleApplication
         static void Main(string[] args)
         {
             Sudoko.SudokuPuzzle puzzle = new Sudoko.SudokuPuzzle();
-            puzzle.execute();
+            puzzle.executeOnConsole();
         }
     }
 }
