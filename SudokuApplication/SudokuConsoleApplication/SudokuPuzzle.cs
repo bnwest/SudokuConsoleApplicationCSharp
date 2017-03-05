@@ -256,7 +256,7 @@ namespace Sudoko
         }
 
         //
-        // puzzle[i, column] solved with value k
+        // puzzle[i, j] solved with value k
         // remove all neighbors as a possibility for k
         //
 
@@ -677,7 +677,7 @@ namespace Sudoko
             public int column;
         }
 
-        public delegate int SudokuAssist(ref CellCoordinate[] cells, string description);
+        public delegate int SudokuAssist(CellCoordinate[] cells, string description);
 
         public bool findHorizontalExclusions(SudokuAssist assist)
         {
@@ -692,7 +692,7 @@ namespace Sudoko
                 {
                     cells[column] = new CellCoordinate { row = row, column = column };
                 }
-                numChanges += assist(ref cells, String.Format("for row {0}", row + 1));
+                numChanges += assist(cells, String.Format("for row {0}", row + 1));
             }
 
             return (numChanges > 0);
@@ -711,7 +711,7 @@ namespace Sudoko
                 {
                     cells[row] = new CellCoordinate { row = row, column = column };
                 }
-                numChanges += assist(ref cells, String.Format("for column {0}", column + 1));
+                numChanges += assist(cells, String.Format("for column {0}", column + 1));
             }
 
             return (numChanges > 0);
@@ -739,7 +739,7 @@ namespace Sudoko
                             cells[gridIndex++] = new CellCoordinate { row = row, column = column };
                         }
                     }
-                    numChanges += assist(ref cells, String.Format("for grid({0},{1})", gridi + 1, gridj + 1));
+                    numChanges += assist(cells, String.Format("for grid({0},{1})", gridi + 1, gridj + 1));
                 }
             }
 
@@ -755,7 +755,7 @@ namespace Sudoko
             return foundExclusions;
         }
 
-        public int findNakedPairsAssist(ref CellCoordinate[] cells, string description)
+        public int findNakedPairsAssist(CellCoordinate[] cells, string description)
         {
             int numChanges;
             int numCandidatePairs;
@@ -906,7 +906,7 @@ namespace Sudoko
             return findExclusions(findNakedPairsAssist);
         }
 
-        public int findNakedTriplesAssist(ref CellCoordinate[] cells, string description)
+        public int findNakedTriplesAssist(CellCoordinate[] cells, string description)
         {
             int numChanges;
             int numCandidateTriples;
@@ -1095,7 +1095,7 @@ namespace Sudoko
             return findExclusions(findNakedTriplesAssist);
         }
 
-        public int findNakedQuadsAssist(ref CellCoordinate[] cells, string description)
+        public int findNakedQuadsAssist(CellCoordinate[] cells, string description)
         {
             int numChanges;
             int numCandidateQuads;
@@ -1332,7 +1332,7 @@ namespace Sudoko
             return findExclusions(findNakedQuadsAssist);
         }
 
-        public int findHiddenSinglesAssist(ref CellCoordinate[] cells, string description)
+        public int findHiddenSinglesAssist(CellCoordinate[] cells, string description)
         {
             int numChanges;
 
@@ -1380,7 +1380,7 @@ namespace Sudoko
             return findExclusions(findHiddenSinglesAssist);
         }
 
-        public int findHiddenPairsAssist(ref CellCoordinate[] cells, string description)
+        public int findHiddenPairsAssist(CellCoordinate[] cells, string description)
         {
             int NumChanges;
             bool[] PossiblePairs = new bool[9];
@@ -1488,7 +1488,7 @@ namespace Sudoko
             return findExclusions(findHiddenPairsAssist);
         }
 
-        public int findHiddenTriplesAssist(ref CellCoordinate[] cells, string description)
+        public int findHiddenTriplesAssist(CellCoordinate[] cells, string description)
         {
             int NumChanges;
             bool[] PossibleTriples = new bool[9] { false, false, false, false, false, false, false, false, false };
@@ -1674,9 +1674,10 @@ namespace Sudoko
             // Harder
             // 7. hidden pairs
             // 8. hidden triples
+            //----- do not plan to implement the methods below -----
             // 9. hidden quads
             // Expert
-            // do not plan to implement: x-wing, y-wing, swordfish, et al
+            // x-wing, y-wing, swordfish, et al
             //
 
             do
