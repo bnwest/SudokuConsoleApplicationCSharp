@@ -202,7 +202,7 @@ namespace Sudoko
         }
 
         //
-        // puzzle[i, column] solved with value k
+        // puzzle[i, j] solved with value k
         // remove vertical neighbors as a possibility for k
         //
 
