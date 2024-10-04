@@ -1,3 +1,23 @@
+// Lessons learned:
+//
+// 1. String processing is a no fly zone.  strings are are an array of potentially
+// variable length utf-8 characters.  Indexing into a string does nto make sense.
+// My workaround was to create an array of characters, where indexing works.
+//
+// 2. Indices must use type "usize".  Rust is very unforgiving.
+//
+// 3. types are not required at variable declaration.  rust compiler can decide
+// from context what the type is, making the type implicit.  for loop variables
+// get context from fro statement and may enough context for integer types.
+//
+// 4. variable must be initialized at declaration.  might be required since types are not.
+//
+// 5. rust compiler warns on constant variable not being all CAPs,
+// expressions have "unneeded" parens, etc aka stuff that does not matter.
+//
+// 6. arrays are declared ass backwards ... aka inside out.
+// [[uside; 3]; 9] => a 9 row x 3 column array.
+//
 
 #[derive(Debug)]  // adding so prety print will work ... {:#?} for pretty-print
 pub struct SudokuGame {
@@ -11,24 +31,24 @@ impl SudokuGame {
         return SudokuGame {
             // db_game is a 81 character string, with the solved numbers present.
             db_game: String::from(
-            // hidden triples
-            // "4....8.....753...8.9..6.41353....2.7.........7.6....81954.1..3.3...751.....9....5"
-            // 4..  ..8  ...
-            // ..7  53.  ..8
-            // .9.  .6.  413
-            //
-            // 53.  ...  2.7
-            // ...  ...  ...
-            // 7.6  ...  .81
-            //
-            // 954  .1.  .3.
-            // 3..  .75  1..
-            // ...  9..  ..5
+                // hidden triples
+                "4....8.....753...8.9..6.41353....2.7.........7.6....81954.1..3.3...751.....9....5"
+                // 4..  ..8  ...
+                // ..7  53.  ..8
+                // .9.  .6.  413
+                //
+                // 53.  ...  2.7
+                // ...  ...  ...
+                // 7.6  ...  .81
+                //
+                // 954  .1.  .3.
+                // 3..  .75  1..
+                // ...  9..  ..5
 
-            // type 1 and 2 locked candidate in row and column
-            "563700000002000947040100000030050209020000080409010050000004010254000600000006495"
+                // type 1 and 2 locked candidate in row and column
+                // "563700000002000947040100000030050209020000080409010050000004010254000600000006495"
             ),
-        } 
+        }
     }
 }
 
@@ -322,7 +342,7 @@ impl SudokuPuzzle {
     }
 
     fn find_exclusions(
-         &mut self,
+        &mut self,
         assist: fn(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: String) -> u32
     ) -> bool {
         let mut found_exclusions: bool = false;
@@ -705,6 +725,160 @@ impl SudokuPuzzle {
         return did_something;
     }
 
+    fn find_naked_pairs_assist(
+        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: String
+    ) -> u32 {
+        let mut num_changes: u32 = 0;
+
+        let mut candidate_pairs: [[usize; 3]; 9] = [[SudokuPuzzleCell::NOT_FOUND; 3]; 9];  // 9 row x 3 column array
+        let mut num_candidate_pairs: usize = 0;
+
+        // File "iter()" and iter_mut" under ... WTF.
+        for (c, cell) in cells.iter().enumerate() {
+            let row: usize = cell.row;
+            let column: usize = cell.column;
+
+            let mut p1: usize = SudokuPuzzleCell::NOT_FOUND;
+            let mut p2: usize = SudokuPuzzleCell::NOT_FOUND;
+            let mut num_possibilities: u32 = 0;
+
+            for k in 0..9 {
+                if !puzzle.cells[row][column].is_solved() {
+                    if puzzle.cells[row][column].is_possible(k) {
+                        num_possibilities += 1;
+                        if num_possibilities > 2 {
+                            break;
+                        }
+                        if p1 == SudokuPuzzleCell::NOT_FOUND {
+                            p1 = k;
+                        }
+                        else {
+                            p2 = k;
+                        }
+                    }
+                }
+            }
+
+            if num_possibilities == 2 {
+                // we have found a pair candidate
+                candidate_pairs[num_candidate_pairs][0] = p1;
+                candidate_pairs[num_candidate_pairs][1] = p2;
+                candidate_pairs[num_candidate_pairs][2] = c;
+                num_candidate_pairs += 1;
+            }
+        }
+
+        let mut num_naked_pairs = 0;
+        let mut naked_pairs: [[usize; 4]; 9] = [[SudokuPuzzleCell::NOT_FOUND; 4]; 9];  // 9 x 4 array
+
+        if num_candidate_pairs >= 2 {
+            for c1 in 0_usize..num_candidate_pairs-1 {
+                for c2 in c1+1..num_candidate_pairs {
+                    // determine if candidate_pairs[c1] and candidate_pairs[c2]
+                    // are candidate pairs.
+
+                    let mut p1: usize = SudokuPuzzleCell::NOT_FOUND;
+                    let mut p2: usize = SudokuPuzzleCell::NOT_FOUND;
+                    let mut possibles_for_pair: [bool; 9] = [false; 9];
+
+                    p1 = candidate_pairs[c1][0];
+                    p2 = candidate_pairs[c1][1];
+                    possibles_for_pair[p1] = true;
+                    possibles_for_pair[p2] = true;
+
+                    p1 = candidate_pairs[c2][0];
+                    p2 = candidate_pairs[c2][1];
+                    possibles_for_pair[p1] = true;
+                    possibles_for_pair[p2] = true;
+
+                    // let num_possibles_for_pairs: u32 = {
+                    //     let mut num: u32 = 0;
+                    //     for i in 0..9 {
+                    //         if possibles_for_pair[i] {
+                    //             num += 1;
+                    //         }
+                    //     }
+                    //     num
+                    // };
+
+                    let mut num_possibles_for_pairs: u32 = 0;
+                    p1 = SudokuPuzzleCell::NOT_FOUND;
+                    p2 = SudokuPuzzleCell::NOT_FOUND;
+                    for k in 0..9 {
+                        if possibles_for_pair[k] {
+                            num_possibles_for_pairs += 1;
+                            if p1 == SudokuPuzzleCell::NOT_FOUND {
+                                p1 = k;
+                            }
+                            else {
+                                p2 = k;
+                            }
+                        }
+                    }
+                    if num_possibles_for_pairs == 2 {
+                        // candidate_pairs[c1] and candidate_pairs[c2]
+                        // have the same pair: (p1, p2).
+                        naked_pairs[num_naked_pairs][0] = p1;
+                        naked_pairs[num_naked_pairs][1] = p2;
+                        naked_pairs[num_naked_pairs][2] = candidate_pairs[c1][2];  // index into cells[]
+                        naked_pairs[num_naked_pairs][3] = candidate_pairs[c2][2];
+                        num_naked_pairs += 1;
+                    }
+                }
+            }
+        }
+
+        if num_naked_pairs > 0 {
+            for t in 0..num_naked_pairs {
+                let p1: usize = naked_pairs[t][0];
+                let p2: usize = naked_pairs[t][1];
+                let c1: usize = naked_pairs[t][2];
+                let c2: usize = naked_pairs[t][3];
+
+                let mut num_changes_for_pair: u32 = 0;
+                for (c, cell) in cells.iter().enumerate() {
+                    let cell_outside_of_pair: bool = (c != c1) && (c != c2);
+                    if !cell_outside_of_pair {
+                        continue;
+                    }
+
+                    let row: usize = cell.row;
+                    let column: usize = cell.column;
+                    if !puzzle.cells[row][column].is_solved() {
+                        if puzzle.cells[row][column].is_possible(p1) {
+                            puzzle.cells[row][column].set_possible(p1, false);
+                            num_changes_for_pair += 1;
+                            num_changes += 1;
+                        }
+                        if puzzle.cells[row][column].is_possible(p2) {
+                            puzzle.cells[row][column].set_possible(p2, false);
+                            num_changes_for_pair += 1;
+                            num_changes += 1;
+                        }
+                    }
+                }
+                if num_changes_for_pair > 0 {
+                    println!(
+                        "found naked pair ({}, {}) {}",
+                        p1+1, p2+1, description
+                    );
+                }
+                else {
+                    println!(
+                        "xxx found naked pair ({}, {}) {}",
+                        p1+1, p2+1, description
+                    );
+                }
+            }
+        }
+
+        return num_changes;
+    }
+
+    fn find_naked_pairs(&mut self) -> bool {
+        return self.find_exclusions(SudokuPuzzle::find_naked_pairs_assist);
+    }
+
     fn solve_cell(&mut self, i: usize, j: usize, k: usize) {
         self.cells[i][j].found = k;
 
@@ -806,8 +980,8 @@ impl SudokuPuzzle {
         // 2. hidden singles
         // Standard/Modearate
         // 3. locked candidates type 1 and 2
-
         // 4. naked pairs
+
         // Hard
         // 5. naked triples
         // 6. naked quads
@@ -822,6 +996,7 @@ impl SudokuPuzzle {
 
         loop {
             // Easy
+
             let did_something: bool = self.find_naked_singles();
             if did_something {
                 continue;
@@ -833,7 +1008,13 @@ impl SudokuPuzzle {
             }
 
             // Standard
+
             let did_something: bool = self.find_locked_candidate();
+            if did_something {
+                continue;
+            }
+
+            let did_something: bool = self.find_naked_pairs();
             if did_something {
                 continue;
             }
