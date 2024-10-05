@@ -33,6 +33,7 @@ impl SudokuGame {
             db_game: String::from(
                 // hidden triples
                 "4....8.....753...8.9..6.41353....2.7.........7.6....81954.1..3.3...751.....9....5"
+
                 // 4..  ..8  ...
                 // ..7  53.  ..8
                 // .9.  .6.  413
@@ -47,6 +48,9 @@ impl SudokuGame {
 
                 // type 1 and 2 locked candidate in row and column
                 // "563700000002000947040100000030050209020000080409010050000004010254000600000006495"
+
+                // 2 x naked triples (grid,row)
+                // "5..8.......8..91...69..4...8.61....47...9...39....75.2...9..43...26..9.......3..7"
             ),
         }
     }
@@ -768,7 +772,7 @@ impl SudokuPuzzle {
             }
         }
 
-        let mut num_naked_pairs = 0;
+        let mut num_naked_pairs: usize = 0;
         let mut naked_pairs: [(usize, usize, usize, usize); 9] = [
             (SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND); 9
         ];
@@ -875,6 +879,176 @@ impl SudokuPuzzle {
         return self.find_exclusions(SudokuPuzzle::find_naked_pairs_assist);
     }
 
+    fn find_naked_triples_assist(
+        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: String
+    ) -> u32 {
+        let mut num_changes: u32 = 0;
+
+        let mut num_candidate_triples: usize = 0;
+        let mut candidate_triples: [(usize, usize, usize, usize); 9] = [
+            (SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND); 9
+        ];
+
+        for (c, cell) in cells.iter().enumerate() {
+            let row: usize = cell.row;
+            let column: usize = cell.column;
+
+            let mut t1: usize = SudokuPuzzleCell::NOT_FOUND;
+            let mut t2: usize = SudokuPuzzleCell::NOT_FOUND;
+            let mut t3: usize = SudokuPuzzleCell::NOT_FOUND;
+            let mut num_possibilities: u32 = 0;
+
+            for k in 0..9 {
+                if !puzzle.cells[row][column].is_solved() {
+                    if puzzle.cells[row][column].is_possible(k) {
+                        num_possibilities += 1;
+                        if num_possibilities > 3 {
+                            break;
+                        }
+                        if t1 == SudokuPuzzleCell::NOT_FOUND {
+                            t1 = k;
+                        }
+                        else if t2 == SudokuPuzzleCell::NOT_FOUND {
+                            t2 = k;
+                        }
+                        else {
+                            t3 = k;
+                        }
+                    }
+                }
+            }
+
+            // (1, 2) (2, 3) (1, 3) is a naked triple
+            if num_possibilities == 3 || num_possibilities == 2 {
+                candidate_triples[num_candidate_triples] = (t1, t2, t3, c);  // t3 could be NOT_FOUND
+                num_candidate_triples += 1;
+            }
+        }
+
+        let mut num_naked_triples: usize = 0;
+        let mut naked_triples: [(usize, usize, usize, usize, usize, usize); 9] = [
+            (SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND, ); 9
+        ];
+
+        if num_candidate_triples >= 3 {
+            for c1 in 0_usize..num_candidate_triples {
+                for c2 in c1+1..num_candidate_triples {
+                    for c3 in c2+1..num_candidate_triples {
+                        let mut possibles_for_triple: [bool; 9] = [false; 9];
+
+                        let (t1, t2, t3, _) = candidate_triples[c1];
+                        possibles_for_triple[t1] = true;
+                        possibles_for_triple[t2] = true;
+                        if t3 != SudokuPuzzleCell::NOT_FOUND {
+                            possibles_for_triple[t3] = true;
+                        }
+
+                        let (t1, t2, t3, _) = candidate_triples[c2];
+                        possibles_for_triple[t1] = true;
+                        possibles_for_triple[t2] = true;
+                        if t3 != SudokuPuzzleCell::NOT_FOUND {
+                            possibles_for_triple[t3] = true;
+                        }
+
+                        let (t1, t2, t3, _) = candidate_triples[c3];
+                        possibles_for_triple[t1] = true;
+                        possibles_for_triple[t2] = true;
+                        if t3 != SudokuPuzzleCell::NOT_FOUND {
+                            possibles_for_triple[t3] = true;
+                        }
+
+                        let mut num_possibles_for_triple: u32 = 0;
+                        let mut t1: usize = SudokuPuzzleCell::NOT_FOUND;
+                        let mut t2: usize = SudokuPuzzleCell::NOT_FOUND;
+                        let mut t3: usize = SudokuPuzzleCell::NOT_FOUND;
+                        for k in 0..9 {
+                            if possibles_for_triple[k] {
+                                num_possibles_for_triple += 1;
+                                if t1 == SudokuPuzzleCell::NOT_FOUND {
+                                    t1 = k;
+                                }
+                                else if t2 == SudokuPuzzleCell::NOT_FOUND {
+                                    t2 = k;
+                                }
+                                else if t3 == SudokuPuzzleCell::NOT_FOUND {
+                                    t3 = k;
+                                }
+                                if num_possibles_for_triple > 3 {
+                                    break;
+                                }
+                            }
+                        }
+                        if num_possibles_for_triple == 3 {
+                            naked_triples[num_naked_triples] = (
+                                t1,
+                                t2,
+                                t3,
+                                candidate_triples[c1].3,  // .3 => index into cells[]
+                                candidate_triples[c2].3,
+                                candidate_triples[c3].3
+                            );
+                            num_naked_triples += 1;
+                        }
+                    }
+                }
+            }
+        }
+
+        if num_naked_triples > 0 {
+            for t in 0..num_naked_triples {
+                let (t1, t2, t3, c1, c2, c3) = naked_triples[t];
+                let mut num_changes_for_triple = 0;
+                for c in 0..9 {
+                    let cell_outside_of_triple: bool = (c != c1) && (c != c2) && (c != c3);
+                    if !cell_outside_of_triple {
+                        continue;
+                    }
+
+                    let row: usize = cells[c].row;
+                    let column: usize = cells[c].column;
+
+                    if !puzzle.cells[row][column].is_solved() {
+                        if puzzle.cells[row][column].is_possible(t1) {
+                            puzzle.cells[row][column].set_possible(t1, false);
+                            num_changes_for_triple += 1;
+                            num_changes += 1;
+                        }
+                        if puzzle.cells[row][column].is_possible(t2) {
+                            puzzle.cells[row][column].set_possible(t2, false);
+                            num_changes_for_triple += 1;
+                            num_changes += 1;
+                        }
+                        if puzzle.cells[row][column].is_possible(t3) {
+                            puzzle.cells[row][column].set_possible(t3, false);
+                            num_changes_for_triple += 1;
+                            num_changes += 1;
+                        }
+                    }
+                }
+                if num_changes_for_triple > 0 {
+                    println!(
+                        "found naked triple ({} {} {}) {}",
+                        t1+1, t2+1, t3+1, description
+                    );
+                }
+                else {
+                    println!(
+                        "xxx found naked triple ({} {} {}) {}",
+                        t1+1, t2+1, t3+1, description
+                    );
+                }
+            }
+        }
+
+        return num_changes;
+    }
+
+    fn find_naked_triples(&mut self) -> bool {
+        return self.find_exclusions(SudokuPuzzle::find_naked_triples_assist);
+    }
+
     fn solve_cell(&mut self, i: usize, j: usize, k: usize) {
         self.cells[i][j].found = k;
 
@@ -974,7 +1148,7 @@ impl SudokuPuzzle {
         // Easy
         // 1. naked singles
         // 2. hidden singles
-        // Standard/Modearate
+        // Standard/Moderate
         // 3. locked candidates type 1 and 2
         // 4. naked pairs
 
@@ -1003,7 +1177,7 @@ impl SudokuPuzzle {
                 continue;
             }
 
-            // Standard
+            // Standard/Moderate
 
             let did_something: bool = self.find_locked_candidate();
             if did_something {
@@ -1011,6 +1185,13 @@ impl SudokuPuzzle {
             }
 
             let did_something: bool = self.find_naked_pairs();
+            if did_something {
+                continue;
+            }
+
+            // Hard
+
+            let did_something: bool = self.find_naked_triples();
             if did_something {
                 continue;
             }
