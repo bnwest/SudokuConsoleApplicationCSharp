@@ -730,7 +730,9 @@ impl SudokuPuzzle {
     ) -> u32 {
         let mut num_changes: u32 = 0;
 
-        let mut candidate_pairs: [[usize; 3]; 9] = [[SudokuPuzzleCell::NOT_FOUND; 3]; 9];  // 9 row x 3 column array
+        let mut candidate_pairs: [(usize, usize, usize); 9] = [
+            (SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND); 9
+        ];
         let mut num_candidate_pairs: usize = 0;
 
         // File "iter()" and iter_mut" under ... WTF.
@@ -761,33 +763,31 @@ impl SudokuPuzzle {
 
             if num_possibilities == 2 {
                 // we have found a pair candidate
-                candidate_pairs[num_candidate_pairs][0] = p1;
-                candidate_pairs[num_candidate_pairs][1] = p2;
-                candidate_pairs[num_candidate_pairs][2] = c;
+                candidate_pairs[num_candidate_pairs] = (p1, p2, c);
                 num_candidate_pairs += 1;
             }
         }
 
         let mut num_naked_pairs = 0;
-        let mut naked_pairs: [[usize; 4]; 9] = [[SudokuPuzzleCell::NOT_FOUND; 4]; 9];  // 9 x 4 array
+        let mut naked_pairs: [(usize, usize, usize, usize); 9] = [
+            (SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND); 9
+        ];
 
         if num_candidate_pairs >= 2 {
             for c1 in 0_usize..num_candidate_pairs-1 {
                 for c2 in c1+1..num_candidate_pairs {
                     // determine if candidate_pairs[c1] and candidate_pairs[c2]
-                    // are candidate pairs.
+                    // are candidate pairs.  do they reference the same pair?
 
                     let mut p1: usize = SudokuPuzzleCell::NOT_FOUND;
                     let mut p2: usize = SudokuPuzzleCell::NOT_FOUND;
                     let mut possibles_for_pair: [bool; 9] = [false; 9];
 
-                    p1 = candidate_pairs[c1][0];
-                    p2 = candidate_pairs[c1][1];
+                    (p1, p2, _) = candidate_pairs[c1];
                     possibles_for_pair[p1] = true;
                     possibles_for_pair[p2] = true;
 
-                    p1 = candidate_pairs[c2][0];
-                    p2 = candidate_pairs[c2][1];
+                    (p1, p2, _) = candidate_pairs[c2];
                     possibles_for_pair[p1] = true;
                     possibles_for_pair[p2] = true;
 
@@ -802,26 +802,23 @@ impl SudokuPuzzle {
                     // };
 
                     let mut num_possibles_for_pairs: u32 = 0;
-                    p1 = SudokuPuzzleCell::NOT_FOUND;
-                    p2 = SudokuPuzzleCell::NOT_FOUND;
                     for k in 0..9 {
                         if possibles_for_pair[k] {
                             num_possibles_for_pairs += 1;
-                            if p1 == SudokuPuzzleCell::NOT_FOUND {
-                                p1 = k;
-                            }
-                            else {
-                                p2 = k;
+                            if num_possibles_for_pairs > 2 {
+                                break;
                             }
                         }
                     }
                     if num_possibles_for_pairs == 2 {
                         // candidate_pairs[c1] and candidate_pairs[c2]
                         // have the same pair: (p1, p2).
-                        naked_pairs[num_naked_pairs][0] = p1;
-                        naked_pairs[num_naked_pairs][1] = p2;
-                        naked_pairs[num_naked_pairs][2] = candidate_pairs[c1][2];  // index into cells[]
-                        naked_pairs[num_naked_pairs][3] = candidate_pairs[c2][2];
+                        naked_pairs[num_naked_pairs] = (
+                            candidate_pairs[c1].0,
+                            candidate_pairs[c1].1,
+                            candidate_pairs[c1].2,  // index into cells[]
+                            candidate_pairs[c2].2,
+                        );
                         num_naked_pairs += 1;
                     }
                 }
@@ -830,10 +827,9 @@ impl SudokuPuzzle {
 
         if num_naked_pairs > 0 {
             for t in 0..num_naked_pairs {
-                let p1: usize = naked_pairs[t][0];
-                let p2: usize = naked_pairs[t][1];
-                let c1: usize = naked_pairs[t][2];
-                let c2: usize = naked_pairs[t][3];
+                // either one must declare (and initialize) the variables beforehand
+                // or let the rust compiler give them an implicit type.
+                let (p1, p2, c1, c2) = naked_pairs[t];
 
                 let mut num_changes_for_pair: u32 = 0;
                 for (c, cell) in cells.iter().enumerate() {
