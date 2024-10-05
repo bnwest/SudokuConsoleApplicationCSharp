@@ -32,7 +32,7 @@ impl SudokuGame {
             // db_game is a 81 character string, with the solved numbers present.
             db_game: String::from(
                 // hidden triples
-                "4....8.....753...8.9..6.41353....2.7.........7.6....81954.1..3.3...751.....9....5"
+                // "4....8.....753...8.9..6.41353....2.7.........7.6....81954.1..3.3...751.....9....5"
 
                 // 4..  ..8  ...
                 // ..7  53.  ..8
@@ -51,6 +51,9 @@ impl SudokuGame {
 
                 // 2 x naked triples (grid,row)
                 // "5..8.......8..91...69..4...8.61....47...9...39....75.2...9..43...26..9.......3..7"
+
+                // failed to solve - naked quad ( 2 3 5 8 ) for grid(2,3), exclude based on colors)
+                ".....7.....2...6......3......96..........5........4.1747....9..1...........85.3.."
             ),
         }
     }
@@ -928,8 +931,9 @@ impl SudokuPuzzle {
 
         let mut num_naked_triples: usize = 0;
         let mut naked_triples: [(usize, usize, usize, usize, usize, usize); 9] = [
-            (SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND,
-            SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND, ); 9
+            (SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND); 9
         ];
 
         if num_candidate_triples >= 3 {
@@ -1047,6 +1051,219 @@ impl SudokuPuzzle {
 
     fn find_naked_triples(&mut self) -> bool {
         return self.find_exclusions(SudokuPuzzle::find_naked_triples_assist);
+    }
+
+    fn find_naked_quads_assist(
+        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: String
+    ) -> u32 {
+        let mut num_changes: u32 = 0;
+
+        let mut num_candidate_quads: usize = 0;
+        let mut candidate_quads: [(usize, usize, usize, usize, usize); 9] = [
+            (SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND); 9
+        ];
+
+        for (c, cell) in cells.iter().enumerate() {
+            let row: usize = cell.row;
+            let column: usize = cell.column;
+
+            let mut t1: usize = SudokuPuzzleCell::NOT_FOUND;
+            let mut t2: usize = SudokuPuzzleCell::NOT_FOUND;
+            let mut t3: usize = SudokuPuzzleCell::NOT_FOUND;
+            let mut t4: usize = SudokuPuzzleCell::NOT_FOUND;
+            let mut num_possibilities: u32 = 0;
+
+            for k in 0..9 {
+                if !puzzle.cells[row][column].is_solved() {
+                    if puzzle.cells[row][column].is_possible(k) {
+                        num_possibilities += 1;
+                        if num_possibilities > 4 {
+                            break;
+                        }
+                        if t1 == SudokuPuzzleCell::NOT_FOUND {
+                            t1 = k;
+                        }
+                        else if t2 == SudokuPuzzleCell::NOT_FOUND {
+                            t2 = k;
+                        }
+                        else if t3 == SudokuPuzzleCell::NOT_FOUND {
+                            t3 = k;
+                        }
+                        else {
+                            t4 = k;
+                        }
+                    }
+                }
+            }
+
+            // (1, 2) (2, 3) (3, 4) (1, 4) is a naked quad
+            if num_possibilities == 4 || num_possibilities == 3 || num_possibilities == 2 {
+                candidate_quads[num_candidate_quads] = (t1, t2, t3, t4, c);  // t3/t4 could be NOT_FOUND
+                num_candidate_quads+= 1;
+            }
+        }
+
+        let mut num_naked_quads: usize = 0;
+        let mut naked_quads: [(usize, usize, usize, usize, usize, usize, usize, usize); 9] = [
+            (SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND); 9
+        ];
+
+        if num_candidate_quads >= 4 {
+            for c1 in 0_usize..num_candidate_quads {
+                for c2 in c1+1..num_candidate_quads {
+                    for c3 in c2+1..num_candidate_quads {
+                        for c4 in c3+1..num_candidate_quads {
+                            let mut possibles_for_quad: [bool; 9] = [false; 9];
+
+                            let (t1, t2, t3, t4, _) = candidate_quads[c1];
+                            possibles_for_quad[t1] = true;
+                            possibles_for_quad[t2] = true;
+                            if t3 != SudokuPuzzleCell::NOT_FOUND {
+                                possibles_for_quad[t3] = true;
+                            }
+                            if t4 != SudokuPuzzleCell::NOT_FOUND {
+                                possibles_for_quad[t4] = true;
+                            }
+
+                            let (t1, t2, t3, t4, _) = candidate_quads[c2];
+                            possibles_for_quad[t1] = true;
+                            possibles_for_quad[t2] = true;
+                            if t3 != SudokuPuzzleCell::NOT_FOUND {
+                                possibles_for_quad[t3] = true;
+                            }
+                            if t4 != SudokuPuzzleCell::NOT_FOUND {
+                                possibles_for_quad[t4] = true;
+                            }
+
+                            let (t1, t2, t3, t4, _) = candidate_quads[c3];
+                            possibles_for_quad[t1] = true;
+                            possibles_for_quad[t2] = true;
+                            if t3 != SudokuPuzzleCell::NOT_FOUND {
+                                possibles_for_quad[t3] = true;
+                            }
+                            if t4 != SudokuPuzzleCell::NOT_FOUND {
+                                possibles_for_quad[t4] = true;
+                            }
+
+                            let (t1, t2, t3, t4, _) = candidate_quads[c4];
+                            possibles_for_quad[t1] = true;
+                            possibles_for_quad[t2] = true;
+                            if t3 != SudokuPuzzleCell::NOT_FOUND {
+                                possibles_for_quad[t3] = true;
+                            }
+                            if t4 != SudokuPuzzleCell::NOT_FOUND {
+                                possibles_for_quad[t4] = true;
+                            }
+
+                            let mut num_possibles_for_quad: u32 = 0;
+                            let mut t1: usize = SudokuPuzzleCell::NOT_FOUND;
+                            let mut t2: usize = SudokuPuzzleCell::NOT_FOUND;
+                            let mut t3: usize = SudokuPuzzleCell::NOT_FOUND;
+                            let mut t4: usize = SudokuPuzzleCell::NOT_FOUND;
+                            for k in 0..9 {
+                                if possibles_for_quad[k] {
+                                    num_possibles_for_quad += 1;
+                                    if t1 == SudokuPuzzleCell::NOT_FOUND {
+                                        t1 = k;
+                                    }
+                                    else if t2 == SudokuPuzzleCell::NOT_FOUND {
+                                        t2 = k;
+                                    }
+                                    else if t3 == SudokuPuzzleCell::NOT_FOUND {
+                                        t3 = k;
+                                    }
+                                    else if t4 == SudokuPuzzleCell::NOT_FOUND {
+                                        t4 = k;
+                                    }
+                                    if num_possibles_for_quad > 4 {
+                                        break;
+                                    }
+                                }
+                            }
+                            if num_possibles_for_quad == 4 {
+                                naked_quads[num_naked_quads] = (
+                                    t1,
+                                    t2,
+                                    t3,
+                                    t4,
+                                    candidate_quads[c1].4,  // .3 => index into cells[]
+                                    candidate_quads[c2].4,
+                                    candidate_quads[c3].4,
+                                    candidate_quads[c4].4
+                                );
+                                num_naked_quads += 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if num_naked_quads > 0 {
+            for t in 0..num_naked_quads {
+                let (t1, t2, t3, t4, c1, c2, c3, c4) = naked_quads[t];
+                let mut num_changes_for_quad = 0;
+                for c in 0..9 {
+                    let cell_outside_of_quad: bool = (c != c1) && (c != c2) && (c != c3) && (c != c4);
+                    if !cell_outside_of_quad {
+                        continue;
+                    }
+
+                    let row: usize = cells[c].row;
+                    let column: usize = cells[c].column;
+
+                    if !puzzle.cells[row][column].is_solved() {
+                        if puzzle.cells[row][column].is_possible(t1) {
+                            puzzle.cells[row][column].set_possible(t1, false);
+                            println!("    update {} in cell({}, {}) {}.", t1+1, row+1, column+1, description);
+                            num_changes_for_quad += 1;
+                            num_changes += 1;
+                        }
+                        if puzzle.cells[row][column].is_possible(t2) {
+                            puzzle.cells[row][column].set_possible(t2, false);
+                            println!("    update {} in cell({}, {}) {}.", t2+1, row+1, column+1, description);
+                            num_changes_for_quad += 1;
+                            num_changes += 1;
+                        }
+                        if puzzle.cells[row][column].is_possible(t3) {
+                            puzzle.cells[row][column].set_possible(t3, false);
+                            println!("    update {} in cell({}, {}) {}.", t3+1, row+1, column+1, description);
+                            num_changes_for_quad += 1;
+                            num_changes += 1;
+                        }
+                        if puzzle.cells[row][column].is_possible(t4) {
+                            puzzle.cells[row][column].set_possible(t4, false);
+                            println!("    update {} in cell({}, {}) {}.", t4+1, row+1, column+1, description);
+                            num_changes_for_quad += 1;
+                            num_changes += 1;
+                        }
+                    }
+                }
+                if num_changes_for_quad > 0 {
+                    println!(
+                        "found naked quad ({} {} {} {}) {}",
+                        t1+1, t2+1, t3+1, t4+1, description
+                    );
+                }
+                else {
+                    println!(
+                        "xxx found naked quad ({} {} {} {}) {}",
+                        t1+1, t2+1, t3+1, t4+1, description
+                    );
+                }
+            }
+        }
+
+        return num_changes;
+    }
+
+    fn find_naked_quads(&mut self) -> bool {
+        return self.find_exclusions(SudokuPuzzle::find_naked_quads_assist);
     }
 
     fn solve_cell(&mut self, i: usize, j: usize, k: usize) {
@@ -1192,6 +1409,11 @@ impl SudokuPuzzle {
             // Hard
 
             let did_something: bool = self.find_naked_triples();
+            if did_something {
+                continue;
+            }
+
+            let did_something: bool = self.find_naked_quads();
             if did_something {
                 continue;
             }
