@@ -1,16 +1,16 @@
 // Lessons learned:
 //
 // 1. String processing is a no fly zone.  strings are are an array of potentially
-// variable length utf-8 characters.  Indexing into a string does nto make sense.
+// variable length utf-8 characters.  Indexing into a string does not make sense.
 // My workaround was to create an array of characters, where indexing works.
 //
 // 2. Indices must use type "usize".  Rust is very unforgiving.
 //
 // 3. types are not required at variable declaration.  rust compiler can decide
 // from context what the type is, making the type implicit.  for loop variables
-// get context from fro statement and may enough context for integer types.
+// get context from for statement which may not be enough context for integer types.
 //
-// 4. variable must be initialized at declaration.  might be required since types are not.
+// 4. variable must be initialized at declaration.  might be required since types are not?
 //
 // 5. rust compiler warns on constant variable not being all CAPs,
 // expressions have "unneeded" parens, etc aka stuff that does not matter.
@@ -31,7 +31,7 @@ impl SudokuGame {
         return SudokuGame {
             // db_game is a 81 character string, with the solved numbers present.
             db_game: String::from(
-                // hidden triples
+                // found hidden triple (3 6 7) at cell(5, 4) and cell(5, 6) and cell(5, 7), for row 5
                 // "4....8.....753...8.9..6.41353....2.7.........7.6....81954.1..3.3...751.....9....5"
 
                 // 4..  ..8  ...
@@ -63,6 +63,26 @@ impl SudokuGame {
                 // "1....89...5..9..32.9.7..6..83.9...2.....4...6.....53..5..1.94...6..5...84...8..1."
                 // "...7..1...81..2..595...1..7.......73..3...8..54.......2..6...594..8..76...7..4..."
                 // "73...46...94..28...2..........43.2.7.........3.2.78..........5...89..73...61...84"
+
+                // Simple Sudoku
+                // http://www.angusj.com/sudoku/
+                // hard
+                // 2 x naked triples (grid,row)
+                // hidden pair ( 6 8 ) at cell(6,5) and cell(6,8), row 6 (at start)
+                // hidden triple ( 3 4 7 ) for row 8 (at start)
+                // "5..8.......8..91...69..4...8.61....47...9...39....75.2...9..43...26..9.......3..7"
+                // "........547.......85..42...64.58......79.41......73.96...85..34.......673........"
+                // found hidden triple ( 4 5 8 ) for column 3 (at start)
+                // "46...1.....2.96....3.....68.......37...6.7...51.......84.....5....71.9.....3...24"
+                // found hidden triple ( 4 7 8 ) for grid(1,1)
+                // "1....89...5..9..32.9.7..6..83.9...2.....4...6.....53..5..1.94...6..5...84...8..1."
+                // "...7..1...81..2..595...1..7.......73..3...8..54.......2..6...594..8..76...7..4..."
+                // "73...46...94..28...2..........43.2.7.........3.2.78..........5...89..73...61...84"
+
+                // found hidden triple (3 6 7) at cell(5, 1) and cell(5, 4) and cell(5, 9), for row 5
+                // "4....961...56...79.1.42.3...51.6.................1.83...7.83.6.53...67...692....3"
+                // found hidden triple (3 6 7) at cell(5, 4) and cell(5, 6) and cell(5, 7), for row 5
+                "4....8.....753...8.9..6.41353....2.7.........7.6....81954.1..3.3...751.....9....5"
 
                 // https://kjell.haxx.se/sudoku/ -- 26 is hard, 25 is harder, etc
                 // 26
@@ -1534,6 +1554,164 @@ impl SudokuPuzzle {
         return self.find_exclusions(SudokuPuzzle::find_hidden_pairs_assist);
     }
 
+    fn find_hidden_triples_assist(
+        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: String
+    ) -> u32 {
+        let mut num_changes: u32 = 0;
+
+        let mut num_possibles_triples: [usize; 9] = [0; 9];
+        let mut possible_triples: [bool; 9] = [false; 9];
+        let mut possible_triple_locations: [[usize; 3]; 9] = [[SudokuPuzzleCell::NOT_FOUND; 3]; 9];  // 9 x 2 array
+
+        for (c, cell) in cells.iter().enumerate() {
+            let row: usize = cell.row;
+            let column: usize = cell.column;
+            if !puzzle.cells[row][column].is_solved() {
+                for k in 0..9 {
+                    if puzzle.cells[row][column].is_possible(k) {
+                        if num_possibles_triples[k] < 3 {
+                            possible_triple_locations[k][num_possibles_triples[k]] = c;
+                        }
+                        num_possibles_triples[k] += 1;
+                        possible_triples[k] = (
+                            num_possibles_triples[k] == 2 || num_possibles_triples[k] == 3
+                        );
+                    }
+                }
+            }
+        }
+
+        for p1 in 0..9 {
+            if possible_triples[p1] {
+                for p2 in p1+1..9 {
+                    if possible_triples[p2] {
+                        for p3 in p2+1..9 {
+                            if possible_triples[p3] {
+                                let mut triple_cells: [bool; 9] = [false; 9];
+
+                                let c1: usize = possible_triple_locations[p1][0];
+                                let c2: usize = possible_triple_locations[p1][1];
+                                let c3: usize = possible_triple_locations[p1][2];
+                                triple_cells[c1] = true;
+                                triple_cells[c2] = true;
+                                if num_possibles_triples[p1] == 3 {
+                                    triple_cells[c3] = true;
+                                }
+
+                                let c1: usize = possible_triple_locations[p2][0];
+                                let c2: usize = possible_triple_locations[p2][1];
+                                let c3: usize = possible_triple_locations[p2][2];
+                                triple_cells[c1] = true;
+                                triple_cells[c2] = true;
+                                if num_possibles_triples[p2] == 3 {
+                                    triple_cells[c3] = true;
+                                }
+
+                                let c1: usize = possible_triple_locations[p3][0];
+                                let c2: usize = possible_triple_locations[p3][1];
+                                let c3: usize = possible_triple_locations[p3][2];
+                                triple_cells[c1] = true;
+                                triple_cells[c2] = true;
+                                if num_possibles_triples[p3] == 3 {
+                                    triple_cells[c3] = true;
+                                }
+
+                                let num_triple_cells: u32 = {
+                                    let mut num = 0;
+                                    for i in 0..9 {
+                                        if triple_cells[i] {
+                                            num += 1;
+                                        }
+                                    }
+                                    num
+                                };
+                                let share_same_three_cells: bool = num_triple_cells == 3;
+
+                                if share_same_three_cells {
+                                    let mut c1: usize = SudokuPuzzleCell::NOT_FOUND;
+                                    let mut c2: usize = SudokuPuzzleCell::NOT_FOUND;
+                                    let mut c3: usize = SudokuPuzzleCell::NOT_FOUND;
+                                    for c in 0..9 {
+                                        if triple_cells[c] {
+                                            if c1 ==  SudokuPuzzleCell::NOT_FOUND {
+                                                c1 = c;
+                                            }
+                                            else if c2 ==  SudokuPuzzleCell::NOT_FOUND {
+                                                c2 = c;
+                                            }
+                                            else if c3 ==  SudokuPuzzleCell::NOT_FOUND {
+                                                c3 = c;
+                                            }
+                                        }
+                                    }
+
+                                    // found a hidden triple (p1, p2, p3) in cells c1 and c2 and c3
+
+                                    let row1: usize = cells[c1].row;
+                                    let column1: usize = cells[c1].column;
+                                    let row2: usize = cells[c2].row;
+                                    let column2: usize = cells[c2].column;
+                                    let row3: usize = cells[c3].row;
+                                    let column3: usize = cells[c3].column;
+
+                                    // for cells outside of c1 and c2 and c3, exclude p1 and p2  and p3 posibilities
+
+                                    let mut num_changes_this_triple: u32 = 0;
+                                    for k in 0..9 {
+                                        let not_in_triple: bool = k != p1 && k != p2 && k != p3;
+                                        if not_in_triple {
+                                            if puzzle.cells[row1][column1].is_possible(k) {
+                                                puzzle.cells[row1][column1].set_possible(k, false);
+                                                num_changes_this_triple += 1;
+                                                num_changes += 1;
+                                            }
+                                            if puzzle.cells[row2][column2].is_possible(k) {
+                                                puzzle.cells[row2][column2].set_possible(k, false);
+                                                num_changes_this_triple += 1;
+                                                num_changes += 1;
+                                            }
+                                            if puzzle.cells[row3][column3].is_possible(k) {
+                                                puzzle.cells[row3][column3].set_possible(k, false);
+                                                num_changes_this_triple += 1;
+                                                num_changes += 1;
+                                            }
+                                        }
+                                    }
+                                    if num_changes_this_triple > 0 {
+                                        println!(
+                                            "found hidden triple ({} {} {}) at cell({}, {}) and cell({}, {}) and cell({}, {}), {}",
+                                            p1+1, p2+1, p3+1,
+                                            row1+1, column1+1,
+                                            row2+1, column2+1,
+                                            row3+1, column3+1,
+                                            description
+                                        );
+                                    }
+                                    else {
+                                        println!(
+                                            "xxx found hidden triple ({} {} {}) at cell({}, {}) and cell({}, {}) and cell({}, {}), {}",
+                                            p1+1, p2+1, p3+1,
+                                            row1+1, column1+1,
+                                            row2+1, column2+1,
+                                            row3+1, column3+1,
+                                            description
+                                        );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return num_changes;
+    }
+
+    fn find_hidden_triples(&mut self) -> bool {
+        return self.find_exclusions(SudokuPuzzle::find_hidden_triples_assist);
+    }
+
     fn solve_cell(&mut self, i: usize, j: usize, k: usize) {
         self.cells[i][j].found = k;
 
@@ -1689,6 +1867,11 @@ impl SudokuPuzzle {
             // Harder
 
             let did_something: bool = self.find_hidden_pairs();
+            if did_something {
+                continue;
+            }
+
+            let did_something: bool = self.find_hidden_triples();
             if did_something {
                 continue;
             }
