@@ -1904,20 +1904,15 @@ pub fn get_next_game() -> SudokuGame {
 pub fn create_puzzle(game: &SudokuGame) -> SudokuPuzzle {
     let mut puzzle: SudokuPuzzle = SudokuPuzzle::create(game);
 
-    // let is_possible = puzzle.cells[0][1].is_possible(3);
-    // println!("create_puzzle: before is cell(1, 2, 4) possible? {is_possible}.");
-
+    // freshly created puzzle may have nake singles, so solve them first.
     puzzle.find_naked_singles();
-    // let is_possible = puzzle.cells[0][1].is_possible(3);
-    // println!("create_puzzle: after is cell(1, 2, 4) possible? {is_possible}.");
-
     // println!("puzzle: {puzzle:#?}");
+
     return puzzle;
 }
 
 
 pub fn solve_puzzle(puzzle: &mut SudokuPuzzle) -> bool {
-    // freshly created puzzle may have nake singles, so solve them first.
     let solved: bool = puzzle.solve();
     return solved;
 }
