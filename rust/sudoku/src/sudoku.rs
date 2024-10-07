@@ -46,6 +46,22 @@ impl SudokuGame {
                 // 3..  .75  1..
                 // ...  9..  ..5
 
+                // found naked triple (2 4 6) for row 2
+                // found naked triple (2 3 6) for row 8
+                // found naked triple (2 7 9) for grid(3, 3)
+                // "69..71.....8..3..1...5.9.....3...65.97.3.5.12.51...3.....7.8...8..4..1.....93..85"
+
+                // found naked quad (3 4 6 7) for row 1
+                // found naked quad (3 4 5 6) for grid(1, 1)
+                // "....19..5......1.89....32...46..2.....78.59.....4..86...19....32.9......7..25...."
+
+                // https://www.sudokuwiki.org/
+                // hidden triples?
+                // "000000000231090000065003100008924000100050006000136700009300570000010843000000000"
+                // hidden quads
+                // "650000024000609000040000000570400061000501000310002085000000010000203000130000098"
+                "000500000425090001800010020500000000019000460000000002090040003200060807000001600"
+
                 // type 1 and 2 locked candidate in row and column
                 // "563700000002000947040100000030050209020000080409010050000004010254000600000006495"
 
@@ -82,7 +98,7 @@ impl SudokuGame {
                 // found hidden triple (3 6 7) at cell(5, 1) and cell(5, 4) and cell(5, 9), for row 5
                 // "4....961...56...79.1.42.3...51.6.................1.83...7.83.6.53...67...692....3"
                 // found hidden triple (3 6 7) at cell(5, 4) and cell(5, 6) and cell(5, 7), for row 5
-                "4....8.....753...8.9..6.41353....2.7.........7.6....81954.1..3.3...751.....9....5"
+                // "4....8.....753...8.9..6.41353....2.7.........7.6....81954.1..3.3...751.....9....5"
 
                 // https://kjell.haxx.se/sudoku/ -- 26 is hard, 25 is harder, etc
                 // 26
@@ -1822,7 +1838,7 @@ impl SudokuPuzzle {
         // 7. hidden pairs
         // 8. hidden triples
         //----- do not plan to implement the methods below -----
-        // 9. hidden quads
+        // 9. hidden quads (exceptionally rare)
         // Expert
         // x-wing, y-wing, swordfish, et al
         //
