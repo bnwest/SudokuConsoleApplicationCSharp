@@ -32,7 +32,7 @@ impl SudokuGame {
             // db_game is a 81 character string, with the solved numbers present.
             db_game: String::from(
                 // found hidden triple (3 6 7) at cell(5, 4) and cell(5, 6) and cell(5, 7), for row 5
-                // "4....8.....753...8.9..6.41353....2.7.........7.6....81954.1..3.3...751.....9....5"
+                "4....8.....753...8.9..6.41353....2.7.........7.6....81954.1..3.3...751.....9....5"
 
                 // 4..  ..8  ...
                 // ..7  53.  ..8
@@ -60,7 +60,7 @@ impl SudokuGame {
                 // "000000000231090000065003100008924000100050006000136700009300570000010843000000000"
                 // hidden quads
                 // "650000024000609000040000000570400061000501000310002085000000010000203000130000098"
-                "000500000425090001800010020500000000019000460000000002090040003200060807000001600"
+                // "000500000425090001800010020500000000019000460000000002090040003200060807000001600"
 
                 // type 1 and 2 locked candidate in row and column
                 // "563700000002000947040100000030050209020000080409010050000004010254000600000006495"
@@ -491,7 +491,7 @@ impl SudokuPuzzle {
 
     fn find_horizontal_exclusions(
          &mut self,
-         assist: fn(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: String) -> u32
+         assist: fn(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String) -> u32
     ) -> bool {
         let mut num_changes: u32 = 0;
         let mut cells: [CellCoordinate; 9] =  [
@@ -503,8 +503,9 @@ impl SudokuPuzzle {
                 cells[column].row = row;
                 cells[column].column = column;
             }
+            let description: String = format!("for row {}", row+1);
             // let puzzle: &mut SudokuPuzzle = self;
-            num_changes += assist(self, &cells, format!("for row {}", row+1));
+            num_changes += assist(self, &cells, &description);
         }
 
         return num_changes > 0;
@@ -512,7 +513,7 @@ impl SudokuPuzzle {
 
     fn find_vertical_exclusions(
          &mut self,
-         assist: fn(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: String) -> u32
+         assist: fn(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String) -> u32
     ) -> bool {
         let mut num_changes: u32 = 0;
         let mut cells: [CellCoordinate; 9] =  [
@@ -524,7 +525,8 @@ impl SudokuPuzzle {
                 cells[row].row = row;
                 cells[row].column = column;
             }
-            num_changes += assist(self, &cells, format!("for column {}", column+1));
+            let description: String = format!("for column {}", column+1);
+            num_changes += assist(self, &cells, &description);
         }
 
         return num_changes > 0;
@@ -532,7 +534,7 @@ impl SudokuPuzzle {
 
     fn find_grid_exclusions(
          &mut self,
-         assist: fn(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: String) -> u32
+         assist: fn(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String) -> u32
     ) -> bool {
         let mut num_changes: u32 = 0;
         let mut cells: [CellCoordinate; 9] =  [
@@ -552,7 +554,8 @@ impl SudokuPuzzle {
                         grid_index += 1;
                     }
                 }
-                num_changes += assist(self, &cells, format!("for grid({}, {})", gridi+1, gridj+1));
+                let description: String = format!("for grid({}, {})", gridi+1, gridj+1);
+                num_changes += assist(self, &cells, &description);
             }
         }
 
@@ -561,7 +564,7 @@ impl SudokuPuzzle {
 
     fn find_exclusions(
         &mut self,
-        assist: fn(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: String) -> u32
+        assist: fn(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String) -> u32
     ) -> bool {
         let mut found_exclusions: bool = false;
 
@@ -577,7 +580,7 @@ impl SudokuPuzzle {
     }
 
     fn find_hidden_singles_assist(
-        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: String
+        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String
     ) -> u32 {
         let mut num_changes = 0;
 
@@ -944,7 +947,7 @@ impl SudokuPuzzle {
     }
 
     fn find_naked_pairs_assist(
-        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: String
+        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String
     ) -> u32 {
         let mut num_changes: u32 = 0;
 
@@ -1094,7 +1097,7 @@ impl SudokuPuzzle {
     }
 
     fn find_naked_triples_assist(
-        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: String
+        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String
     ) -> u32 {
         let mut num_changes: u32 = 0;
 
@@ -1265,7 +1268,7 @@ impl SudokuPuzzle {
     }
 
     fn find_naked_quads_assist(
-        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: String
+        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String
     ) -> u32 {
         let mut num_changes: u32 = 0;
 
@@ -1478,7 +1481,7 @@ impl SudokuPuzzle {
     }
 
     fn find_hidden_pairs_assist(
-        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: String
+        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String
     ) -> u32 {
         let mut num_changes: u32 = 0;
 
@@ -1571,7 +1574,7 @@ impl SudokuPuzzle {
     }
 
     fn find_hidden_triples_assist(
-        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: String
+        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String
     ) -> u32 {
         let mut num_changes: u32 = 0;
 
