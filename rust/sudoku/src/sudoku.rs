@@ -24,6 +24,9 @@
 // 8. Simple structs do not get Copy/Clone traits and must be explicitly derived
 // or implemented.
 //
+// 9. private struct methods can not be unit tested (without some thunk code)
+// since they are not visible outside of the struct.
+//
 
 #[derive(Debug)]  // adding so pretty print will work ... {:#?} for pretty-print
 pub struct SudokuGame {
@@ -604,7 +607,7 @@ impl SudokuPuzzle {
         return found_exclusions;
     }
 
-    fn find_hidden_singles(&mut self) -> bool {
+    pub fn find_hidden_singles(&mut self) -> bool {
         return self.find_exclusions(SudokuPuzzle::find_hidden_singles_assist);
     }
 
@@ -2042,8 +2045,68 @@ mod tests {
         assert_eq!(num_unsolved_cells, 81);
     }
 
+    fn test_cell_solved_ness(
+        puzzle: &SudokuPuzzle,
+        row: usize,
+        column: usize,
+        solved_possible: usize)
+    {
+        // 4 is a naked single in cell(3, 7) in grid(2, 3).
+
+        // check solved cell(3, 7) ...
+        let cell: &SudokuPuzzleCell = &puzzle.cells[row][column];
+        assert_eq!(cell.found, 3);
+        for k in 0..9 {
+            if k == solved_possible {
+                assert_eq!(cell.possibles[k], true);
+            }
+            else {
+                assert_eq!(cell.possibles[k], false);
+            }
+        }
+
+        // check cell(3, 7) row neighbors ...
+        for j in 0..9 {
+            let cell: &SudokuPuzzleCell = &puzzle.cells[row][j];
+            // check cell(column, j)
+            if j == column {
+                assert_eq!(cell.possibles[solved_possible], true);
+            }
+            else {
+                assert_eq!(cell.possibles[solved_possible], false);
+            }
+        }
+
+        // check cell(3, 7) column neighbors ...
+        for i in 0..9 {
+            let cell: &SudokuPuzzleCell = &puzzle.cells[i][column];
+            // check cell(i, column)
+            if i == row {
+                assert_eq!(cell.possibles[solved_possible], true);
+            }
+            else {
+                assert_eq!(cell.possibles[solved_possible], false);
+            }
+        }
+
+        // check cell(3, 7) grid neighbors ...
+        let gridi_start: usize = (row / 3) * 3;
+        let gridj_start: usize = (column / 3) * 3;
+        for i in gridi_start..gridi_start+3 {
+            for j in gridj_start..gridj_start+3 {
+                let cell: &SudokuPuzzleCell = &puzzle.cells[i][j];
+                if i == row && j == column {
+                    assert_eq!(cell.possibles[solved_possible], true);
+                }
+                else {
+                    assert_eq!(cell.possibles[solved_possible], false);
+                }
+            }
+        }
+    }
+
     #[test]
-    fn test_find_nake_singles_negative() {
+    fn test_find_naked_singles_negative() {
         let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
 
         let mut found = puzzle.find_naked_singles();
@@ -2062,7 +2125,7 @@ mod tests {
     }
 
     #[test]
-    fn test_find_nake_singles_positive() {
+    fn test_find_naked_singles_positive() {
         let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
         let row: usize = 2;
         let column: usize = 6;
@@ -2079,55 +2142,50 @@ mod tests {
         let mut found = puzzle.find_naked_singles();
         assert_eq!(found, true);
 
-        // check solved cell(3, 7) ...
-        let cell: &mut SudokuPuzzleCell = &mut puzzle.cells[row][column];
-        assert_eq!(cell.found, 3);
-        for k in 0..9 {
-            if k == naked_single_possible {
-                assert_eq!(cell.possibles[k], true);
-            }
-            else {
-                assert_eq!(cell.possibles[k], false);
+        test_cell_solved_ness(&puzzle, row, column, naked_single_possible);
+    }
+
+    #[test]
+    fn test_find_hidden_singles_negative() {
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+
+        let mut found = puzzle.find_hidden_singles();
+        assert_eq!(found, false);
+
+        let mut num_unsolved_cells: u32 = 0;
+        for row in 0..9 {
+            for column in 0..9 {
+                let cell: &SudokuPuzzleCell = &puzzle.cells[row][column];
+                if cell.found == SudokuPuzzleCell::NOT_FOUND {
+                    num_unsolved_cells += 1;
+                }
             }
         }
+        assert_eq!(num_unsolved_cells, 81);
+    }
 
-        // check cell(3, 7) row neighbors ...
+    #[test]
+    fn test_find_hidden_singles_row_positive() {
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+        let row: usize = 2;
+        let column: usize = 6;
+        // => cell(3, 7)
+
+        let hidden_single_possible: usize = 3;
         for j in 0..9 {
             let cell: &mut SudokuPuzzleCell = &mut puzzle.cells[row][j];
-            // check cell(column, j)
             if j == column {
-                assert_eq!(cell.possibles[naked_single_possible], true);
+                cell.possibles[hidden_single_possible] = true;
             }
             else {
-                assert_eq!(cell.possibles[naked_single_possible], false);
+                cell.possibles[hidden_single_possible] = false;
             }
         }
+        // 4 is a hidden single in cell(3, 7) in grid(2, 3).
 
-        // check cell(3, 7) column neighbors ...
-        for i in 0..9 {
-            let cell: &mut SudokuPuzzleCell = &mut puzzle.cells[i][column];
-            // check cell(i, column)
-            if i == row {
-                assert_eq!(cell.possibles[naked_single_possible], true);
-            }
-            else {
-                assert_eq!(cell.possibles[naked_single_possible], false);
-            }
-        }
+        let mut found = puzzle.find_hidden_singles();
+        assert_eq!(found, true);
 
-        // check cell(3, 7) grid neighbors ...
-        let gridi_start: usize = (row / 3) * 3;
-        let gridj_start: usize = (column / 3) * 3;
-        for i in gridi_start..gridi_start+3 {
-            for j in gridj_start..gridj_start+3 {
-                let cell: &mut SudokuPuzzleCell = &mut puzzle.cells[i][j];
-                if i == row && j == column {
-                    assert_eq!(cell.possibles[naked_single_possible], true);
-                }
-                else {
-                    assert_eq!(cell.possibles[naked_single_possible], false);
-                }
-            }
-        }
+        test_cell_solved_ness(&puzzle, row, column, hidden_single_possible);
     }
 }
