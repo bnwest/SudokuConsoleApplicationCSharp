@@ -18,8 +18,14 @@
 // 6. arrays are declared ass backwards ... aka inside out.
 // [[uside; 3]; 9] => a 9 row x 3 column array.
 //
+// 7. Extremely non-obvious when a variable gets "moved" (ending its lifetime
+// before going out of scope).
+//
+// 8. Simple structs do not get Copy/Clone traits and must be explicitly derived
+// or implemented.
+//
 
-#[derive(Debug)]  // adding so prety print will work ... {:#?} for pretty-print
+#[derive(Debug)]  // adding so pretty print will work ... {:#?} for pretty-print
 pub struct SudokuGame {
     // private data member(s)
     db_game: String,
@@ -271,11 +277,33 @@ impl SudokuGame {
 }
 
 
-#[derive(Clone, Copy, Debug)]  // needed Copy to create 2D array.  needed Clone for Copy.
+#[derive(Debug)]  // adding so pretty print will work ... {:#?} for pretty-print
 pub struct SudokuPuzzleCell {
     possibles: [bool; 9],
     found: usize,
 }
+
+// Replace
+//     #[derive(Clone, Copy)]
+// with an explicit implementation ...
+
+// Copy trait is opt-in, meaning you still have to either derive the Copy trait
+// implementation or make it yourself.
+
+// Clone is actually a super-trait of Copy, so anything that implements Copy
+// also must implement Clone.
+
+// Traits are similar to a feature often called interfaces in other languages,
+// although with some differences.
+
+impl Copy for SudokuPuzzleCell {}
+
+impl Clone for SudokuPuzzleCell {
+    fn clone(&self) -> SudokuPuzzleCell {
+        *self
+    }
+}
+
 
 impl SudokuPuzzleCell {
     const NOT_FOUND: usize = 0xFFFFFFFF;
@@ -328,7 +356,6 @@ struct CellCoordinate {
 }
 
 
-// #[derive(Debug, Clone)]
 #[derive(Debug)]
 pub struct SudokuPuzzle {
     // rust only supports single dimensional arrays 
@@ -364,7 +391,9 @@ impl SudokuPuzzle {
             normalized_db_game.push_str(&game.db_game[i..i+9]);
         }
 
-        // lesson learned: rust does not support string processing it is hard.
+        // lesson learned: rust does not support string processing since it is hard.
+        // rust "char" is a potentially multi-byte UTF-8 character.
+        // the "chars()" iterates over the UTF-8 characters.
         let mut normalized_db_game_char_array: [char; 81] = ['.'; 81];
         for (i, c) in normalized_db_game.chars().enumerate() {
             if '1' <= c && c <= '9' {
@@ -411,7 +440,7 @@ impl SudokuPuzzle {
             println!("+-------+ +-------+ +-------+  +-------+ +-------+ +-------+  +-------+ +-------+ +-------+");
             for k in (0..9).step_by(3) {
                 for j in 0..9 {
-                    let cell: SudokuPuzzleCell = self.cells[i][j];
+                    let cell: &SudokuPuzzleCell = &self.cells[i][j];
 
                     let kk: usize = usize::try_from(k).unwrap();
 
@@ -433,7 +462,7 @@ impl SudokuPuzzle {
         }
     }
 
-    fn find_naked_singles(&mut self) -> bool {
+    pub fn find_naked_singles(&mut self) -> bool {
         let mut found_singles: bool = false;
         let mut singles: [[usize; 9]; 9] = [[SudokuPuzzleCell::NOT_FOUND; 9]; 9];
 
@@ -1934,4 +1963,171 @@ pub fn create_puzzle(game: &SudokuGame) -> SudokuPuzzle {
 pub fn solve_puzzle(puzzle: &mut SudokuPuzzle) -> bool {
     let solved: bool = puzzle.solve();
     return solved;
+}
+
+
+#[cfg(test)]
+mod tests {
+    // pull outer scope into inner scope.
+    use super::*;
+
+    #[test]
+    fn test_create_sudoku_game() {
+        let game: SudokuGame = get_next_game();
+        assert_eq!(game.db_game.len(), 81);
+    }
+
+    #[test]
+    fn test_create_sudoku_puzzle() {
+        let game: SudokuGame = get_next_game();
+        assert_eq!(game.db_game.len(), 81);
+
+        let mut puzzle: SudokuPuzzle = SudokuPuzzle::create(&game);
+        // proceed if no panic ...
+
+        // initialize() takes the game back to naught.
+        puzzle.initialize();
+        for row in 0..9 {
+            for column in 0..9 {
+                let cell: &SudokuPuzzleCell = &puzzle.cells[row][column];
+                assert_eq!(cell.found, SudokuPuzzleCell::NOT_FOUND);
+                for i in 0..9 {
+                    // need to call find_naked_singles() ...
+                    assert_eq!(cell.possibles[i], true);
+                }
+            }
+        }
+    }
+
+    fn create_empty_sudoku_game() -> SudokuGame {
+        let empty_row: &str = ".........";
+        let db_game: String = String::from(
+            format!(
+                "{empty_row}{empty_row}{empty_row}{empty_row}{empty_row}{empty_row}{empty_row}{empty_row}{empty_row}"
+            )
+        );
+        let game: SudokuGame = SudokuGame {
+            db_game: db_game
+        };
+        return game;
+    }
+
+    fn create_empty_sudoku_puzzle() -> SudokuPuzzle {
+        let game: SudokuGame = create_empty_sudoku_game();
+        let mut puzzle: SudokuPuzzle = SudokuPuzzle::create(&game);
+        return puzzle;
+    }
+
+    #[test]
+    fn test_create_sudoku_empty_game() {
+        let game: SudokuGame = create_empty_sudoku_game();
+        assert_eq!(game.db_game.len(), 81);
+    }
+
+    #[test]
+    fn test_create_sudoku_empty_puzzle() {
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+
+        let mut num_unsolved_cells: u32 = 0;
+        for row in 0..9 {
+            for column in 0..9 {
+                let cell: &SudokuPuzzleCell = &puzzle.cells[row][column];
+                assert_eq!(cell.found, SudokuPuzzleCell::NOT_FOUND);
+                num_unsolved_cells += 1;
+                for k in 0..9 {
+                    assert_eq!(cell.possibles[k], true);
+                }
+            }
+        }
+        assert_eq!(num_unsolved_cells, 81);
+    }
+
+    #[test]
+    fn test_find_nake_singles_negative() {
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+
+        let mut found = puzzle.find_naked_singles();
+        assert_eq!(found, false);
+
+        let mut num_unsolved_cells: u32 = 0;
+        for row in 0..9 {
+            for column in 0..9 {
+                let cell: &SudokuPuzzleCell = &puzzle.cells[row][column];
+                if cell.found == SudokuPuzzleCell::NOT_FOUND {
+                    num_unsolved_cells += 1;
+                }
+            }
+        }
+        assert_eq!(num_unsolved_cells, 81);
+    }
+
+    #[test]
+    fn test_find_nake_singles_positive() {
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+        let row: usize = 2;
+        let column: usize = 6;
+        // => cell(3, 7)
+
+        let naked_single_possible: usize = 3;
+        {
+            let cell: &mut SudokuPuzzleCell = &mut puzzle.cells[row][column];
+            cell.possibles = [false; 9];
+            cell.possibles[naked_single_possible] = true;
+        }
+        // 4 is a naked single in cell(3, 7) in grid(2, 3).
+
+        let mut found = puzzle.find_naked_singles();
+        assert_eq!(found, true);
+
+        // check solved cell(3, 7) ...
+        let cell: &mut SudokuPuzzleCell = &mut puzzle.cells[row][column];
+        assert_eq!(cell.found, 3);
+        for k in 0..9 {
+            if k == naked_single_possible {
+                assert_eq!(cell.possibles[k], true);
+            }
+            else {
+                assert_eq!(cell.possibles[k], false);
+            }
+        }
+
+        // check cell(3, 7) row neighbors ...
+        for j in 0..9 {
+            let cell: &mut SudokuPuzzleCell = &mut puzzle.cells[row][j];
+            // check cell(column, j)
+            if j == column {
+                assert_eq!(cell.possibles[naked_single_possible], true);
+            }
+            else {
+                assert_eq!(cell.possibles[naked_single_possible], false);
+            }
+        }
+
+        // check cell(3, 7) column neighbors ...
+        for i in 0..9 {
+            let cell: &mut SudokuPuzzleCell = &mut puzzle.cells[i][column];
+            // check cell(i, column)
+            if i == row {
+                assert_eq!(cell.possibles[naked_single_possible], true);
+            }
+            else {
+                assert_eq!(cell.possibles[naked_single_possible], false);
+            }
+        }
+
+        // check cell(3, 7) grid neighbors ...
+        let gridi_start: usize = (row / 3) * 3;
+        let gridj_start: usize = (column / 3) * 3;
+        for i in gridi_start..gridi_start+3 {
+            for j in gridj_start..gridj_start+3 {
+                let cell: &mut SudokuPuzzleCell = &mut puzzle.cells[i][j];
+                if i == row && j == column {
+                    assert_eq!(cell.possibles[naked_single_possible], true);
+                }
+                else {
+                    assert_eq!(cell.possibles[naked_single_possible], false);
+                }
+            }
+        }
+    }
 }
