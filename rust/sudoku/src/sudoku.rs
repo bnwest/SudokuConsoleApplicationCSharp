@@ -2188,4 +2188,58 @@ mod tests {
 
         test_cell_solved_ness(&puzzle, row, column, hidden_single_possible);
     }
+
+    #[test]
+    fn test_find_hidden_singles_column_positive() {
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+        let row: usize = 2;
+        let column: usize = 6;
+        // => cell(3, 7)
+
+        let hidden_single_possible: usize = 3;
+        for i in 0..9 {
+            let cell: &mut SudokuPuzzleCell = &mut puzzle.cells[i][column];
+            if i == row {
+                cell.possibles[hidden_single_possible] = true;
+            }
+            else {
+                cell.possibles[hidden_single_possible] = false;
+            }
+        }
+        // 4 is a hidden single in cell(3, 7) in grid(2, 3).
+
+        let mut found = puzzle.find_hidden_singles();
+        assert_eq!(found, true);
+
+        test_cell_solved_ness(&puzzle, row, column, hidden_single_possible);
+    }
+
+    #[test]
+    fn test_find_hidden_singles_grid_positive() {
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+        let row: usize = 2;
+        let column: usize = 6;
+        // => cell(3, 7)
+
+        let hidden_single_possible: usize = 3;
+        let gridi_start: usize = (row / 3) * 3;
+        let gridj_start: usize = (column / 3) * 3;
+        for i in gridi_start..gridi_start+3 {
+            for j in gridj_start..gridj_start+3 {
+                let cell: &mut SudokuPuzzleCell = &mut puzzle.cells[i][j];
+                if i == row && j == column {
+                    cell.possibles[hidden_single_possible] = true;
+                }
+                else {
+                    cell.possibles[hidden_single_possible] = false;
+                }
+            }
+        }
+        // 4 is a hidden single in cell(3, 7) in grid(2, 3).
+
+        let mut found = puzzle.find_hidden_singles();
+        assert_eq!(found, true);
+
+        test_cell_solved_ness(&puzzle, row, column, hidden_single_possible);
+    }
 }
