@@ -25,8 +25,9 @@
 // or implemented.
 //
 // 9. private struct methods can not be unit tested (without some thunk code)
-// since they are not visible outside of the struct.
+// since they are not visible outside of the struct???
 //
+
 
 #[derive(Debug)]  // adding so pretty print will work ... {:#?} for pretty-print
 pub struct SudokuGame {
@@ -307,7 +308,6 @@ impl Clone for SudokuPuzzleCell {
     }
 }
 
-
 impl SudokuPuzzleCell {
     const NOT_FOUND: usize = 0xFFFFFFFF;
 
@@ -465,7 +465,7 @@ impl SudokuPuzzle {
         }
     }
 
-    pub fn find_naked_singles(&mut self) -> bool {
+    fn find_naked_singles(&mut self) -> bool {
         let mut found_singles: bool = false;
         let mut singles: [[usize; 9]; 9] = [[SudokuPuzzleCell::NOT_FOUND; 9]; 9];
 
@@ -1080,8 +1080,6 @@ impl SudokuPuzzle {
 
         if num_naked_pairs > 0 {
             for t in 0..num_naked_pairs {
-                // either one must declare (and initialize) the variables beforehand
-                // or let the rust compiler give them an implicit type.
                 let (p1, p2, c1, c2) = naked_pairs[t];
 
                 let mut num_changes_for_pair: u32 = 0;
@@ -1968,6 +1966,10 @@ pub fn solve_puzzle(puzzle: &mut SudokuPuzzle) -> bool {
     return solved;
 }
 
+//
+// % cargo test
+// will run the unit tests
+//
 
 #[cfg(test)]
 mod tests {
@@ -2377,7 +2379,6 @@ mod tests {
             }
         }
 
-
         let mut found = puzzle.find_locked_candidate();
         assert_eq!(found, true);
 
@@ -2392,5 +2393,162 @@ mod tests {
                 assert_eq!(puzzle.cells[i][j].is_possible(locked_candidate), false);
             }
         }
+    }
+
+    #[test]
+    fn test_find_naked_pairs_row() {
+        // found naked pair (2, 6) for row 9
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+
+        // candidates 2 and 6 in cell(9,*)
+        let candidate1: usize = 1;
+        let candidate2: usize = 5;
+        let row: usize = 8;
+        let column1: usize = 0;  // candidates 2 and 6 will be only possible in cell(9,1)
+        let column2: usize = 8;  // candidates 2 and 6 will be only possible in cell(9,9)
+
+        // for row 9, all cells should have (2,6) as a possible
+        // for cell(9,1) and cell(9,9) should only have (2,6) possible
+        for j in 0..9 {
+            puzzle.cells[row][j].set_possible(candidate1, true);
+            puzzle.cells[row][j].set_possible(candidate2, true);
+        }
+        for j in 0..9 {
+            if j == column1 || j == column2 {
+                for k in 0..9 {
+                    if k == candidate1 || k == candidate2 {
+                        // do nothing. possible[k] is already set to true.
+                    }
+                    else {
+                        puzzle.cells[row][j].set_possible(k, false);
+                    }
+                }
+            }
+        }
+
+        let mut found = puzzle.find_naked_pairs();
+        assert_eq!(found, true);
+
+        // chek that (2,6) is now excluded from the other columns
+        for j in 0..9 {
+            if j != column1 && j != column2 {
+                assert_eq!(puzzle.cells[row][j].is_possible(candidate1), false);
+                assert_eq!(puzzle.cells[row][j].is_possible(candidate2), false);
+            }
+        }
+    }
+
+    #[test]
+    fn test_find_naked_pairs_column() {
+        // found naked pair (2, 6) for column 9
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+
+        // candidates 2 and 6 in cell(*,9)
+        let candidate1: usize = 1;
+        let candidate2: usize = 5;
+        let column: usize = 8;
+        let row1: usize = 0;  // candidates 2 and 6 will be only possible in cell(1,9)
+        let row2: usize = 8;  // candidates 2 and 6 will be only possible in cell(9,9)
+
+        // for column 9, all cells should have (2,6) as a possible
+        // for cell(1,9) and cell(9,9) should only have (2,6) possible
+        for i in 0..9 {
+            puzzle.cells[i][column].set_possible(candidate1, true);
+            puzzle.cells[i][column].set_possible(candidate2, true);
+        }
+        for i in 0..9 {
+            if i == row1 || i == row2 {
+                for k in 0..9 {
+                    if k == candidate1 || k == candidate2 {
+                        // do nothing. possible[k] is already set to true.
+                    }
+                    else {
+                        puzzle.cells[i][column].set_possible(k, false);
+                    }
+                }
+            }
+        }
+
+        let mut found = puzzle.find_naked_pairs();
+        assert_eq!(found, true);
+
+        // chek that (2,6) is now excluded from the other rows
+        for i in 0..9 {
+            if i != row1 && i != row2 {
+                assert_eq!(puzzle.cells[i][column].is_possible(candidate1), false);
+                assert_eq!(puzzle.cells[i][column].is_possible(candidate2), false);
+            }
+        }
+    }
+
+    #[test]
+    fn test_find_naked_pairs_grid() {
+        // found naked pair (2, 6) for grid(3,3)
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+
+        // candidates 2 and 6 in cell(7..9,7..9)
+        let candidate1: usize = 1;
+        let candidate2: usize = 5;
+        let column1: usize = 6;
+        let column2: usize = 8;
+        let row1: usize = 6;  // candidates 2 and 6 will be only possible in cell(7,7)
+        let row2: usize = 8;  // candidates 2 and 6 will be only possible in cell(9,9)
+
+        // for grid(3,3), all cells should have (2,6) as a possible
+        // for cell(7,9) and cell(9,9) should only have (2,6) possible
+        let gridi_start: usize = (row1 / 3) * 3;
+        let gridj_start: usize = (column1 / 3) * 3;
+        for i in gridi_start..gridi_start+3 {
+            for j in gridj_start..gridj_start+3 {
+                puzzle.cells[i][j].set_possible(candidate1, true);
+                puzzle.cells[i][j].set_possible(candidate1, true);
+            }
+        }
+        for k in 0..9 {
+            if k != candidate1 && k != candidate2 {
+                puzzle.cells[row1][column1].set_possible(k, false);
+                puzzle.cells[row2][column2].set_possible(k, false);
+            }
+        }
+
+        let mut found = puzzle.find_naked_pairs();
+        assert_eq!(found, true);
+
+        // chek that (2,6) is now excluded from the other grid cells
+        let gridi_start: usize = (row1 / 3) * 3;
+        let gridj_start: usize = (column1 / 3) * 3;
+        for i in gridi_start..gridi_start+3 {
+            for j in gridj_start..gridj_start+3 {
+                if i == row1 && j ==column1 {
+                    continue;
+                }
+                if i == row2 && j == column2 {
+                    continue;
+                }
+                assert_eq!(puzzle.cells[i][j].is_possible(candidate1), false);
+                assert_eq!(puzzle.cells[i][j].is_possible(candidate2), false);
+            }
+        }
+        assert!(true);
+    }
+
+    #[test]
+    fn test_find_naked_triples() {
+        assert!(true);
+    }
+
+    #[test]
+    fn test_find_naked_quads() {
+        assert!(true);
+    }
+
+    #[test]
+    fn test_find_hidden_pairs() {
+        assert!(true);
+    }
+
+    #[test]
+    fn test_find_hidden_triples() {
+        assert!(true);
     }
 }
