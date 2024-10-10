@@ -2019,7 +2019,7 @@ mod tests {
 
     fn create_empty_sudoku_puzzle() -> SudokuPuzzle {
         let game: SudokuGame = create_empty_sudoku_game();
-        let mut puzzle: SudokuPuzzle = SudokuPuzzle::create(&game);
+        let puzzle: SudokuPuzzle = SudokuPuzzle::create(&game);
         return puzzle;
     }
 
@@ -2031,7 +2031,7 @@ mod tests {
 
     #[test]
     fn test_create_sudoku_empty_puzzle() {
-        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+        let puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
 
         let mut num_unsolved_cells: u32 = 0;
         for row in 0..9 {
@@ -2111,7 +2111,7 @@ mod tests {
     fn test_find_naked_singles_negative() {
         let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
 
-        let mut found = puzzle.find_naked_singles();
+        let found = puzzle.find_naked_singles();
         assert_eq!(found, false);
 
         let mut num_unsolved_cells: u32 = 0;
@@ -2141,7 +2141,7 @@ mod tests {
         }
         // 4 is a naked single in cell(3, 7) in grid(2, 3).
 
-        let mut found = puzzle.find_naked_singles();
+        let found = puzzle.find_naked_singles();
         assert_eq!(found, true);
 
         test_cell_solved_ness(&puzzle, row, column, naked_single_possible);
@@ -2151,7 +2151,7 @@ mod tests {
     fn test_find_hidden_singles_negative() {
         let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
 
-        let mut found = puzzle.find_hidden_singles();
+        let found = puzzle.find_hidden_singles();
         assert_eq!(found, false);
 
         let mut num_unsolved_cells: u32 = 0;
@@ -2185,7 +2185,7 @@ mod tests {
         }
         // 4 is a hidden single in cell(3, 7) in grid(2, 3).
 
-        let mut found = puzzle.find_hidden_singles();
+        let found = puzzle.find_hidden_singles();
         assert_eq!(found, true);
 
         test_cell_solved_ness(&puzzle, row, column, hidden_single_possible);
@@ -2210,7 +2210,7 @@ mod tests {
         }
         // 4 is a hidden single in cell(3, 7) in grid(2, 3).
 
-        let mut found = puzzle.find_hidden_singles();
+        let found = puzzle.find_hidden_singles();
         assert_eq!(found, true);
 
         test_cell_solved_ness(&puzzle, row, column, hidden_single_possible);
@@ -2239,7 +2239,7 @@ mod tests {
         }
         // 4 is a hidden single in cell(3, 7) in grid(2, 3).
 
-        let mut found = puzzle.find_hidden_singles();
+        let found = puzzle.find_hidden_singles();
         assert_eq!(found, true);
 
         test_cell_solved_ness(&puzzle, row, column, hidden_single_possible);
@@ -2268,7 +2268,7 @@ mod tests {
             }
         }
 
-        let mut found = puzzle.find_locked_candidate();
+        let found = puzzle.find_locked_candidate();
         assert_eq!(found, true);
 
         // candidate 1 in cell(1,4..9) should not possible.
@@ -2306,7 +2306,7 @@ mod tests {
             }
         }
 
-        let mut found = puzzle.find_locked_candidate();
+        let found = puzzle.find_locked_candidate();
         assert_eq!(found, true);
 
         // candidate 1 in cell(4..9,6) should not possible.
@@ -2342,7 +2342,7 @@ mod tests {
             }
         }
 
-        let mut found = puzzle.find_locked_candidate();
+        let found = puzzle.find_locked_candidate();
         assert_eq!(found, true);
 
         // candidate 1 in cell(1,1..3) and cell(3,1..3) should not possible.
@@ -2379,7 +2379,7 @@ mod tests {
             }
         }
 
-        let mut found = puzzle.find_locked_candidate();
+        let found = puzzle.find_locked_candidate();
         assert_eq!(found, true);
 
         // candidate 1 in cell(0..2,3) and cell(0..2,4) should not possible.
@@ -2426,7 +2426,7 @@ mod tests {
             }
         }
 
-        let mut found = puzzle.find_naked_pairs();
+        let found = puzzle.find_naked_pairs();
         assert_eq!(found, true);
 
         // chek that (2,6) is now excluded from the other columns
@@ -2469,7 +2469,7 @@ mod tests {
             }
         }
 
-        let mut found = puzzle.find_naked_pairs();
+        let found = puzzle.find_naked_pairs();
         assert_eq!(found, true);
 
         // chek that (2,6) is now excluded from the other rows
@@ -2511,7 +2511,7 @@ mod tests {
             }
         }
 
-        let mut found = puzzle.find_naked_pairs();
+        let found = puzzle.find_naked_pairs();
         assert_eq!(found, true);
 
         // chek that (2,6) is now excluded from the other grid cells
@@ -2533,12 +2533,32 @@ mod tests {
     }
 
     #[test]
-    fn test_find_naked_triples() {
+    fn test_find_naked_triples_row() {
         assert!(true);
     }
 
     #[test]
-    fn test_find_naked_quads() {
+    fn test_find_naked_triples_column() {
+        assert!(true);
+    }
+
+    #[test]
+    fn test_find_naked_triples_grid() {
+        assert!(true);
+    }
+
+    #[test]
+    fn test_find_naked_quads_row() {
+        assert!(true);
+    }
+
+    #[test]
+    fn test_find_naked_quads_column() {
+        assert!(true);
+    }
+
+    #[test]
+    fn test_find_naked_quads_grid() {
         assert!(true);
     }
 
@@ -2563,7 +2583,7 @@ mod tests {
             }
         }
 
-        let mut found = puzzle.find_hidden_pairs();
+        let found = puzzle.find_hidden_pairs();
         assert_eq!(found, true);
 
         // cell(3, 4) and cell(3, 6) need to exclude all non-candidates
@@ -2595,7 +2615,7 @@ mod tests {
             }
         }
 
-        let mut found = puzzle.find_hidden_pairs();
+        let found = puzzle.find_hidden_pairs();
         assert_eq!(found, true);
 
         // cell(4, 3) and cell(6, 3) need to exclude all non-candidates
@@ -2639,7 +2659,7 @@ mod tests {
             }
         }
 
-        let mut found = puzzle.find_hidden_pairs();
+        let found = puzzle.find_hidden_pairs();
         assert_eq!(found, true);
 
         // cell(4, 4) and cell(6, 6) need to exclude all non-candidates
@@ -2652,7 +2672,17 @@ mod tests {
     }
 
     #[test]
-    fn test_find_hidden_triples() {
+    fn test_find_hidden_triples_row() {
+        assert!(true);
+    }
+
+    #[test]
+    fn test_find_hidden_triples_column() {
+        assert!(true);
+    }
+
+    #[test]
+    fn test_find_hidden_triples_grid() {
         assert!(true);
     }
 }
