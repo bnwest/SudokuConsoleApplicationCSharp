@@ -2543,8 +2543,112 @@ mod tests {
     }
 
     #[test]
-    fn test_find_hidden_pairs() {
-        assert!(true);
+    fn test_find_hidden_pairs_row() {
+        // hidden pair (2 7) at cell(3, 4) and cell(3, 6), for row 3
+        // found naked pair (2, 6) for row 3
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+
+        // candidates 2 and 7 in row 3
+        let candidate1: usize = 1;
+        let candidate2: usize = 6;
+        let row: usize = 2;
+        let column1: usize = 3;
+        let column2: usize = 5;
+
+        // for row 3, all non-candidate cells need to exclude candidates
+        for j in 0..9 {
+            if j != column1 && j != column2 {
+                puzzle.cells[row][j].set_possible(candidate1, false);
+                puzzle.cells[row][j].set_possible(candidate2, false);
+            }
+        }
+
+        let mut found = puzzle.find_hidden_pairs();
+        assert_eq!(found, true);
+
+        // cell(3, 4) and cell(3, 6) need to exclude all non-candidates
+        for k in 0..9 {
+            if k != candidate1 && k != candidate2 {
+                assert_eq!(puzzle.cells[row][column1].is_possible(k), false);
+                assert_eq!(puzzle.cells[row][column2].is_possible(k), false);
+            }
+        }
+    }
+
+    #[test]
+    fn test_find_hidden_pairs_column() {
+        // hidden pair (2 7) at cell(4, 3) and cell(6, 3), for column 3
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+
+        // candidates 2 and 7 in row 3
+        let candidate1: usize = 1;
+        let candidate2: usize = 6;
+        let row1: usize = 3;
+        let row2: usize = 5;
+        let column: usize = 2;
+
+        // for column 3, all non-candidate cells need to exclude candidates
+        for i in 0..9 {
+            if i != row1 && i != row2 {
+                puzzle.cells[i][column].set_possible(candidate1, false);
+                puzzle.cells[i][column].set_possible(candidate2, false);
+            }
+        }
+
+        let mut found = puzzle.find_hidden_pairs();
+        assert_eq!(found, true);
+
+        // cell(4, 3) and cell(6, 3) need to exclude all non-candidates
+        for k in 0..9 {
+            if k != candidate1 && k != candidate2 {
+                assert_eq!(puzzle.cells[row1][column].is_possible(k), false);
+                assert_eq!(puzzle.cells[row2][column].is_possible(k), false);
+            }
+        }
+    }
+
+    #[test]
+    fn test_find_hidden_pairs_grid() {
+        // hidden pair (2 7) at cell(4, 4) and cell(6, 6), for grid(2, 2)
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+
+        // candidates 2 and 7 in cell(4, 4) and cell(6, 6), for grid(2, 2)
+        let candidate1: usize = 1;
+        let candidate2: usize = 6;
+        let row1: usize = 3;
+        let row2: usize = 5;
+        let column1: usize = 3;
+        let column2: usize = 5;
+
+        // grid (2, 2) is cell(4..6, 4..6).
+        // for grid (2, 2), all non-candidate cells need to exclude candidates
+        let gridi_start: usize = (row1 / 3) * 3;
+        let gridj_start: usize = (column1 / 3) * 3;
+        for i in gridi_start..gridi_start+3 {
+            for j in gridj_start..gridj_start+3 {
+                if i == row1 && j == column1 {
+                    // do nothing
+                }
+                else if i == row2 && j == column2 {
+                    // do nothing
+                }
+                else {
+                    puzzle.cells[i][j].set_possible(candidate1, false);
+                    puzzle.cells[i][j].set_possible(candidate2, false);
+                }
+            }
+        }
+
+        let mut found = puzzle.find_hidden_pairs();
+        assert_eq!(found, true);
+
+        // cell(4, 4) and cell(6, 6) need to exclude all non-candidates
+        for k in 0..9 {
+            if k != candidate1 && k != candidate2 {
+                assert_eq!(puzzle.cells[row1][column1].is_possible(k), false);
+                assert_eq!(puzzle.cells[row2][column2].is_possible(k), false);
+            }
+        }
     }
 
     #[test]
