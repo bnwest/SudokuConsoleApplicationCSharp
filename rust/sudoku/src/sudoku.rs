@@ -2242,4 +2242,155 @@ mod tests {
 
         test_cell_solved_ness(&puzzle, row, column, hidden_single_possible);
     }
+
+    #[test]
+    fn test_find_locked_candidate_type_1_horizontal() {
+        // found type 1 locked candidate 1 in row cells(2,1..3)
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+
+        // locked candidate 1 in cells(2,1) and cell(2,3)
+        let locked_candidate: usize = 0;
+        let row: usize = 1;
+        let column1: usize = 0;
+        let column2: usize = 2;
+
+        // candidate 1 in cell(1,1..3) and cell(3,1..3) are not possible.
+        let gridi_start: usize = (row / 3) * 3;
+        let gridj_start: usize = (column1 / 3) * 3;
+        for i in gridi_start..gridi_start+3 {
+            if i == row {
+                continue;
+            }
+            for j in gridj_start..gridj_start+3 {
+                puzzle.cells[i][j].set_possible(locked_candidate, false);
+            }
+        }
+
+        let mut found = puzzle.find_locked_candidate();
+        assert_eq!(found, true);
+
+        // candidate 1 in cell(1,4..9) should not possible.
+        for j in 0..9 {
+            let candidate_gridj_start: usize = (column1 / 3) * 3;
+            let column_in_candidate_grid: bool = (
+                candidate_gridj_start <= j && j < candidate_gridj_start+3
+            );
+            if !column_in_candidate_grid {
+                assert_eq!(puzzle.cells[row][j].is_possible(locked_candidate), false);
+            }
+        }
+    }
+
+    #[test]
+    fn test_find_locked_candidate_type_1_vertical() {
+        // found type 1 locked candidate 1 in row cells(1..3,6)
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+
+        // locked candidate 1 in cells(1,6) and cell(2,6)
+        let locked_candidate: usize = 0;
+        let row1: usize = 0;
+        let row2: usize = 1;
+        let column: usize = 5;
+
+        // candidate 1 in cell(1..3,4) and cell(1..3,5) are not possible.
+        let gridi_start: usize = (row1 / 3) * 3;
+        let gridj_start: usize = (column / 3) * 3;
+        for j in gridj_start..gridj_start+3 {
+            if j == column {
+                continue;
+            }
+            for i in gridi_start..gridi_start+3 {
+                puzzle.cells[i][j].set_possible(locked_candidate, false);
+            }
+        }
+
+        let mut found = puzzle.find_locked_candidate();
+        assert_eq!(found, true);
+
+        // candidate 1 in cell(4..9,6) should not possible.
+        for i in 0..9 {
+            let candidate_gridi_start: usize = (row1 / 3) * 3;
+            let row_in_candidate_grid: bool = (
+                candidate_gridi_start <= i && i < candidate_gridi_start+3
+            );
+            if !row_in_candidate_grid {
+                assert_eq!(puzzle.cells[i][column].is_possible(locked_candidate), false);
+            }
+        }
+    }
+
+    #[test]
+    fn test_find_locked_candidate_type_2_horizontal() {
+        // found type 2 locked candidate 1 in row cells(2,1..3)
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+
+        // locked candidate 1 in cells(2,1) and cell(2,3)
+        let locked_candidate: usize = 0;
+        let row: usize = 1;
+        let column1: usize = 0;
+        let column2: usize = 2;
+
+        for j in 0..9 {
+            let cell: &mut SudokuPuzzleCell = &mut puzzle.cells[row][j];
+            if j == column1 || j == column2 {
+                cell.possibles[locked_candidate] = true;
+            }
+            else {
+                cell.possibles[locked_candidate] = false;
+            }
+        }
+
+        let mut found = puzzle.find_locked_candidate();
+        assert_eq!(found, true);
+
+        // candidate 1 in cell(1,1..3) and cell(3,1..3) should not possible.
+        let gridi_start: usize = (row / 3) * 3;
+        let gridj_start: usize = (column1 / 3) * 3;
+        for i in gridi_start..gridi_start+3 {
+            if i == row {
+                continue;
+            }
+            for j in gridj_start..gridj_start+3 {
+                assert_eq!(puzzle.cells[i][j].is_possible(locked_candidate), false);
+            }
+        }
+    }
+
+    #[test]
+    fn test_find_locked_candidate_type_2_vertical() {
+        // found type 2 locked candidate 1 in row cells(1..3,6)
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+
+        // locked candidate 1 in cells(1,6) and cell(2,6)
+        let locked_candidate: usize = 0;
+        let row1: usize = 0;
+        let row2: usize = 1;
+        let column: usize = 5;
+
+        for i in 0..9 {
+            let cell: &mut SudokuPuzzleCell = &mut puzzle.cells[i][column];
+            if i == row1 || i == row2 {
+                cell.possibles[locked_candidate] = true;
+            }
+            else {
+                cell.possibles[locked_candidate] = false;
+            }
+        }
+
+
+        let mut found = puzzle.find_locked_candidate();
+        assert_eq!(found, true);
+
+        // candidate 1 in cell(0..2,3) and cell(0..2,4) should not possible.
+        let gridi_start: usize = (row1 / 3) * 3;
+        let gridj_start: usize = (column / 3) * 3;
+        for j in gridj_start..gridj_start+3 {
+            if j == column {
+                continue;
+            }
+            for i in gridi_start..gridi_start+3 {
+                assert_eq!(puzzle.cells[i][j].is_possible(locked_candidate), false);
+            }
+        }
+    }
 }
