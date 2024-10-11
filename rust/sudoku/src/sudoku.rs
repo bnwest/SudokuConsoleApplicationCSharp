@@ -69,7 +69,19 @@ impl SudokuGame {
                 // hidden triples?
                 // "000000000231090000065003100008924000100050006000136700009300570000010843000000000"
                 // hidden quads
+                // found hidden quad (2 3 7 8) at cell(2, 1) and cell(2, 2) and cell(2, 3) and cell(2, 9), for row 2
+                // xxx found hidden quad (2 6 8 9) at cell(2, 2) and cell(5, 2) and cell(7, 2) and cell(8, 2), for column 2
+                // xxx found hidden quad (1 6 8 9) at cell(1, 7) and cell(2, 7) and cell(3, 7) and cell(3, 9), for grid(1, 3)
                 // "650000024000609000040000000570400061000501000310002085000000010000203000130000098"
+                // xxx found hidden quad (2 3 7 8) at cell(1, 2) and cell(1, 5) and cell(1, 6) and cell(1, 7), for row 1
+                // xxx found hidden quad (3 4 5 9) at cell(8, 2) and cell(8, 3) and cell(8, 4) and cell(8, 6), for row 8
+                // xxx found hidden quad (3 4 7 8) at cell(3, 3) and cell(6, 3) and cell(8, 3) and cell(9, 3), for column 3
+                // xxx found hidden quad (3 4 6 7) at cell(2, 4) and cell(2, 6) and cell(3, 4) and cell(3, 6), for grid(1, 2)
+                // xxx found hidden quad (3 5 7 9) at cell(1, 7) and cell(2, 7) and cell(3, 7) and cell(3, 9), for grid(1, 3)
+                // xxx found hidden quad (3 4 7 8) at cell(4, 2) and cell(5, 1) and cell(6, 2) and cell(6, 3), for grid(2, 1)
+                // xxx found hidden quad (1 4 6 9) at cell(4, 4) and cell(4, 6) and cell(6, 4) and cell(6, 6), for grid(2, 2)
+                // xxx found hidden quad (1 5 8 9) at cell(4, 7) and cell(4, 9) and cell(5, 9) and cell(6, 7), for grid(2, 3)
+                // xxx found hidden quad (2 3 5 9) at cell(8, 4) and cell(8, 6) and cell(9, 4) and cell(9, 5), for grid(3, 2)
                 // "000500000425090001800010020500000000019000460000000002090040003200060807000001600"
 
                 // type 1 and 2 locked candidate in row and column
@@ -1610,7 +1622,7 @@ impl SudokuPuzzle {
 
         let mut num_possibles_triples: [usize; 9] = [0; 9];
         let mut possible_triples: [bool; 9] = [false; 9];
-        let mut possible_triple_locations: [[usize; 3]; 9] = [[SudokuPuzzleCell::NOT_FOUND; 3]; 9];  // 9 x 2 array
+        let mut possible_triple_locations: [[usize; 3]; 9] = [[SudokuPuzzleCell::NOT_FOUND; 3]; 9];  // 9 x 3 array
 
         for (c, cell) in cells.iter().enumerate() {
             let row: usize = cell.row;
@@ -1703,7 +1715,7 @@ impl SudokuPuzzle {
                                     let row3: usize = cells[c3].row;
                                     let column3: usize = cells[c3].column;
 
-                                    // for cells outside of c1 and c2 and c3, exclude p1 and p2  and p3 posibilities
+                                    // for cells outside of c1 and c2 and c3, exclude p1 and p2 and p3 posibilities
 
                                     let mut num_changes_this_triple: u32 = 0;
                                     for k in 0..9 {
@@ -1759,6 +1771,212 @@ impl SudokuPuzzle {
 
     fn find_hidden_triples(&mut self) -> bool {
         return self.find_exclusions(SudokuPuzzle::find_hidden_triples_assist);
+    }
+
+    fn find_hidden_quads_assist(
+        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String
+    ) -> u32 {
+        let mut num_changes: u32 = 0;
+
+        let mut num_possibles_quads: [usize; 9] = [0; 9];
+        let mut possible_quads: [bool; 9] = [false; 9];
+        let mut possible_quad_locations: [[usize; 4]; 9] = [[SudokuPuzzleCell::NOT_FOUND; 4]; 9];  // 9 x 4 array
+
+        for (c, cell) in cells.iter().enumerate() {
+            let row: usize = cell.row;
+            let column: usize = cell.column;
+            if !puzzle.cells[row][column].is_solved() {
+                for k in 0..9 {
+                    if puzzle.cells[row][column].is_possible(k) {
+                        if num_possibles_quads[k] < 4 {
+                            possible_quad_locations[k][num_possibles_quads[k]] = c;
+                        }
+                        num_possibles_quads[k] += 1;
+                        possible_quads[k] = (
+                            num_possibles_quads[k] == 2 
+                            || num_possibles_quads[k] == 3
+                            || num_possibles_quads[k] == 4
+                        );
+                    }
+                }
+            }
+        }
+
+        for p1 in 0..9 {
+            if possible_quads[p1] {
+                for p2 in p1+1..9 {
+                    if possible_quads[p2] {
+                        for p3 in p2+1..9 {
+                            if possible_quads[p3] {
+                                for p4 in p3+1..9 {
+                                    if possible_quads[p4] {
+                                        let mut quad_cells: [bool; 9] = [false; 9];
+
+                                        let c1: usize = possible_quad_locations[p1][0];
+                                        let c2: usize = possible_quad_locations[p1][1];
+                                        let c3: usize = possible_quad_locations[p1][2];
+                                        let c4: usize = possible_quad_locations[p1][3];
+                                        quad_cells[c1] = true;
+                                        quad_cells[c2] = true;
+                                        if num_possibles_quads[p1] == 3 {
+                                            quad_cells[c3] = true;
+                                        }
+                                        else if num_possibles_quads[p1] == 4 {
+                                            quad_cells[c3] = true;
+                                            quad_cells[c4] = true;
+                                        }
+
+                                        let c1: usize = possible_quad_locations[p2][0];
+                                        let c2: usize = possible_quad_locations[p2][1];
+                                        let c3: usize = possible_quad_locations[p2][2];
+                                        let c4: usize = possible_quad_locations[p2][3];
+                                        quad_cells[c1] = true;
+                                        quad_cells[c2] = true;
+                                        if num_possibles_quads[p2] == 3 {
+                                            quad_cells[c3] = true;
+                                        }
+                                        else if num_possibles_quads[p2] == 4 {
+                                            quad_cells[c3] = true;
+                                            quad_cells[c4] = true;
+                                        }
+
+                                        let c1: usize = possible_quad_locations[p3][0];
+                                        let c2: usize = possible_quad_locations[p3][1];
+                                        let c3: usize = possible_quad_locations[p3][2];
+                                        let c4: usize = possible_quad_locations[p3][3];
+                                        quad_cells[c1] = true;
+                                        quad_cells[c2] = true;
+                                        if num_possibles_quads[p3] == 3 {
+                                            quad_cells[c3] = true;
+                                        }
+                                        else if num_possibles_quads[p3] == 4 {
+                                            quad_cells[c3] = true;
+                                            quad_cells[c4] = true;
+                                        }
+
+                                        let c1: usize = possible_quad_locations[p4][0];
+                                        let c2: usize = possible_quad_locations[p4][1];
+                                        let c3: usize = possible_quad_locations[p4][2];
+                                        let c4: usize = possible_quad_locations[p4][3];
+                                        quad_cells[c1] = true;
+                                        quad_cells[c2] = true;
+                                        if num_possibles_quads[p4] == 3 {
+                                            quad_cells[c3] = true;
+                                        }
+                                        else if num_possibles_quads[p4] == 4 {
+                                            quad_cells[c3] = true;
+                                            quad_cells[c4] = true;
+                                        }
+
+                                        let num_quad_cells: u32 = {
+                                            let mut num = 0;
+                                            for i in 0..9 {
+                                                if quad_cells[i] {
+                                                    num += 1;
+                                                }
+                                            }
+                                            num
+                                        };
+                                        let share_same_four_cells: bool = num_quad_cells == 4;
+
+                                        if share_same_four_cells {
+                                            let mut c1: usize = SudokuPuzzleCell::NOT_FOUND;
+                                            let mut c2: usize = SudokuPuzzleCell::NOT_FOUND;
+                                            let mut c3: usize = SudokuPuzzleCell::NOT_FOUND;
+                                            let mut c4: usize = SudokuPuzzleCell::NOT_FOUND;
+                                            for c in 0..9 {
+                                                if quad_cells[c] {
+                                                    if c1 ==  SudokuPuzzleCell::NOT_FOUND {
+                                                        c1 = c;
+                                                    }
+                                                    else if c2 ==  SudokuPuzzleCell::NOT_FOUND {
+                                                        c2 = c;
+                                                    }
+                                                    else if c3 ==  SudokuPuzzleCell::NOT_FOUND {
+                                                        c3 = c;
+                                                    }
+                                                    else if c4 ==  SudokuPuzzleCell::NOT_FOUND {
+                                                        c4 = c;
+                                                    }
+                                                }
+                                            }
+
+                                            // found a hidden quad (p1, p2, p3, p4) in cells c1 and c2 and c3 and c4
+
+                                            let row1: usize = cells[c1].row;
+                                            let column1: usize = cells[c1].column;
+                                            let row2: usize = cells[c2].row;
+                                            let column2: usize = cells[c2].column;
+                                            let row3: usize = cells[c3].row;
+                                            let column3: usize = cells[c3].column;
+                                            let row4: usize = cells[c4].row;
+                                            let column4: usize = cells[c4].column;
+
+                                            // for cells outside of c1 and c2 and c3 and c4, exclude p1 and p2 and p3 and p4 posibilities
+
+                                            let mut num_changes_this_quad: u32 = 0;
+                                            for k in 0..9 {
+                                                let not_in_quad: bool = k != p1 && k != p2 && k != p3 && k != p4;
+                                                if not_in_quad {
+                                                    if puzzle.cells[row1][column1].is_possible(k) {
+                                                        puzzle.cells[row1][column1].set_possible(k, false);
+                                                        num_changes_this_quad += 1;
+                                                        num_changes += 1;
+                                                    }
+                                                    if puzzle.cells[row2][column2].is_possible(k) {
+                                                        puzzle.cells[row2][column2].set_possible(k, false);
+                                                        num_changes_this_quad += 1;
+                                                        num_changes += 1;
+                                                    }
+                                                    if puzzle.cells[row3][column3].is_possible(k) {
+                                                        puzzle.cells[row3][column3].set_possible(k, false);
+                                                        num_changes_this_quad += 1;
+                                                        num_changes += 1;
+                                                    }
+                                                    if puzzle.cells[row4][column4].is_possible(k) {
+                                                        puzzle.cells[row4][column4].set_possible(k, false);
+                                                        num_changes_this_quad += 1;
+                                                        num_changes += 1;
+                                                    }
+                                                }
+                                            }
+                                            if num_changes_this_quad > 0 {
+                                                println!(
+                                                    "found hidden quad ({} {} {} {}) at cell({}, {}) and cell({}, {}) and cell({}, {}) and cell({}, {}), {}",
+                                                    p1+1, p2+1, p3+1, p4+1,
+                                                    row1+1, column1+1,
+                                                    row2+1, column2+1,
+                                                    row3+1, column3+1,
+                                                    row4+1, column4+1,
+                                                    description
+                                                );
+                                            }
+                                            else {
+                                                println!(
+                                                    "xxx found hidden quad ({} {} {} {}) at cell({}, {}) and cell({}, {}) and cell({}, {}) and cell({}, {}), {}",
+                                                    p1+1, p2+1, p3+1, p4+1,
+                                                    row1+1, column1+1,
+                                                    row2+1, column2+1,
+                                                    row3+1, column3+1,
+                                                    row4+1, column4+1,
+                                                    description
+                                                );
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return num_changes;
+    }
+
+    fn find_hidden_quads(&mut self) -> bool {
+        return self.find_exclusions(SudokuPuzzle::find_hidden_quads_assist);
     }
 
     fn solve_cell(&mut self, i: usize, j: usize, k: usize) {
@@ -1870,8 +2088,8 @@ impl SudokuPuzzle {
         // Harder
         // 7. hidden pairs
         // 8. hidden triples
-        //----- do not plan to implement the methods below -----
         // 9. hidden quads (exceptionally rare)
+        //----- do not plan to implement the methods below -----
         // Expert
         // x-wing, y-wing, swordfish, et al
         //
@@ -1921,6 +2139,11 @@ impl SudokuPuzzle {
             }
 
             let did_something: bool = self.find_hidden_triples();
+            if did_something {
+                continue;
+            }
+
+            let did_something: bool = self.find_hidden_quads();
             if did_something {
                 continue;
             }
@@ -3291,6 +3514,162 @@ mod tests {
                 assert_eq!(puzzle.cells[row1][column1].is_possible(k), false);
                 assert_eq!(puzzle.cells[row2][column2].is_possible(k), false);
                 assert_eq!(puzzle.cells[row3][column3].is_possible(k), false);
+            }
+        }
+    }
+
+    #[test]
+    fn test_find_hidded_quads_row() {
+        // found hidden quad (1 2 3 4) at cell(3, 1) and cell(3, 4) and cell(3, 6) and cell(3, 9), for row 3
+        //     (1 2)     in cell(3, 1)
+        //     (2 3)     in cell(3, 4)
+        //     (3 4)     in cell(3, 6)
+        //     (1 2 3 4) in cell(3, 9)
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+
+        // candidates 1, 2, 3 and 4 in row 3
+        let candidate1: usize = 0;
+        let candidate2: usize = 1;
+        let candidate3: usize = 2;
+        let candidate4: usize = 3;
+        let row: usize = 2;
+        let column1: usize = 0;
+        let column2: usize = 3;
+        let column3: usize = 5;
+        let column4: usize = 8;
+
+        // for row 3, all non-candidate cells need to exclude candidates
+        for j in 0..9 {
+            if j != column1 && j != column2 && j != column3 && j != column4 {
+                puzzle.cells[row][j].set_possible(candidate1, false);
+                puzzle.cells[row][j].set_possible(candidate2, false);
+                puzzle.cells[row][j].set_possible(candidate3, false);
+                puzzle.cells[row][j].set_possible(candidate4, false);
+            }
+        }
+
+        let found = puzzle.find_hidden_quads();
+        assert_eq!(found, true);
+
+        // cell(3, 1), cell(3, 4) and cell(3, 9) need to exclude all non-candidates
+        for k in 0..9 {
+            if k != candidate1 && k != candidate2 && k != candidate3 && k != candidate4 {
+                assert_eq!(puzzle.cells[row][column1].is_possible(k), false);
+                assert_eq!(puzzle.cells[row][column2].is_possible(k), false);
+                assert_eq!(puzzle.cells[row][column3].is_possible(k), false);
+                assert_eq!(puzzle.cells[row][column4].is_possible(k), false);
+            }
+        }
+    }
+
+    #[test]
+    fn test_find_hidded_quads_column() {
+        // found hidden quad (1 2 3 4) in column 3
+        //     (1 2)   in cell(1, 3)
+        //     (2 3)   in cell(4, 3)
+        //     (3 4)   in cell(6, 3)
+        //     (1 2 3) in cell(9, 3)
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+
+        // candidates 1, 2, 3 and 4 in column 3
+        let candidate1: usize = 0;
+        let candidate2: usize = 1;
+        let candidate3: usize = 2;
+        let candidate4: usize = 3;
+        let row1: usize = 0;
+        let row2: usize = 3;
+        let row3: usize = 5;
+        let row4: usize = 8;
+        let column: usize = 2;
+
+        // for column 3, all non-candidate cells need to exclude candidates
+        for i in 0..9 {
+            if i != row1 && i != row2 && i != row3 && i != row4 {
+                puzzle.cells[i][column].set_possible(candidate1, false);
+                puzzle.cells[i][column].set_possible(candidate2, false);
+                puzzle.cells[i][column].set_possible(candidate3, false);
+                puzzle.cells[i][column].set_possible(candidate4, false);
+            }
+        }
+
+        let found = puzzle.find_hidden_quads();
+        assert_eq!(found, true);
+
+        // cell(3, 1), cell(3, 4) and cell(3, 9) need to exclude all non-candidates
+        for k in 0..9 {
+            if k != candidate1 && k != candidate2 && k != candidate3 && k != candidate4 {
+                assert_eq!(puzzle.cells[row1][column].is_possible(k), false);
+                assert_eq!(puzzle.cells[row2][column].is_possible(k), false);
+                assert_eq!(puzzle.cells[row3][column].is_possible(k), false);
+                assert_eq!(puzzle.cells[row4][column].is_possible(k), false);
+            }
+        }
+    }
+
+    #[test]
+    fn test_find_hidded_quads_grid() {
+        // found hidden quad (1 2 3 4) for grid(2, 2)
+        //     (1 2)     in cell(4, 4)
+        //     (2 3)     in cell(4, 6)
+        //     (3 4)     in cell(6, 4)
+        //     (1 2 3 4) in cell(6, 6)
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+
+        // candidates 1, 2, 3 and 4 in grid(2, 2)
+        let candidate1: usize = 0;
+        let candidate2: usize = 1;
+        let candidate3: usize = 2;
+        let candidate4: usize = 3;
+        let row1: usize = 3;
+        let row2: usize = 3;
+        let row3: usize = 5;
+        let row4: usize = 5;
+        let column1: usize = 3;
+        let column2: usize = 5;
+        let column3: usize = 3;
+        let column4: usize = 5;
+
+        // for grid(2, 2), all non-candidate cells need to exclude candidates
+        let gridi_start: usize = (row1 / 3) * 3;
+        let gridj_start: usize = (column1 / 3) * 3;
+        for i in gridi_start..gridi_start+3 {
+            for j in gridj_start..gridj_start+3 {
+                if i == row1 && j == column1 {
+                    puzzle.cells[i][j].set_possible(candidate1, true);
+                    puzzle.cells[i][j].set_possible(candidate2, true);
+                }
+                else if i == row2 && j == column2 {
+                    puzzle.cells[i][j].set_possible(candidate2, true);
+                    puzzle.cells[i][j].set_possible(candidate3, true);
+                }
+                else if i == row3 && j == column3 {
+                    puzzle.cells[i][j].set_possible(candidate3, true);
+                    puzzle.cells[i][j].set_possible(candidate4, true);
+                }
+                else if i == row4 && j == column4 {
+                    puzzle.cells[i][j].set_possible(candidate1, true);
+                    puzzle.cells[i][j].set_possible(candidate2, true);
+                    puzzle.cells[i][j].set_possible(candidate3, true);
+                    puzzle.cells[i][j].set_possible(candidate4, true);
+                }
+                else {
+                    puzzle.cells[i][j].set_possible(candidate1, false);
+                    puzzle.cells[i][j].set_possible(candidate2, false);
+                    puzzle.cells[i][j].set_possible(candidate3, false);
+                    puzzle.cells[i][j].set_possible(candidate4, false);
+                }
+            }
+        }
+
+        let found = puzzle.find_hidden_quads();
+        assert_eq!(found, true);
+
+        for k in 0..9 {
+            if k != candidate1 && k != candidate2 && k != candidate3 && k != candidate4 {
+                assert_eq!(puzzle.cells[row1][column1].is_possible(k), false);
+                assert_eq!(puzzle.cells[row2][column2].is_possible(k), false);
+                assert_eq!(puzzle.cells[row3][column3].is_possible(k), false);
+                assert_eq!(puzzle.cells[row4][column4].is_possible(k), false);
             }
         }
     }
