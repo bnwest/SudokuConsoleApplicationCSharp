@@ -2534,32 +2534,522 @@ mod tests {
 
     #[test]
     fn test_find_naked_triples_row() {
-        assert!(true);
+        // naked triple (1 2 3) in row 7
+        // (1 2) in cell(7,3), (2 3) in cel(7, 4), (1 2 3) in cell(7, 9)
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+
+        // candidates 1, 2 and 6 in row 7
+        let candidate1: usize = 0;
+        let candidate2: usize = 1;
+        let candidate3: usize = 2;
+        let row: usize = 6;
+        let column1: usize = 2;
+        let column2: usize = 3;
+        let column3: usize = 8;
+
+        // for row 7, all non-candidate cells show have (1 2 3) as possible.
+        // for cell(7,3), (1 2) are only possibles.
+        // for cell(7,4), (2 3) are only possibles.
+        // for cell(7,9), (1 2 3) are only possibles.
+        for j in 0..9 {
+            for k in 0..9 {
+                if j == column1 {
+                    if k == candidate1 || k == candidate2 {
+                        puzzle.cells[row][j].set_possible(k, true);
+                    }
+                    else {
+                        puzzle.cells[row][j].set_possible(k, false);
+                    }
+                }
+                else if j == column2 {
+                    if k == candidate2 || k == candidate3 {
+                        puzzle.cells[row][j].set_possible(k, true);
+                    }
+                    else {
+                        puzzle.cells[row][j].set_possible(k, false);
+                    }
+                }
+                else if j == column3 {
+                    if k == candidate1 || k == candidate2 || k == candidate3 {
+                        puzzle.cells[row][j].set_possible(k, true);
+                    }
+                    else {
+                        puzzle.cells[row][j].set_possible(k, false);
+                    }                    
+                }
+                else {
+                    puzzle.cells[row][j].set_possible(k, true);
+                }
+            }
+        }
+
+        let found = puzzle.find_naked_triples();
+        assert_eq!(found, true);
+
+        for j in 0..9 {
+            if j == column1 || j == column2 || j == column3 {
+                continue;
+            }
+            else {
+                assert_eq!(puzzle.cells[row][j].is_possible(candidate1), false);
+                assert_eq!(puzzle.cells[row][j].is_possible(candidate2), false);
+                assert_eq!(puzzle.cells[row][j].is_possible(candidate3), false);                
+            }
+        }
     }
 
     #[test]
     fn test_find_naked_triples_column() {
-        assert!(true);
+        // naked triple (1 2 3) in column 7
+        //     (1 2)   in cell(3, 7)
+        //     (2 3)   in cell(4, 7)
+        //     (1 2 3) in cell(9, 7)
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+
+        // candidates 1, 2 and 3 in row 7
+        let candidate1: usize = 0;
+        let candidate2: usize = 1;
+        let candidate3: usize = 2;
+        let row1: usize = 2;
+        let row2: usize = 3;
+        let row3: usize = 8;
+        let column: usize = 6;
+
+        // for column 7, all non-candidate cells show have (1 2 3) as possible.
+        // for cell(3, 7), (1 2) are only possibles.
+        // for cell(4, 7), (2 3) are only possibles.
+        // for cell(9, 7), (1 2 3) are only possibles.
+        for i in 0..9 {
+            for k in 0..9 {
+                if i == row1 {
+                    if k == candidate1 || k == candidate2 {
+                        puzzle.cells[i][column].set_possible(k, true);
+                    }
+                    else {
+                        puzzle.cells[i][column].set_possible(k, false);
+                    }
+                }
+                else if i == row2 {
+                    if k == candidate2 || k == candidate3 {
+                        puzzle.cells[i][column].set_possible(k, true);
+                    }
+                    else {
+                        puzzle.cells[i][column].set_possible(k, false);
+                    }
+                }
+                else if i == row3 {
+                    if k == candidate1 || k == candidate2 || k == candidate3 {
+                        puzzle.cells[i][column].set_possible(k, true);
+                    }
+                    else {
+                        puzzle.cells[i][column].set_possible(k, false);
+                    }                    
+                }
+                else {
+                    puzzle.cells[i][column].set_possible(k, true);
+                }
+            }
+        }
+
+        let found = puzzle.find_naked_triples();
+        assert_eq!(found, true);
+
+
+        for i in 0..9 {
+            if i == row1 || i == row2 || i == row3 {
+                continue;
+            }
+            else {
+                assert_eq!(puzzle.cells[i][column].is_possible(candidate1), false);
+                assert_eq!(puzzle.cells[i][column].is_possible(candidate2), false);
+                assert_eq!(puzzle.cells[i][column].is_possible(candidate3), false);
+            }
+        }
     }
 
     #[test]
     fn test_find_naked_triples_grid() {
-        assert!(true);
+        // naked triple (1 2 3) in grid(2, 2)
+        //     (1 2) in cell(4, 4)
+        //     (2 3) in cell(5, 5)
+        //     (1 2 3) in cell(6, 6)
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+
+        // candidates 1, 2 and 3 in grid(2, 2)
+        let candidate1: usize = 0;
+        let candidate2: usize = 1;
+        let candidate3: usize = 2;
+        let row1: usize = 3;
+        let row2: usize = 4;
+        let row3: usize = 5;
+        let column1: usize = 3;
+        let column2: usize = 4;
+        let column3: usize = 5;
+
+        // for grid(2, 2), all non-candidate cells show have (1 2 3) as possible.
+        // for cell(4, 4), (1 2) are only possibles.
+        // for cell(5, 5), (2 3) are only possibles.
+        // for cell(6, 6), (1 2 3) are only possibles.
+        let gridi_start: usize = (row1 / 3) * 3;
+        let gridj_start: usize = (column1 / 3) * 3;
+        for i in gridi_start..gridi_start+3 {
+            for j in gridj_start..gridj_start+3 {
+                if i == row1 && j == column1 {
+                    for k in 0..9 {
+                        if k == candidate1 || k == candidate2 {
+                            puzzle.cells[i][j].set_possible(k, true);
+                        }
+                        else {
+                            puzzle.cells[i][j].set_possible(k, false);
+                        }
+                    }
+                }
+                else if i == row2 && j == column2 {
+                    for k in 0..9 {
+                        if k == candidate2 || k == candidate3 {
+                            puzzle.cells[i][j].set_possible(k, true);
+                        }
+                        else {
+                            puzzle.cells[i][j].set_possible(k, false);
+                        }
+                    }
+                }
+                else if i == row3 && j == column3 {
+                    for k in 0..9 {
+                        if k == candidate1 || k == candidate2 || k == candidate3 {
+                            puzzle.cells[i][j].set_possible(k, true);
+                        }
+                        else {
+                            puzzle.cells[i][j].set_possible(k, false);
+                        }
+                    }
+                }
+                else {
+                    puzzle.cells[i][j].set_possible(candidate1, true);
+                    puzzle.cells[i][j].set_possible(candidate2, true);
+                    puzzle.cells[i][j].set_possible(candidate3, true);
+                }
+            }
+        }
+
+        let found = puzzle.find_naked_triples();
+        assert_eq!(found, true);
+
+        let gridi_start: usize = (row1 / 3) * 3;
+        let gridj_start: usize = (column1 / 3) * 3;
+        for i in gridi_start..gridi_start+3 {
+            for j in gridj_start..gridj_start+3 {
+                if i == row1 && j == column1 {
+                    continue;
+                }
+                else if i == row2 && j == column2 {
+                    continue;
+                }
+                else if i == row3 && j == column3 {
+                    continue;
+                }
+                else {
+                    assert_eq!(puzzle.cells[i][j].is_possible(candidate1), false);
+                    assert_eq!(puzzle.cells[i][j].is_possible(candidate2), false);
+                    assert_eq!(puzzle.cells[i][j].is_possible(candidate3), false);
+                }
+            }
+        }
     }
 
     #[test]
     fn test_find_naked_quads_row() {
-        assert!(true);
+        // naked quad (1 2 3 4) in row 7
+        //     (1 2)     in cell(7, 1)
+        //     (2 3)     in cell(7, 4) 
+        //     (3 4)     in cell(7, 6)
+        //     (1 2 3 4) in cell(7, 9)
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+
+        // candidates 1, 2, 3 and 4 in row 7
+        let candidate1: usize = 0;
+        let candidate2: usize = 1;
+        let candidate3: usize = 2;
+        let candidate4: usize = 3;
+        let row: usize = 6;
+        let column1: usize = 0;
+        let column2: usize = 3;
+        let column3: usize = 5;
+        let column4: usize = 8;
+
+        // for row 7, all non-candidate cells show have (1 2 3 4) as possible.
+        // for cell(7, 1), (1 2) are only possibles.
+        // for cell(7, 4), (2 3) are only possibles.
+        // for cell(7, 6), (3 4) are only possibles.
+        // for cell(7, 9), (1 2 3 4) are only possibles.
+        for j in 0..9 {
+            for k in 0..9 {
+                if j == column1 {
+                    if k == candidate1 || k == candidate2 {
+                        puzzle.cells[row][j].set_possible(k, true);
+                    }
+                    else {
+                        puzzle.cells[row][j].set_possible(k, false);
+                    }
+                }
+                else if j == column2 {
+                    if k == candidate2 || k == candidate3 {
+                        puzzle.cells[row][j].set_possible(k, true);
+                    }
+                    else {
+                        puzzle.cells[row][j].set_possible(k, false);
+                    }
+                }
+                else if j == column3 {
+                    if k == candidate3 || k == candidate4 {
+                        puzzle.cells[row][j].set_possible(k, true);
+                    }
+                    else {
+                        puzzle.cells[row][j].set_possible(k, false);
+                    }                    
+                }
+                else if j == column4 {
+                    if  k == candidate1 || k == candidate2 || k == candidate3 || k == candidate4 {
+                        puzzle.cells[row][j].set_possible(k, true);
+                    }
+                    else {
+                        puzzle.cells[row][j].set_possible(k, false);
+                    }                    
+                }
+                else {
+                    puzzle.cells[row][j].set_possible(k, true);
+                }
+            }
+        }
+
+        let found = puzzle.find_naked_quads();
+        assert_eq!(found, true);
+
+        for j in 0..9 {
+            for k in 0..9 {
+                if j == column1 {
+                    continue;
+                }
+                else if j == column2 {
+                    continue;
+                }
+                else if j == column3 {
+                    continue;
+                }
+                else if j == column4 {
+                    continue;
+                }
+                else {
+                    assert_eq!(puzzle.cells[row][j].is_possible(candidate1), false);
+                    assert_eq!(puzzle.cells[row][j].is_possible(candidate2), false);
+                    assert_eq!(puzzle.cells[row][j].is_possible(candidate3), false);
+                    assert_eq!(puzzle.cells[row][j].is_possible(candidate4), false);
+                }
+            }
+        }
     }
 
     #[test]
     fn test_find_naked_quads_column() {
+        // naked quad (1 2 3 4) in column 7
+        //     (1 2)     in cell(1, 7)
+        //     (2 3)     in cell(4, 7) 
+        //     (3 4)     in cell(6, 7)
+        //     (1 2 3 4) in cell(9, 7)
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+
+        // candidates 1, 2, 3 and 4 in column 7
+        let candidate1: usize = 0;
+        let candidate2: usize = 1;
+        let candidate3: usize = 2;
+        let candidate4: usize = 3;
+        let row1: usize = 0;
+        let row2: usize = 3;
+        let row3: usize = 5;
+        let row4: usize = 8;
+        let column: usize = 6;
+
+        // for row 7, all non-candidate cells show have (1 2 3 4) as possible.
+        // for cell(1, 7), (1 2) are only possibles.
+        // for cell(4, 7), (2 3) are only possibles.
+        // for cell(6, 7), (3 4) are only possibles.
+        // for cell(9, 7), (1 2 3 4) are only possibles.
+        for i in 0..9 {
+            for k in 0..9 {
+                if i == row1 {
+                    if k == candidate1 || k == candidate2 {
+                        puzzle.cells[i][column].set_possible(k, true);
+                    }
+                    else {
+                        puzzle.cells[i][column].set_possible(k, false);
+                    }
+                }
+                else if i == row2 {
+                    if k == candidate2 || k == candidate3 {
+                        puzzle.cells[i][column].set_possible(k, true);
+                    }
+                    else {
+                        puzzle.cells[i][column].set_possible(k, false);
+                    }
+                }
+                else if i == row3 {
+                    if k == candidate3 || k == candidate4 {
+                        puzzle.cells[i][column].set_possible(k, true);
+                    }
+                    else {
+                        puzzle.cells[i][column].set_possible(k, false);
+                    }                    
+                }
+                else if i == row4 {
+                    if  k == candidate1 || k == candidate2 || k == candidate3 || k == candidate4 {
+                        puzzle.cells[i][column].set_possible(k, true);
+                    }
+                    else {
+                        puzzle.cells[i][column].set_possible(k, false);
+                    }                    
+                }
+                else {
+                    puzzle.cells[i][column].set_possible(k, true);
+                }
+            }
+        }
+
+        let found = puzzle.find_naked_quads();
+        assert_eq!(found, true);
+
+        for i in 0..9 {
+            for k in 0..9 {
+                if i == row1 {
+                    continue;
+                }
+                else if i == row2 {
+                    continue;
+                }
+                else if i == row3 {
+                    continue;
+                }
+                else if i == row4 {
+                    continue;
+                }
+                else {
+                    assert_eq!(puzzle.cells[i][column].is_possible(candidate1), false);
+                    assert_eq!(puzzle.cells[i][column].is_possible(candidate2), false);
+                    assert_eq!(puzzle.cells[i][column].is_possible(candidate3), false);
+                    assert_eq!(puzzle.cells[i][column].is_possible(candidate4), false);
+                }
+            }
+        }
         assert!(true);
     }
 
     #[test]
     fn test_find_naked_quads_grid() {
-        assert!(true);
+        // naked quad (1 2 3 4) in grid(2, 2)
+        //     (1 2)     in cell(4, 4)
+        //     (2 3)     in cell(4, 6) 
+        //     (3 4)     in cell(6, 4)
+        //     (1 2 3 4) in cell(6, 6)
+        let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
+
+        // candidates 1, 2, 3 and 4 in grid(2, 2)
+        let candidate1: usize = 0;
+        let candidate2: usize = 1;
+        let candidate3: usize = 2;
+        let candidate4: usize = 3;
+        let row1: usize = 3;
+        let row2: usize = 3;
+        let row3: usize = 5;
+        let row4: usize = 5;
+        let column1: usize = 3;
+        let column2: usize = 5;
+        let column3: usize = 3;
+        let column4: usize = 5;
+
+        // for grid(2, 2), all non-candidate cells show have (1 2 3 4) as possible.
+        // for cell(4, 4), (1 2) are only possibles.
+        // for cell(4, 6), (2 3) are only possibles.
+        // for cell(6, 4), (3 4) are only possibles.
+        // for cell(6, 6), (1 2 3 4) are only possibles.
+        let gridi_start: usize = (row1 / 3) * 3;
+        let gridj_start: usize = (column1 / 3) * 3;
+        for i in gridi_start..gridi_start+3 {
+            for j in gridj_start..gridj_start+3 {
+                if i == row1 && j == column1 {
+                    for k in 0..9 {
+                        if k == candidate1 || k == candidate2 {
+                            puzzle.cells[i][j].set_possible(k, true);
+                        }
+                        else {
+                            puzzle.cells[i][j].set_possible(k, false);
+                        }
+                    }
+                }
+                else if i == row2 && j == column2 {
+                    for k in 0..9 {
+                        if k == candidate2 || k == candidate3 {
+                            puzzle.cells[i][j].set_possible(k, true);
+                        }
+                        else {
+                            puzzle.cells[i][j].set_possible(k, false);
+                        }
+                    }
+                }
+                else if i == row3 && j == column3 {
+                    for k in 0..9 {
+                        if k == candidate3 || k == candidate4 {
+                            puzzle.cells[i][j].set_possible(k, true);
+                        }
+                        else {
+                            puzzle.cells[i][j].set_possible(k, false);
+                        }
+                    }
+                }
+                else if i == row4 && j == column4 {
+                    for k in 0..9 {
+                        if k == candidate1 || k == candidate2 || k == candidate3 || k == candidate4 {
+                            puzzle.cells[i][j].set_possible(k, true);
+                        }
+                        else {
+                            puzzle.cells[i][j].set_possible(k, false);
+                        }
+                    }
+                }
+                else {
+                    puzzle.cells[i][j].set_possible(candidate1, true);
+                    puzzle.cells[i][j].set_possible(candidate2, true);
+                    puzzle.cells[i][j].set_possible(candidate3, true);
+                    puzzle.cells[i][j].set_possible(candidate4, true);
+                }
+            }
+        }
+
+        let found = puzzle.find_naked_quads();
+        assert_eq!(found, true);
+
+        let gridi_start: usize = (row1 / 3) * 3;
+        let gridj_start: usize = (column1 / 3) * 3;
+        for i in gridi_start..gridi_start+3 {
+            for j in gridj_start..gridj_start+3 {
+                if i == row1 && j == column1 {
+                    continue;
+                }
+                else if i == row2 && j == column2 {
+                    continue;
+                }
+                else if i == row3 && j == column3 {
+                    continue;
+                }
+                else if i == row4 && j == column4 {
+                    continue;
+                }
+                else {
+                    assert_eq!(puzzle.cells[i][j].is_possible(candidate1), false);
+                    assert_eq!(puzzle.cells[i][j].is_possible(candidate2), false);
+                    assert_eq!(puzzle.cells[i][j].is_possible(candidate3), false);
+                    assert_eq!(puzzle.cells[i][j].is_possible(candidate4), false);
+                }
+            }
+        }
     }
 
     #[test]
