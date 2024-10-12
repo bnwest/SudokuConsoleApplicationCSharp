@@ -28,8 +28,7 @@
 // since they are not visible outside of the struct???
 //
 
-
-#[derive(Debug)]  // adding so pretty print will work ... {:#?} for pretty-print
+#[derive(Debug)] // adding so pretty print will work ... {:#?} for pretty-print
 pub struct SudokuGame {
     // private data member(s)
     db_game: String,
@@ -42,8 +41,7 @@ impl SudokuGame {
             // db_game is a 81 character string, with the solved numbers present.
             db_game: String::from(
                 // found hidden triple (3 6 7) at cell(5, 4) and cell(5, 6) and cell(5, 7), for row 5
-                "4....8.....753...8.9..6.41353....2.7.........7.6....81954.1..3.3...751.....9....5"
-
+                "4....8.....753...8.9..6.41353....2.7.........7.6....81954.1..3.3...751.....9....5",
                 // 4..  ..8  ...
                 // ..7  53.  ..8
                 // .9.  .6.  413
@@ -238,7 +236,7 @@ impl SudokuGame {
                 // "...2.1..9.....5...3.........51..9.........3........4.....8...214.36.....7........"
                 // "5...............6....94.7....8........97..........1.3.16...5.........8.73.....4.."
 
-                // http://www.angusj.com/sudoku/ -- Advanced Puzzle Pack 2 -- puzzle001.ss to puzzle046.ss 
+                // http://www.angusj.com/sudoku/ -- Advanced Puzzle Pack 2 -- puzzle001.ss to puzzle046.ss
                 // hidden pair ( 1 6 ) at cell(2,4) and cell(3,4), column 4
                 // "2...578.37.....4...43.......7.54....32.876.49....13.5.......61...1.....44.736...2"
                 // "7..42..6..435..2...1..3.59......4321....9....1643......71.6..3...9..361..2..41..9"
@@ -286,14 +284,12 @@ impl SudokuGame {
                 // "7.9.3.8.....2.....4....8.6525...4...3..672..4...3...8794.8....3.....3.....3.1.7.8"
                 // "4..2..89..96.8.2.1.......54...42.....5.9.1.8.....65...17.......6.2.4.51..39..2..8"
                 // ".......5..5.9..3..3..754..8..8.4.6..17..2..45..5.7.2..5..867..4..9..5.8..6......."
-
             ),
-        }
+        };
     }
 }
 
-
-#[derive(Debug)]  // adding so pretty print will work ... {:#?} for pretty-print
+#[derive(Debug)] // adding so pretty print will work ... {:#?} for pretty-print
 pub struct SudokuPuzzleCell {
     possibles: [bool; 9],
     found: usize,
@@ -326,9 +322,9 @@ impl SudokuPuzzleCell {
     fn new() -> SudokuPuzzleCell {
         // create an empty cell
         return SudokuPuzzleCell {
-            possibles:  [true; 9],
+            possibles: [true; 9],
             found: SudokuPuzzleCell::NOT_FOUND,
-        }
+        };
     }
 
     fn initialize(&mut self) {
@@ -363,17 +359,15 @@ impl SudokuPuzzleCell {
     }
 }
 
-
 #[derive(Copy, Clone)]
 struct CellCoordinate {
     row: usize,
     column: usize,
 }
 
-
 #[derive(Debug)]
 pub struct SudokuPuzzle {
-    // rust only supports single dimensional arrays 
+    // rust only supports single dimensional arrays
     // => one needs build their own multi-dimensional array
     cells: [[SudokuPuzzleCell; 9]; 9],
 }
@@ -398,12 +392,18 @@ impl SudokuPuzzle {
         // some use "0" versus "." to indicate unknown values
 
         let input_string_has_plus_signs: bool = game.db_game.chars().nth(9).unwrap() == '+';
-        let cell_increment: usize = {if input_string_has_plus_signs {10} else {9}};
+        let cell_increment: usize = {
+            if input_string_has_plus_signs {
+                10
+            } else {
+                9
+            }
+        };
 
         let mut normalized_db_game: String = String::from("");
 
         for i in (0..81).step_by(cell_increment) {
-            normalized_db_game.push_str(&game.db_game[i..i+9]);
+            normalized_db_game.push_str(&game.db_game[i..i + 9]);
         }
 
         // lesson learned: rust does not support string processing since it is hard.
@@ -422,7 +422,7 @@ impl SudokuPuzzle {
         let mut input_index: usize = 0;
 
         for row in 0..9 {
-            let input_row = &normalized_db_game_char_array[input_index..input_index+9];
+            let input_row = &normalized_db_game_char_array[input_index..input_index + 9];
             for column in 0..9 {
                 let cell: char = input_row[column];
                 // println!("create: row {row} column {column} cell {cell}.");
@@ -459,9 +459,27 @@ impl SudokuPuzzle {
 
                     let kk: usize = usize::try_from(k).unwrap();
 
-                    let char1: char = {if cell.is_possible(kk+0) {char::from_digit(k+1, 10).expect("digit is digit")} else{' '}};
-                    let char2: char = {if cell.is_possible(kk+1) {char::from_digit(k+2, 10).expect("digit is digit")} else{' '}};
-                    let char3: char = {if cell.is_possible(kk+2) {char::from_digit(k+3, 10).expect("digit is digit")} else{' '}};
+                    let char1: char = {
+                        if cell.is_possible(kk + 0) {
+                            char::from_digit(k + 1, 10).expect("digit is digit")
+                        } else {
+                            ' '
+                        }
+                    };
+                    let char2: char = {
+                        if cell.is_possible(kk + 1) {
+                            char::from_digit(k + 2, 10).expect("digit is digit")
+                        } else {
+                            ' '
+                        }
+                    };
+                    let char3: char = {
+                        if cell.is_possible(kk + 2) {
+                            char::from_digit(k + 3, 10).expect("digit is digit")
+                        } else {
+                            ' '
+                        }
+                    };
 
                     print!("| {char1} {char2} {char3} | ");
                     if (j + 1) % 3 == 0 {
@@ -498,14 +516,12 @@ impl SudokuPuzzle {
                     }
                     let found_single: bool = num_possibilities == 1;
                     if found_single {
-                       found_singles = true;
-                       singles[i][j] = last_found;
-                    }
-                    else {
+                        found_singles = true;
+                        singles[i][j] = last_found;
+                    } else {
                         singles[i][j] = SudokuPuzzleCell::NOT_FOUND;
                     }
-                }
-                else {
+                } else {
                     singles[i][j] = SudokuPuzzleCell::NOT_FOUND;
                 }
             }
@@ -534,20 +550,21 @@ impl SudokuPuzzle {
     }
 
     fn find_horizontal_exclusions(
-         &mut self,
-         assist: fn(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String) -> u32
+        &mut self,
+        assist: fn(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String) -> u32,
     ) -> bool {
         let mut num_changes: u32 = 0;
-        let mut cells: [CellCoordinate; 9] =  [
-            CellCoordinate{row: SudokuPuzzleCell::NOT_FOUND, column: SudokuPuzzleCell::NOT_FOUND}; 9
-        ];
+        let mut cells: [CellCoordinate; 9] = [CellCoordinate {
+            row: SudokuPuzzleCell::NOT_FOUND,
+            column: SudokuPuzzleCell::NOT_FOUND,
+        }; 9];
 
         for row in 0..9 {
             for column in 0..9 {
                 cells[column].row = row;
                 cells[column].column = column;
             }
-            let description: String = format!("for row {}", row+1);
+            let description: String = format!("for row {}", row + 1);
             // let puzzle: &mut SudokuPuzzle = self;
             num_changes += assist(self, &cells, &description);
         }
@@ -556,20 +573,21 @@ impl SudokuPuzzle {
     }
 
     fn find_vertical_exclusions(
-         &mut self,
-         assist: fn(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String) -> u32
+        &mut self,
+        assist: fn(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String) -> u32,
     ) -> bool {
         let mut num_changes: u32 = 0;
-        let mut cells: [CellCoordinate; 9] =  [
-            CellCoordinate{row: SudokuPuzzleCell::NOT_FOUND, column: SudokuPuzzleCell::NOT_FOUND}; 9
-        ];
+        let mut cells: [CellCoordinate; 9] = [CellCoordinate {
+            row: SudokuPuzzleCell::NOT_FOUND,
+            column: SudokuPuzzleCell::NOT_FOUND,
+        }; 9];
 
         for column in 0..9 {
             for row in 0..9 {
                 cells[row].row = row;
                 cells[row].column = column;
             }
-            let description: String = format!("for column {}", column+1);
+            let description: String = format!("for column {}", column + 1);
             num_changes += assist(self, &cells, &description);
         }
 
@@ -577,13 +595,14 @@ impl SudokuPuzzle {
     }
 
     fn find_grid_exclusions(
-         &mut self,
-         assist: fn(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String) -> u32
+        &mut self,
+        assist: fn(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String) -> u32,
     ) -> bool {
         let mut num_changes: u32 = 0;
-        let mut cells: [CellCoordinate; 9] =  [
-            CellCoordinate{row: SudokuPuzzleCell::NOT_FOUND, column: SudokuPuzzleCell::NOT_FOUND}; 9
-        ];
+        let mut cells: [CellCoordinate; 9] = [CellCoordinate {
+            row: SudokuPuzzleCell::NOT_FOUND,
+            column: SudokuPuzzleCell::NOT_FOUND,
+        }; 9];
 
         for gridi in 0..3 {
             for gridj in 0..3 {
@@ -591,14 +610,14 @@ impl SudokuPuzzle {
                 let startj: usize = gridj * 3;
 
                 let mut grid_index: usize = 0;
-                for row in starti..starti+3 {
-                    for column in startj..startj+3 {
+                for row in starti..starti + 3 {
+                    for column in startj..startj + 3 {
                         cells[grid_index].row = row;
                         cells[grid_index].column = column;
                         grid_index += 1;
                     }
                 }
-                let description: String = format!("for grid({}, {})", gridi+1, gridj+1);
+                let description: String = format!("for grid({}, {})", gridi + 1, gridj + 1);
                 num_changes += assist(self, &cells, &description);
             }
         }
@@ -608,7 +627,7 @@ impl SudokuPuzzle {
 
     fn find_exclusions(
         &mut self,
-        assist: fn(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String) -> u32
+        assist: fn(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String) -> u32,
     ) -> bool {
         let mut found_exclusions: bool = false;
 
@@ -623,9 +642,7 @@ impl SudokuPuzzle {
         return self.find_exclusions(SudokuPuzzle::find_hidden_singles_assist);
     }
 
-    fn find_hidden_singles_assist(
-        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String
-    ) -> u32 {
+    fn find_hidden_singles_assist(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String) -> u32 {
         let mut num_changes = 0;
 
         for k in 0..9 {
@@ -636,10 +653,6 @@ impl SudokuPuzzle {
                 let column: usize = cells[c].column;
                 if !puzzle.cells[row][column].is_solved() {
                     if puzzle.cells[row][column].is_possible(k) {
-                        // println!(
-                        //     "find_hidden_singles_assist: row({}) column({}) possible({})? {}, desc({}).",
-                        //     row+1, column+1, k+1, puzzle.cells[row][column].is_possible(k), description
-                        // );
                         num_possibilities += 1;
                         last_found = c;
                     }
@@ -652,9 +665,9 @@ impl SudokuPuzzle {
                 let column: usize = cells[last_found].column;
                 println!(
                     "found hidden single {} in cell({}, {}) {}.",
-                    k+1,
-                    row+1,
-                    column+1,
+                    k + 1,
+                    row + 1,
+                    column + 1,
                     description
                 );
                 puzzle.solve_cell(row, column, k);
@@ -665,25 +678,24 @@ impl SudokuPuzzle {
         return num_changes;
     }
 
-
     fn find_locked_candidate_horizontal(&mut self) -> bool {
         let mut num_changes: u32 = 0;
         let mut candidate: [[[bool; 9]; 3]; 9] = [[[false; 9]; 3]; 9];
 
         for row in 0..9 {
-           for k in 0..9 {
-               candidate[row][0][k] = false;
-               candidate[row][1][k] = false;
-               candidate[row][2][k] = false;
-           }
-           for k in 0..9 {
-              for column in 0..9 {
-                  if !self.cells[row][column].is_solved() {
-                      let gridj: usize = column / 3;
-                      candidate[row][gridj][k] |= self.cells[row][column].is_possible(k);
-                  }
-              }
-           }
+            for k in 0..9 {
+                candidate[row][0][k] = false;
+                candidate[row][1][k] = false;
+                candidate[row][2][k] = false;
+            }
+            for k in 0..9 {
+                for column in 0..9 {
+                    if !self.cells[row][column].is_solved() {
+                        let gridj: usize = column / 3;
+                        candidate[row][gridj][k] |= self.cells[row][column].is_possible(k);
+                    }
+                }
+            }
         }
 
         //
@@ -703,20 +715,23 @@ impl SudokuPuzzle {
                     let mut locked_row: usize = SudokuPuzzleCell::NOT_FOUND;
 
                     if candidate[starti][gridj][k]
-                        && !candidate[starti+1][gridj][k]
-                        && !candidate[starti+2][gridj][k] {
+                        && !candidate[starti + 1][gridj][k]
+                        && !candidate[starti + 2][gridj][k]
+                    {
                         found_locked_candidate = true;
                         locked_row = starti;
                     }
                     if !candidate[starti][gridj][k]
-                        && candidate[starti+1][gridj][k]
-                        && !candidate[starti+2][gridj][k] {
+                        && candidate[starti + 1][gridj][k]
+                        && !candidate[starti + 2][gridj][k]
+                    {
                         found_locked_candidate = true;
                         locked_row = starti + 1;
                     }
                     if !candidate[starti][gridj][k]
-                        && !candidate[starti+1][gridj][k]
-                        && candidate[starti+2][gridj][k] {
+                        && !candidate[starti + 1][gridj][k]
+                        && candidate[starti + 2][gridj][k]
+                    {
                         found_locked_candidate = true;
                         locked_row = starti + 2;
                     }
@@ -724,7 +739,10 @@ impl SudokuPuzzle {
                     if found_locked_candidate {
                         println!(
                             "found type 1 locked candidate {0} in row cells({1},{2}..{3}), exclude the rest of the row",
-                            k+1, locked_row+1, startj+1, startj+3
+                            k + 1,
+                            locked_row + 1,
+                            startj + 1,
+                            startj + 3
                         );
                         for column in 0..9 {
                             let this_grid_column: usize = column / 3;
@@ -733,10 +751,7 @@ impl SudokuPuzzle {
                                 if self.cells[locked_row][column].is_possible(k) {
                                     num_changes += 1;
                                     self.cells[locked_row][column].set_possible(k, false);
-                                    println!(
-                                        "    exclude {} from cell({}, {}).",
-                                        k+1, locked_row+1, column+1
-                                    );
+                                    println!("    exclude {} from cell({}, {}).", k + 1, locked_row + 1, column + 1);
                                 }
                             }
                         }
@@ -758,21 +773,15 @@ impl SudokuPuzzle {
                 let mut found_locked_candidate: bool = false;
                 let mut startj: usize = SudokuPuzzleCell::NOT_FOUND;
 
-                if candidate[row][0][k]
-                    && !candidate[row][1][k]
-                    && !candidate[row][2][k] {
+                if candidate[row][0][k] && !candidate[row][1][k] && !candidate[row][2][k] {
                     found_locked_candidate = true;
                     startj = 0;
                 }
-                if !candidate[row][0][k]
-                    && candidate[row][1][k]
-                    && !candidate[row][2][k] {
+                if !candidate[row][0][k] && candidate[row][1][k] && !candidate[row][2][k] {
                     found_locked_candidate = true;
                     startj = 3;
                 }
-                if !candidate[row][0][k]
-                    && !candidate[row][1][k]
-                    && candidate[row][2][k] {
+                if !candidate[row][0][k] && !candidate[row][1][k] && candidate[row][2][k] {
                     found_locked_candidate = true;
                     startj = 6;
                 }
@@ -780,27 +789,25 @@ impl SudokuPuzzle {
                 if found_locked_candidate {
                     let gridj: usize = startj / 3;
                     let starti: usize = row / 3 * 3;
-                    let found_possibilities_to_remove: bool = (
-                        starti != row && candidate[starti][gridj][k]
-                        || starti+1 != row && candidate[starti+1][gridj][k]
-                        || starti+2 != row && candidate[starti+2][gridj][k]
-                    );
+                    let found_possibilities_to_remove: bool = (starti != row && candidate[starti][gridj][k]
+                        || starti + 1 != row && candidate[starti + 1][gridj][k]
+                        || starti + 2 != row && candidate[starti + 2][gridj][k]);
                     if found_possibilities_to_remove {
                         println!(
                             "found type 2 locked candidate {} in row cells({},{}..{}), exclude the rest of the grid",
-                            k+1, row+1, startj+1, startj+3
+                            k + 1,
+                            row + 1,
+                            startj + 1,
+                            startj + 3
                         );
-                        for i in starti..starti+3 {
+                        for i in starti..starti + 3 {
                             let row_needing_exclusion: bool = i != row;
                             if row_needing_exclusion {
-                                for j in startj..startj+3 {
+                                for j in startj..startj + 3 {
                                     if self.cells[i][j].is_possible(k) {
                                         num_changes += 1;
                                         self.cells[i][j].set_possible(k, false);
-                                        println!(
-                                            "    exclude {} from cell({}, {}).",
-                                            k+1, i+1, j+1
-                                        );
+                                        println!("    exclude {} from cell({}, {}).", k + 1, i + 1, j + 1);
                                     }
                                 }
                             }
@@ -826,7 +833,7 @@ impl SudokuPuzzle {
             for k in 0..9 {
                 for row in 0..9 {
                     if !self.cells[row][column].is_solved() {
-                        let  gridi: usize = row / 3;
+                        let gridi: usize = row / 3;
                         candidate[column][gridi][k] |= self.cells[row][column].is_possible(k);
                     }
                 }
@@ -848,20 +855,23 @@ impl SudokuPuzzle {
                     let mut locked_column: usize = SudokuPuzzleCell::NOT_FOUND;
                     // if ( Candidate[startj, gridi, k] && !Candidate[startj + 1, gridi, k] && !Candidate[startj + 2, gridi, k] )
                     if candidate[startj][gridi][k]
-                        && !candidate[startj+1][gridi][k]
-                        && !candidate[startj+2][gridi][k] {
+                        && !candidate[startj + 1][gridi][k]
+                        && !candidate[startj + 2][gridi][k]
+                    {
                         found_locked_candidate = true;
                         locked_column = startj;
                     }
                     if !candidate[startj][gridi][k]
-                        && candidate[startj+1][gridi][k]
-                        && !candidate[startj+2][gridi][k] {
+                        && candidate[startj + 1][gridi][k]
+                        && !candidate[startj + 2][gridi][k]
+                    {
                         found_locked_candidate = true;
                         locked_column = startj + 1;
                     }
                     if !candidate[startj][gridi][k]
-                        && !candidate[startj+1][gridi][k]
-                        && candidate[startj+2][gridi][k] {
+                        && !candidate[startj + 1][gridi][k]
+                        && candidate[startj + 2][gridi][k]
+                    {
                         found_locked_candidate = true;
                         locked_column = startj + 2;
                     }
@@ -870,11 +880,9 @@ impl SudokuPuzzle {
                         //     candidate[locked_row][0][k]
                         //     candidate[locked_row][1][k]
                         //     candidate[locked_row][2][k]
-                        let found_possibilities_to_remove: bool = (
-                            gridi != 0 && candidate[locked_column][0][k]
+                        let found_possibilities_to_remove: bool = (gridi != 0 && candidate[locked_column][0][k]
                             || gridi != 1 && candidate[locked_column][1][k]
-                            || gridi != 2 && candidate[locked_column][2][k]
-                        );
+                            || gridi != 2 && candidate[locked_column][2][k]);
                         if found_possibilities_to_remove {
                             println!(
                                 "found type 1 locked candidate {} in column cells({}..{},{}), exclude the rest of the column",
@@ -889,7 +897,9 @@ impl SudokuPuzzle {
                                         self.cells[row][locked_column].set_possible(k, false);
                                         println!(
                                             "    exclude {} from cell({}, {}).",
-                                            k+1, row+1, locked_column+1
+                                            k + 1,
+                                            row + 1,
+                                            locked_column + 1
                                         );
                                     }
                                 }
@@ -911,21 +921,15 @@ impl SudokuPuzzle {
                 let mut found_locked_candidate = false;
                 let mut starti: usize = SudokuPuzzleCell::NOT_FOUND;
                 // Candidate[column, 0, k] && !Candidate[column, 1, k] && !Candidate[column, 2, k] )
-                if candidate[column][0][k]
-                    && !candidate[column][1][k]
-                    && !candidate[column][2][k] {
+                if candidate[column][0][k] && !candidate[column][1][k] && !candidate[column][2][k] {
                     found_locked_candidate = true;
                     starti = 0;
                 }
-                if !candidate[column][0][k]
-                    && candidate[column][1][k]
-                    && !candidate[column][2][k] {
+                if !candidate[column][0][k] && candidate[column][1][k] && !candidate[column][2][k] {
                     found_locked_candidate = true;
                     starti = 3;
                 }
-                if !candidate[column][0][k]
-                    && !candidate[column][1][k]
-                    && candidate[column][2][k] {
+                if !candidate[column][0][k] && !candidate[column][1][k] && candidate[column][2][k] {
                     found_locked_candidate = true;
                     starti = 6;
                 }
@@ -936,27 +940,22 @@ impl SudokuPuzzle {
                     //     candidate[starti][gridj][k]
                     //     candidate[starti+1][gridj][k]
                     //     candidate[starti+2][gridj][k]
-                    let found_possibilities_to_remove: bool = (
-                        (startj != column && candidate[startj][gridi][k])
+                    let found_possibilities_to_remove: bool = ((startj != column && candidate[startj][gridi][k])
                         || (startj + 1 != column && candidate[startj + 1][gridi][k])
-                        || (startj + 2 != column && candidate[startj + 2][gridi][k])
-                    );
+                        || (startj + 2 != column && candidate[startj + 2][gridi][k]));
                     if found_possibilities_to_remove {
                         println!(
                             "found type 2 locked candidated {} in column cells({}..{},{}), exclude the rest of the grid",
                             k+1, starti+1, starti+3, column+1
                         );
-                        for j in startj..startj+3 {
+                        for j in startj..startj + 3 {
                             let column_needing_exclusion: bool = j != column;
                             if column_needing_exclusion {
-                                for i in starti..starti+3 {
+                                for i in starti..starti + 3 {
                                     if self.cells[i][j].is_possible(k) {
                                         num_changes += 1;
                                         self.cells[i][j].set_possible(k, false);
-                                        println!(
-                                            "    excluding {} in cell({}, {}).",
-                                            k+1, i+1, j+1
-                                        );
+                                        println!("    excluding {} in cell({}, {}).", k + 1, i + 1, j + 1);
                                     }
                                 }
                             }
@@ -990,14 +989,14 @@ impl SudokuPuzzle {
         return did_something;
     }
 
-    fn find_naked_pairs_assist(
-        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String
-    ) -> u32 {
+    fn find_naked_pairs_assist(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String) -> u32 {
         let mut num_changes: u32 = 0;
 
-        let mut candidate_pairs: [(usize, usize, usize); 9] = [
-            (SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND); 9
-        ];
+        let mut candidate_pairs: [(usize, usize, usize); 9] = [(
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+        ); 9];
         let mut num_candidate_pairs: usize = 0;
 
         // File "iter()" and iter_mut" under ... WTF.
@@ -1018,8 +1017,7 @@ impl SudokuPuzzle {
                         }
                         if p1 == SudokuPuzzleCell::NOT_FOUND {
                             p1 = k;
-                        }
-                        else {
+                        } else {
                             p2 = k;
                         }
                     }
@@ -1034,13 +1032,16 @@ impl SudokuPuzzle {
         }
 
         let mut num_naked_pairs: usize = 0;
-        let mut naked_pairs: [(usize, usize, usize, usize); 9] = [
-            (SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND); 9
-        ];
+        let mut naked_pairs: [(usize, usize, usize, usize); 9] = [(
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+        ); 9];
 
         if num_candidate_pairs >= 2 {
-            for c1 in 0_usize..num_candidate_pairs-1 {
-                for c2 in c1+1..num_candidate_pairs {
+            for c1 in 0_usize..num_candidate_pairs - 1 {
+                for c2 in c1 + 1..num_candidate_pairs {
                     // determine if candidate_pairs[c1] and candidate_pairs[c2]
                     // are candidate pairs.  do they reference the same pair?
 
@@ -1055,16 +1056,6 @@ impl SudokuPuzzle {
                     (p1, p2, _) = candidate_pairs[c2];
                     possibles_for_pair[p1] = true;
                     possibles_for_pair[p2] = true;
-
-                    // let num_possibles_for_pairs: u32 = {
-                    //     let mut num: u32 = 0;
-                    //     for i in 0..9 {
-                    //         if possibles_for_pair[i] {
-                    //             num += 1;
-                    //         }
-                    //     }
-                    //     num
-                    // };
 
                     let mut num_possibles_for_pairs: u32 = 0;
                     for k in 0..9 {
@@ -1081,7 +1072,7 @@ impl SudokuPuzzle {
                         naked_pairs[num_naked_pairs] = (
                             candidate_pairs[c1].0,
                             candidate_pairs[c1].1,
-                            candidate_pairs[c1].2,  // index into cells[]
+                            candidate_pairs[c1].2, // index into cells[]
                             candidate_pairs[c2].2,
                         );
                         num_naked_pairs += 1;
@@ -1117,16 +1108,9 @@ impl SudokuPuzzle {
                     }
                 }
                 if num_changes_for_pair > 0 {
-                    println!(
-                        "found naked pair ({}, {}) {}",
-                        p1+1, p2+1, description
-                    );
-                }
-                else {
-                    println!(
-                        "xxx found naked pair ({}, {}) {}",
-                        p1+1, p2+1, description
-                    );
+                    println!("found naked pair ({}, {}) {}", p1 + 1, p2 + 1, description);
+                } else {
+                    println!("xxx found naked pair ({}, {}) {}", p1 + 1, p2 + 1, description);
                 }
             }
         }
@@ -1138,16 +1122,16 @@ impl SudokuPuzzle {
         return self.find_exclusions(SudokuPuzzle::find_naked_pairs_assist);
     }
 
-    fn find_naked_triples_assist(
-        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String
-    ) -> u32 {
+    fn find_naked_triples_assist(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String) -> u32 {
         let mut num_changes: u32 = 0;
 
         let mut num_candidate_triples: usize = 0;
-        let mut candidate_triples: [(usize, usize, usize, usize); 9] = [
-            (SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND,
-            SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND); 9
-        ];
+        let mut candidate_triples: [(usize, usize, usize, usize); 9] = [(
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+        ); 9];
 
         for (c, cell) in cells.iter().enumerate() {
             let row: usize = cell.row;
@@ -1167,11 +1151,9 @@ impl SudokuPuzzle {
                         }
                         if t1 == SudokuPuzzleCell::NOT_FOUND {
                             t1 = k;
-                        }
-                        else if t2 == SudokuPuzzleCell::NOT_FOUND {
+                        } else if t2 == SudokuPuzzleCell::NOT_FOUND {
                             t2 = k;
-                        }
-                        else {
+                        } else {
                             t3 = k;
                         }
                     }
@@ -1180,22 +1162,25 @@ impl SudokuPuzzle {
 
             // (1, 2) (2, 3) (1, 3) is a naked triple
             if num_possibilities == 3 || num_possibilities == 2 {
-                candidate_triples[num_candidate_triples] = (t1, t2, t3, c);  // t3 could be NOT_FOUND
+                candidate_triples[num_candidate_triples] = (t1, t2, t3, c); // t3 could be NOT_FOUND
                 num_candidate_triples += 1;
             }
         }
 
         let mut num_naked_triples: usize = 0;
-        let mut naked_triples: [(usize, usize, usize, usize, usize, usize); 9] = [
-            (SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND,
-            SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND,
-            SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND); 9
-        ];
+        let mut naked_triples: [(usize, usize, usize, usize, usize, usize); 9] = [(
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+        ); 9];
 
         if num_candidate_triples >= 3 {
             for c1 in 0_usize..num_candidate_triples {
-                for c2 in c1+1..num_candidate_triples {
-                    for c3 in c2+1..num_candidate_triples {
+                for c2 in c1 + 1..num_candidate_triples {
+                    for c3 in c2 + 1..num_candidate_triples {
                         let mut possibles_for_triple: [bool; 9] = [false; 9];
 
                         let (t1, t2, t3, _) = candidate_triples[c1];
@@ -1228,11 +1213,9 @@ impl SudokuPuzzle {
                                 num_possibles_for_triple += 1;
                                 if t1 == SudokuPuzzleCell::NOT_FOUND {
                                     t1 = k;
-                                }
-                                else if t2 == SudokuPuzzleCell::NOT_FOUND {
+                                } else if t2 == SudokuPuzzleCell::NOT_FOUND {
                                     t2 = k;
-                                }
-                                else if t3 == SudokuPuzzleCell::NOT_FOUND {
+                                } else if t3 == SudokuPuzzleCell::NOT_FOUND {
                                     t3 = k;
                                 }
                                 if num_possibles_for_triple > 3 {
@@ -1245,9 +1228,9 @@ impl SudokuPuzzle {
                                 t1,
                                 t2,
                                 t3,
-                                candidate_triples[c1].3,  // .3 => index into cells[]
+                                candidate_triples[c1].3, // .3 => index into cells[]
                                 candidate_triples[c2].3,
-                                candidate_triples[c3].3
+                                candidate_triples[c3].3,
                             );
                             num_naked_triples += 1;
                         }
@@ -1288,15 +1271,14 @@ impl SudokuPuzzle {
                     }
                 }
                 if num_changes_for_triple > 0 {
-                    println!(
-                        "found naked triple ({} {} {}) {}",
-                        t1+1, t2+1, t3+1, description
-                    );
-                }
-                else {
+                    println!("found naked triple ({} {} {}) {}", t1 + 1, t2 + 1, t3 + 1, description);
+                } else {
                     println!(
                         "xxx found naked triple ({} {} {}) {}",
-                        t1+1, t2+1, t3+1, description
+                        t1 + 1,
+                        t2 + 1,
+                        t3 + 1,
+                        description
                     );
                 }
             }
@@ -1309,17 +1291,17 @@ impl SudokuPuzzle {
         return self.find_exclusions(SudokuPuzzle::find_naked_triples_assist);
     }
 
-    fn find_naked_quads_assist(
-        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String
-    ) -> u32 {
+    fn find_naked_quads_assist(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String) -> u32 {
         let mut num_changes: u32 = 0;
 
         let mut num_candidate_quads: usize = 0;
-        let mut candidate_quads: [(usize, usize, usize, usize, usize); 9] = [
-            (SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND,
-            SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND,
-            SudokuPuzzleCell::NOT_FOUND); 9
-        ];
+        let mut candidate_quads: [(usize, usize, usize, usize, usize); 9] = [(
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+        ); 9];
 
         for (c, cell) in cells.iter().enumerate() {
             let row: usize = cell.row;
@@ -1340,14 +1322,11 @@ impl SudokuPuzzle {
                         }
                         if t1 == SudokuPuzzleCell::NOT_FOUND {
                             t1 = k;
-                        }
-                        else if t2 == SudokuPuzzleCell::NOT_FOUND {
+                        } else if t2 == SudokuPuzzleCell::NOT_FOUND {
                             t2 = k;
-                        }
-                        else if t3 == SudokuPuzzleCell::NOT_FOUND {
+                        } else if t3 == SudokuPuzzleCell::NOT_FOUND {
                             t3 = k;
-                        }
-                        else {
+                        } else {
                             t4 = k;
                         }
                     }
@@ -1356,24 +1335,28 @@ impl SudokuPuzzle {
 
             // (1, 2) (2, 3) (3, 4) (1, 4) is a naked quad
             if num_possibilities == 4 || num_possibilities == 3 || num_possibilities == 2 {
-                candidate_quads[num_candidate_quads] = (t1, t2, t3, t4, c);  // t3/t4 could be NOT_FOUND
-                num_candidate_quads+= 1;
+                candidate_quads[num_candidate_quads] = (t1, t2, t3, t4, c); // t3/t4 could be NOT_FOUND
+                num_candidate_quads += 1;
             }
         }
 
         let mut num_naked_quads: usize = 0;
-        let mut naked_quads: [(usize, usize, usize, usize, usize, usize, usize, usize); 9] = [
-            (SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND,
-            SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND,
-            SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND,
-            SudokuPuzzleCell::NOT_FOUND, SudokuPuzzleCell::NOT_FOUND); 9
-        ];
+        let mut naked_quads: [(usize, usize, usize, usize, usize, usize, usize, usize); 9] = [(
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+            SudokuPuzzleCell::NOT_FOUND,
+        ); 9];
 
         if num_candidate_quads >= 4 {
             for c1 in 0_usize..num_candidate_quads {
-                for c2 in c1+1..num_candidate_quads {
-                    for c3 in c2+1..num_candidate_quads {
-                        for c4 in c3+1..num_candidate_quads {
+                for c2 in c1 + 1..num_candidate_quads {
+                    for c3 in c2 + 1..num_candidate_quads {
+                        for c4 in c3 + 1..num_candidate_quads {
                             let mut possibles_for_quad: [bool; 9] = [false; 9];
 
                             let (t1, t2, t3, t4, _) = candidate_quads[c1];
@@ -1426,14 +1409,11 @@ impl SudokuPuzzle {
                                     num_possibles_for_quad += 1;
                                     if t1 == SudokuPuzzleCell::NOT_FOUND {
                                         t1 = k;
-                                    }
-                                    else if t2 == SudokuPuzzleCell::NOT_FOUND {
+                                    } else if t2 == SudokuPuzzleCell::NOT_FOUND {
                                         t2 = k;
-                                    }
-                                    else if t3 == SudokuPuzzleCell::NOT_FOUND {
+                                    } else if t3 == SudokuPuzzleCell::NOT_FOUND {
                                         t3 = k;
-                                    }
-                                    else if t4 == SudokuPuzzleCell::NOT_FOUND {
+                                    } else if t4 == SudokuPuzzleCell::NOT_FOUND {
                                         t4 = k;
                                     }
                                     if num_possibles_for_quad > 4 {
@@ -1447,10 +1427,10 @@ impl SudokuPuzzle {
                                     t2,
                                     t3,
                                     t4,
-                                    candidate_quads[c1].4,  // .3 => index into cells[]
+                                    candidate_quads[c1].4, // .3 => index into cells[]
                                     candidate_quads[c2].4,
                                     candidate_quads[c3].4,
-                                    candidate_quads[c4].4
+                                    candidate_quads[c4].4,
                                 );
                                 num_naked_quads += 1;
                             }
@@ -1476,25 +1456,49 @@ impl SudokuPuzzle {
                     if !puzzle.cells[row][column].is_solved() {
                         if puzzle.cells[row][column].is_possible(t1) {
                             puzzle.cells[row][column].set_possible(t1, false);
-                            println!("    update {} in cell({}, {}) {}.", t1+1, row+1, column+1, description);
+                            println!(
+                                "    update {} in cell({}, {}) {}.",
+                                t1 + 1,
+                                row + 1,
+                                column + 1,
+                                description
+                            );
                             num_changes_for_quad += 1;
                             num_changes += 1;
                         }
                         if puzzle.cells[row][column].is_possible(t2) {
                             puzzle.cells[row][column].set_possible(t2, false);
-                            println!("    update {} in cell({}, {}) {}.", t2+1, row+1, column+1, description);
+                            println!(
+                                "    update {} in cell({}, {}) {}.",
+                                t2 + 1,
+                                row + 1,
+                                column + 1,
+                                description
+                            );
                             num_changes_for_quad += 1;
                             num_changes += 1;
                         }
                         if puzzle.cells[row][column].is_possible(t3) {
                             puzzle.cells[row][column].set_possible(t3, false);
-                            println!("    update {} in cell({}, {}) {}.", t3+1, row+1, column+1, description);
+                            println!(
+                                "    update {} in cell({}, {}) {}.",
+                                t3 + 1,
+                                row + 1,
+                                column + 1,
+                                description
+                            );
                             num_changes_for_quad += 1;
                             num_changes += 1;
                         }
                         if puzzle.cells[row][column].is_possible(t4) {
                             puzzle.cells[row][column].set_possible(t4, false);
-                            println!("    update {} in cell({}, {}) {}.", t4+1, row+1, column+1, description);
+                            println!(
+                                "    update {} in cell({}, {}) {}.",
+                                t4 + 1,
+                                row + 1,
+                                column + 1,
+                                description
+                            );
                             num_changes_for_quad += 1;
                             num_changes += 1;
                         }
@@ -1503,13 +1507,20 @@ impl SudokuPuzzle {
                 if num_changes_for_quad > 0 {
                     println!(
                         "found naked quad ({} {} {} {}) {}",
-                        t1+1, t2+1, t3+1, t4+1, description
+                        t1 + 1,
+                        t2 + 1,
+                        t3 + 1,
+                        t4 + 1,
+                        description
                     );
-                }
-                else {
+                } else {
                     println!(
                         "xxx found naked quad ({} {} {} {}) {}",
-                        t1+1, t2+1, t3+1, t4+1, description
+                        t1 + 1,
+                        t2 + 1,
+                        t3 + 1,
+                        t4 + 1,
+                        description
                     );
                 }
             }
@@ -1522,14 +1533,12 @@ impl SudokuPuzzle {
         return self.find_exclusions(SudokuPuzzle::find_naked_quads_assist);
     }
 
-    fn find_hidden_pairs_assist(
-        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String
-    ) -> u32 {
+    fn find_hidden_pairs_assist(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String) -> u32 {
         let mut num_changes: u32 = 0;
 
         let mut num_possibles_pairs: [usize; 9] = [0; 9];
         let mut possible_pairs: [bool; 9] = [false; 9];
-        let mut possible_pair_locations: [[usize; 2]; 9] = [[SudokuPuzzleCell::NOT_FOUND; 2]; 9];  // 9 x 2 array
+        let mut possible_pair_locations: [[usize; 2]; 9] = [[SudokuPuzzleCell::NOT_FOUND; 2]; 9]; // 9 x 2 array
 
         for (c, cell) in cells.iter().enumerate() {
             let row: usize = cell.row;
@@ -1549,12 +1558,11 @@ impl SudokuPuzzle {
 
         for p1 in 0..9 {
             if possible_pairs[p1] {
-                for p2 in p1+1..9 {
+                for p2 in p1 + 1..9 {
                     if possible_pairs[p2] {
-                        let share_same_two_cells: bool = (
-                            possible_pair_locations[p1][0] == possible_pair_locations[p2][0]
-                            && possible_pair_locations[p1][1] == possible_pair_locations[p2][1]
-                        );
+                        let share_same_two_cells: bool = (possible_pair_locations[p1][0]
+                            == possible_pair_locations[p2][0]
+                            && possible_pair_locations[p1][1] == possible_pair_locations[p2][1]);
                         if share_same_two_cells {
                             let c1: usize = possible_pair_locations[p1][0];
                             let c2: usize = possible_pair_locations[p1][1];
@@ -1566,7 +1574,7 @@ impl SudokuPuzzle {
                             let row2: usize = cells[c2].row;
                             let column2: usize = cells[c2].column;
 
-                            // for cells outside of c1 and c2, exclude p1 and p2 posibilities
+                            // for cells outside of c1 and c2, exclude p1 and p2 possibilities
 
                             let mut num_changes_this_pair: u32 = 0;
                             for k in 0..9 {
@@ -1587,18 +1595,23 @@ impl SudokuPuzzle {
                             if num_changes_this_pair > 0 {
                                 println!(
                                     "found hidden pair ({} {}) at cell({}, {}) and cell({}, {}), {}",
-                                    p1+1, p2+1,
-                                    row1+1, column1+1,
-                                    row2+1, column2+1,
+                                    p1 + 1,
+                                    p2 + 1,
+                                    row1 + 1,
+                                    column1 + 1,
+                                    row2 + 1,
+                                    column2 + 1,
                                     description
                                 );
-                            }
-                            else {
+                            } else {
                                 println!(
                                     "xxx found hidden pair ({} {}) at cell({}, {}) and cell({}, {}), {}",
-                                    p1+1, p2+1,
-                                    row1+1, column1+1,
-                                    row2+1, column2+1,
+                                    p1 + 1,
+                                    p2 + 1,
+                                    row1 + 1,
+                                    column1 + 1,
+                                    row2 + 1,
+                                    column2 + 1,
                                     description
                                 );
                             }
@@ -1615,14 +1628,12 @@ impl SudokuPuzzle {
         return self.find_exclusions(SudokuPuzzle::find_hidden_pairs_assist);
     }
 
-    fn find_hidden_triples_assist(
-        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String
-    ) -> u32 {
+    fn find_hidden_triples_assist(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String) -> u32 {
         let mut num_changes: u32 = 0;
 
         let mut num_possibles_triples: [usize; 9] = [0; 9];
         let mut possible_triples: [bool; 9] = [false; 9];
-        let mut possible_triple_locations: [[usize; 3]; 9] = [[SudokuPuzzleCell::NOT_FOUND; 3]; 9];  // 9 x 3 array
+        let mut possible_triple_locations: [[usize; 3]; 9] = [[SudokuPuzzleCell::NOT_FOUND; 3]; 9]; // 9 x 3 array
 
         for (c, cell) in cells.iter().enumerate() {
             let row: usize = cell.row;
@@ -1634,9 +1645,7 @@ impl SudokuPuzzle {
                             possible_triple_locations[k][num_possibles_triples[k]] = c;
                         }
                         num_possibles_triples[k] += 1;
-                        possible_triples[k] = (
-                            num_possibles_triples[k] == 2 || num_possibles_triples[k] == 3
-                        );
+                        possible_triples[k] = (num_possibles_triples[k] == 2 || num_possibles_triples[k] == 3);
                     }
                 }
             }
@@ -1644,9 +1653,9 @@ impl SudokuPuzzle {
 
         for p1 in 0..9 {
             if possible_triples[p1] {
-                for p2 in p1+1..9 {
+                for p2 in p1 + 1..9 {
                     if possible_triples[p2] {
-                        for p3 in p2+1..9 {
+                        for p3 in p2 + 1..9 {
                             if possible_triples[p3] {
                                 let mut triple_cells: [bool; 9] = [false; 9];
 
@@ -1694,13 +1703,11 @@ impl SudokuPuzzle {
                                     let mut c3: usize = SudokuPuzzleCell::NOT_FOUND;
                                     for c in 0..9 {
                                         if triple_cells[c] {
-                                            if c1 ==  SudokuPuzzleCell::NOT_FOUND {
+                                            if c1 == SudokuPuzzleCell::NOT_FOUND {
                                                 c1 = c;
-                                            }
-                                            else if c2 ==  SudokuPuzzleCell::NOT_FOUND {
+                                            } else if c2 == SudokuPuzzleCell::NOT_FOUND {
                                                 c2 = c;
-                                            }
-                                            else if c3 ==  SudokuPuzzleCell::NOT_FOUND {
+                                            } else if c3 == SudokuPuzzleCell::NOT_FOUND {
                                                 c3 = c;
                                             }
                                         }
@@ -1747,8 +1754,7 @@ impl SudokuPuzzle {
                                             row3+1, column3+1,
                                             description
                                         );
-                                    }
-                                    else {
+                                    } else {
                                         println!(
                                             "xxx found hidden triple ({} {} {}) at cell({}, {}) and cell({}, {}) and cell({}, {}), {}",
                                             p1+1, p2+1, p3+1,
@@ -1773,14 +1779,12 @@ impl SudokuPuzzle {
         return self.find_exclusions(SudokuPuzzle::find_hidden_triples_assist);
     }
 
-    fn find_hidden_quads_assist(
-        puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String
-    ) -> u32 {
+    fn find_hidden_quads_assist(puzzle: &mut SudokuPuzzle, cells: &[CellCoordinate; 9], description: &String) -> u32 {
         let mut num_changes: u32 = 0;
 
         let mut num_possibles_quads: [usize; 9] = [0; 9];
         let mut possible_quads: [bool; 9] = [false; 9];
-        let mut possible_quad_locations: [[usize; 4]; 9] = [[SudokuPuzzleCell::NOT_FOUND; 4]; 9];  // 9 x 4 array
+        let mut possible_quad_locations: [[usize; 4]; 9] = [[SudokuPuzzleCell::NOT_FOUND; 4]; 9]; // 9 x 4 array
 
         for (c, cell) in cells.iter().enumerate() {
             let row: usize = cell.row;
@@ -1792,11 +1796,8 @@ impl SudokuPuzzle {
                             possible_quad_locations[k][num_possibles_quads[k]] = c;
                         }
                         num_possibles_quads[k] += 1;
-                        possible_quads[k] = (
-                            num_possibles_quads[k] == 2 
-                            || num_possibles_quads[k] == 3
-                            || num_possibles_quads[k] == 4
-                        );
+                        possible_quads[k] =
+                            (num_possibles_quads[k] == 2 || num_possibles_quads[k] == 3 || num_possibles_quads[k] == 4);
                     }
                 }
             }
@@ -1804,11 +1805,11 @@ impl SudokuPuzzle {
 
         for p1 in 0..9 {
             if possible_quads[p1] {
-                for p2 in p1+1..9 {
+                for p2 in p1 + 1..9 {
                     if possible_quads[p2] {
-                        for p3 in p2+1..9 {
+                        for p3 in p2 + 1..9 {
                             if possible_quads[p3] {
-                                for p4 in p3+1..9 {
+                                for p4 in p3 + 1..9 {
                                     if possible_quads[p4] {
                                         let mut quad_cells: [bool; 9] = [false; 9];
 
@@ -1820,8 +1821,7 @@ impl SudokuPuzzle {
                                         quad_cells[c2] = true;
                                         if num_possibles_quads[p1] == 3 {
                                             quad_cells[c3] = true;
-                                        }
-                                        else if num_possibles_quads[p1] == 4 {
+                                        } else if num_possibles_quads[p1] == 4 {
                                             quad_cells[c3] = true;
                                             quad_cells[c4] = true;
                                         }
@@ -1834,8 +1834,7 @@ impl SudokuPuzzle {
                                         quad_cells[c2] = true;
                                         if num_possibles_quads[p2] == 3 {
                                             quad_cells[c3] = true;
-                                        }
-                                        else if num_possibles_quads[p2] == 4 {
+                                        } else if num_possibles_quads[p2] == 4 {
                                             quad_cells[c3] = true;
                                             quad_cells[c4] = true;
                                         }
@@ -1848,8 +1847,7 @@ impl SudokuPuzzle {
                                         quad_cells[c2] = true;
                                         if num_possibles_quads[p3] == 3 {
                                             quad_cells[c3] = true;
-                                        }
-                                        else if num_possibles_quads[p3] == 4 {
+                                        } else if num_possibles_quads[p3] == 4 {
                                             quad_cells[c3] = true;
                                             quad_cells[c4] = true;
                                         }
@@ -1862,8 +1860,7 @@ impl SudokuPuzzle {
                                         quad_cells[c2] = true;
                                         if num_possibles_quads[p4] == 3 {
                                             quad_cells[c3] = true;
-                                        }
-                                        else if num_possibles_quads[p4] == 4 {
+                                        } else if num_possibles_quads[p4] == 4 {
                                             quad_cells[c3] = true;
                                             quad_cells[c4] = true;
                                         }
@@ -1886,16 +1883,13 @@ impl SudokuPuzzle {
                                             let mut c4: usize = SudokuPuzzleCell::NOT_FOUND;
                                             for c in 0..9 {
                                                 if quad_cells[c] {
-                                                    if c1 ==  SudokuPuzzleCell::NOT_FOUND {
+                                                    if c1 == SudokuPuzzleCell::NOT_FOUND {
                                                         c1 = c;
-                                                    }
-                                                    else if c2 ==  SudokuPuzzleCell::NOT_FOUND {
+                                                    } else if c2 == SudokuPuzzleCell::NOT_FOUND {
                                                         c2 = c;
-                                                    }
-                                                    else if c3 ==  SudokuPuzzleCell::NOT_FOUND {
+                                                    } else if c3 == SudokuPuzzleCell::NOT_FOUND {
                                                         c3 = c;
-                                                    }
-                                                    else if c4 ==  SudokuPuzzleCell::NOT_FOUND {
+                                                    } else if c4 == SudokuPuzzleCell::NOT_FOUND {
                                                         c4 = c;
                                                     }
                                                 }
@@ -1950,8 +1944,7 @@ impl SudokuPuzzle {
                                                     row4+1, column4+1,
                                                     description
                                                 );
-                                            }
-                                            else {
+                                            } else {
                                                 println!(
                                                     "xxx found hidden quad ({} {} {} {}) at cell({}, {}) and cell({}, {}) and cell({}, {}) and cell({}, {}), {}",
                                                     p1+1, p2+1, p3+1, p4+1,
@@ -1983,8 +1976,8 @@ impl SudokuPuzzle {
         self.cells[i][j].found = k;
 
         // other possibilities may need to be removed from cell
-        let mut exclusive_possibles : [usize; 9] = [SudokuPuzzleCell::NOT_FOUND; 9];
-        exclusive_possibles [0] = k;
+        let mut exclusive_possibles: [usize; 9] = [SudokuPuzzleCell::NOT_FOUND; 9];
+        exclusive_possibles[0] = k;
         self.cells[i][j].set_exclusive_possibles(&exclusive_possibles);
 
         self.remove_neighbors(i, j, k);
@@ -2044,8 +2037,8 @@ impl SudokuPuzzle {
         let starti: usize = i / 3 * 3;
         let startj: usize = j / 3 * 3;
 
-        for ii in starti..starti+3 {
-            for jj in startj..startj+3 {
+        for ii in starti..starti + 3 {
+            for jj in startj..startj + 3 {
                 let is_cell_to_change: bool = ii != i || jj != j;
                 if is_cell_to_change {
                     let is_change_needed: bool = self.cells[ii][jj].is_possible(k);
@@ -2167,11 +2160,9 @@ impl SudokuPuzzle {
     }
 }
 
-
 pub fn get_next_game() -> SudokuGame {
-   return SudokuGame::create();
+    return SudokuGame::create();
 }
-
 
 pub fn create_puzzle(game: &SudokuGame) -> SudokuPuzzle {
     let mut puzzle: SudokuPuzzle = SudokuPuzzle::create(game);
@@ -2182,7 +2173,6 @@ pub fn create_puzzle(game: &SudokuGame) -> SudokuPuzzle {
 
     return puzzle;
 }
-
 
 pub fn solve_puzzle(puzzle: &mut SudokuPuzzle) -> bool {
     let solved: bool = puzzle.solve();
@@ -2229,14 +2219,10 @@ mod tests {
 
     fn create_empty_sudoku_game() -> SudokuGame {
         let empty_row: &str = ".........";
-        let db_game: String = String::from(
-            format!(
-                "{empty_row}{empty_row}{empty_row}{empty_row}{empty_row}{empty_row}{empty_row}{empty_row}{empty_row}"
-            )
-        );
-        let game: SudokuGame = SudokuGame {
-            db_game: db_game
-        };
+        let db_game: String = String::from(format!(
+            "{empty_row}{empty_row}{empty_row}{empty_row}{empty_row}{empty_row}{empty_row}{empty_row}{empty_row}"
+        ));
+        let game: SudokuGame = SudokuGame { db_game: db_game };
         return game;
     }
 
@@ -2270,12 +2256,7 @@ mod tests {
         assert_eq!(num_unsolved_cells, 81);
     }
 
-    fn test_cell_solved_ness(
-        puzzle: &SudokuPuzzle,
-        row: usize,
-        column: usize,
-        solved_possible: usize)
-    {
+    fn test_cell_solved_ness(puzzle: &SudokuPuzzle, row: usize, column: usize, solved_possible: usize) {
         // 4 is a naked single in cell(3, 7) in grid(2, 3).
 
         // check solved cell(3, 7) ...
@@ -2284,8 +2265,7 @@ mod tests {
         for k in 0..9 {
             if k == solved_possible {
                 assert_eq!(cell.possibles[k], true);
-            }
-            else {
+            } else {
                 assert_eq!(cell.possibles[k], false);
             }
         }
@@ -2296,8 +2276,7 @@ mod tests {
             // check cell(column, j)
             if j == column {
                 assert_eq!(cell.possibles[solved_possible], true);
-            }
-            else {
+            } else {
                 assert_eq!(cell.possibles[solved_possible], false);
             }
         }
@@ -2308,8 +2287,7 @@ mod tests {
             // check cell(i, column)
             if i == row {
                 assert_eq!(cell.possibles[solved_possible], true);
-            }
-            else {
+            } else {
                 assert_eq!(cell.possibles[solved_possible], false);
             }
         }
@@ -2317,13 +2295,12 @@ mod tests {
         // check cell(3, 7) grid neighbors ...
         let gridi_start: usize = (row / 3) * 3;
         let gridj_start: usize = (column / 3) * 3;
-        for i in gridi_start..gridi_start+3 {
-            for j in gridj_start..gridj_start+3 {
+        for i in gridi_start..gridi_start + 3 {
+            for j in gridj_start..gridj_start + 3 {
                 let cell: &SudokuPuzzleCell = &puzzle.cells[i][j];
                 if i == row && j == column {
                     assert_eq!(cell.possibles[solved_possible], true);
-                }
-                else {
+                } else {
                     assert_eq!(cell.possibles[solved_possible], false);
                 }
             }
@@ -2401,8 +2378,7 @@ mod tests {
             let cell: &mut SudokuPuzzleCell = &mut puzzle.cells[row][j];
             if j == column {
                 cell.possibles[hidden_single_possible] = true;
-            }
-            else {
+            } else {
                 cell.possibles[hidden_single_possible] = false;
             }
         }
@@ -2426,8 +2402,7 @@ mod tests {
             let cell: &mut SudokuPuzzleCell = &mut puzzle.cells[i][column];
             if i == row {
                 cell.possibles[hidden_single_possible] = true;
-            }
-            else {
+            } else {
                 cell.possibles[hidden_single_possible] = false;
             }
         }
@@ -2449,13 +2424,12 @@ mod tests {
         let hidden_single_possible: usize = 3;
         let gridi_start: usize = (row / 3) * 3;
         let gridj_start: usize = (column / 3) * 3;
-        for i in gridi_start..gridi_start+3 {
-            for j in gridj_start..gridj_start+3 {
+        for i in gridi_start..gridi_start + 3 {
+            for j in gridj_start..gridj_start + 3 {
                 let cell: &mut SudokuPuzzleCell = &mut puzzle.cells[i][j];
                 if i == row && j == column {
                     cell.possibles[hidden_single_possible] = true;
-                }
-                else {
+                } else {
                     cell.possibles[hidden_single_possible] = false;
                 }
             }
@@ -2482,11 +2456,11 @@ mod tests {
         // candidate 1 in cell(1,1..3) and cell(3,1..3) are not possible.
         let gridi_start: usize = (row / 3) * 3;
         let gridj_start: usize = (column1 / 3) * 3;
-        for i in gridi_start..gridi_start+3 {
+        for i in gridi_start..gridi_start + 3 {
             if i == row {
                 continue;
             }
-            for j in gridj_start..gridj_start+3 {
+            for j in gridj_start..gridj_start + 3 {
                 puzzle.cells[i][j].set_possible(locked_candidate, false);
             }
         }
@@ -2497,9 +2471,7 @@ mod tests {
         // candidate 1 in cell(1,4..9) should not possible.
         for j in 0..9 {
             let candidate_gridj_start: usize = (column1 / 3) * 3;
-            let column_in_candidate_grid: bool = (
-                candidate_gridj_start <= j && j < candidate_gridj_start+3
-            );
+            let column_in_candidate_grid: bool = (candidate_gridj_start <= j && j < candidate_gridj_start + 3);
             if !column_in_candidate_grid {
                 assert_eq!(puzzle.cells[row][j].is_possible(locked_candidate), false);
             }
@@ -2520,11 +2492,11 @@ mod tests {
         // candidate 1 in cell(1..3,4) and cell(1..3,5) are not possible.
         let gridi_start: usize = (row1 / 3) * 3;
         let gridj_start: usize = (column / 3) * 3;
-        for j in gridj_start..gridj_start+3 {
+        for j in gridj_start..gridj_start + 3 {
             if j == column {
                 continue;
             }
-            for i in gridi_start..gridi_start+3 {
+            for i in gridi_start..gridi_start + 3 {
                 puzzle.cells[i][j].set_possible(locked_candidate, false);
             }
         }
@@ -2535,9 +2507,7 @@ mod tests {
         // candidate 1 in cell(4..9,6) should not possible.
         for i in 0..9 {
             let candidate_gridi_start: usize = (row1 / 3) * 3;
-            let row_in_candidate_grid: bool = (
-                candidate_gridi_start <= i && i < candidate_gridi_start+3
-            );
+            let row_in_candidate_grid: bool = (candidate_gridi_start <= i && i < candidate_gridi_start + 3);
             if !row_in_candidate_grid {
                 assert_eq!(puzzle.cells[i][column].is_possible(locked_candidate), false);
             }
@@ -2559,8 +2529,7 @@ mod tests {
             let cell: &mut SudokuPuzzleCell = &mut puzzle.cells[row][j];
             if j == column1 || j == column2 {
                 cell.possibles[locked_candidate] = true;
-            }
-            else {
+            } else {
                 cell.possibles[locked_candidate] = false;
             }
         }
@@ -2571,11 +2540,11 @@ mod tests {
         // candidate 1 in cell(1,1..3) and cell(3,1..3) should not possible.
         let gridi_start: usize = (row / 3) * 3;
         let gridj_start: usize = (column1 / 3) * 3;
-        for i in gridi_start..gridi_start+3 {
+        for i in gridi_start..gridi_start + 3 {
             if i == row {
                 continue;
             }
-            for j in gridj_start..gridj_start+3 {
+            for j in gridj_start..gridj_start + 3 {
                 assert_eq!(puzzle.cells[i][j].is_possible(locked_candidate), false);
             }
         }
@@ -2596,8 +2565,7 @@ mod tests {
             let cell: &mut SudokuPuzzleCell = &mut puzzle.cells[i][column];
             if i == row1 || i == row2 {
                 cell.possibles[locked_candidate] = true;
-            }
-            else {
+            } else {
                 cell.possibles[locked_candidate] = false;
             }
         }
@@ -2608,11 +2576,11 @@ mod tests {
         // candidate 1 in cell(0..2,3) and cell(0..2,4) should not possible.
         let gridi_start: usize = (row1 / 3) * 3;
         let gridj_start: usize = (column / 3) * 3;
-        for j in gridj_start..gridj_start+3 {
+        for j in gridj_start..gridj_start + 3 {
             if j == column {
                 continue;
             }
-            for i in gridi_start..gridi_start+3 {
+            for i in gridi_start..gridi_start + 3 {
                 assert_eq!(puzzle.cells[i][j].is_possible(locked_candidate), false);
             }
         }
@@ -2627,8 +2595,8 @@ mod tests {
         let candidate1: usize = 1;
         let candidate2: usize = 5;
         let row: usize = 8;
-        let column1: usize = 0;  // candidates 2 and 6 will be only possible in cell(9,1)
-        let column2: usize = 8;  // candidates 2 and 6 will be only possible in cell(9,9)
+        let column1: usize = 0; // candidates 2 and 6 will be only possible in cell(9,1)
+        let column2: usize = 8; // candidates 2 and 6 will be only possible in cell(9,9)
 
         // for row 9, all cells should have (2,6) as a possible
         // for cell(9,1) and cell(9,9) should only have (2,6) possible
@@ -2641,8 +2609,7 @@ mod tests {
                 for k in 0..9 {
                     if k == candidate1 || k == candidate2 {
                         // do nothing. possible[k] is already set to true.
-                    }
-                    else {
+                    } else {
                         puzzle.cells[row][j].set_possible(k, false);
                     }
                 }
@@ -2670,8 +2637,8 @@ mod tests {
         let candidate1: usize = 1;
         let candidate2: usize = 5;
         let column: usize = 8;
-        let row1: usize = 0;  // candidates 2 and 6 will be only possible in cell(1,9)
-        let row2: usize = 8;  // candidates 2 and 6 will be only possible in cell(9,9)
+        let row1: usize = 0; // candidates 2 and 6 will be only possible in cell(1,9)
+        let row2: usize = 8; // candidates 2 and 6 will be only possible in cell(9,9)
 
         // for column 9, all cells should have (2,6) as a possible
         // for cell(1,9) and cell(9,9) should only have (2,6) possible
@@ -2684,8 +2651,7 @@ mod tests {
                 for k in 0..9 {
                     if k == candidate1 || k == candidate2 {
                         // do nothing. possible[k] is already set to true.
-                    }
-                    else {
+                    } else {
                         puzzle.cells[i][column].set_possible(k, false);
                     }
                 }
@@ -2714,15 +2680,15 @@ mod tests {
         let candidate2: usize = 5;
         let column1: usize = 6;
         let column2: usize = 8;
-        let row1: usize = 6;  // candidates 2 and 6 will be only possible in cell(7,7)
-        let row2: usize = 8;  // candidates 2 and 6 will be only possible in cell(9,9)
+        let row1: usize = 6; // candidates 2 and 6 will be only possible in cell(7,7)
+        let row2: usize = 8; // candidates 2 and 6 will be only possible in cell(9,9)
 
         // for grid(3,3), all cells should have (2,6) as a possible
         // for cell(7,9) and cell(9,9) should only have (2,6) possible
         let gridi_start: usize = (row1 / 3) * 3;
         let gridj_start: usize = (column1 / 3) * 3;
-        for i in gridi_start..gridi_start+3 {
-            for j in gridj_start..gridj_start+3 {
+        for i in gridi_start..gridi_start + 3 {
+            for j in gridj_start..gridj_start + 3 {
                 puzzle.cells[i][j].set_possible(candidate1, true);
                 puzzle.cells[i][j].set_possible(candidate1, true);
             }
@@ -2740,9 +2706,9 @@ mod tests {
         // chek that (2,6) is now excluded from the other grid cells
         let gridi_start: usize = (row1 / 3) * 3;
         let gridj_start: usize = (column1 / 3) * 3;
-        for i in gridi_start..gridi_start+3 {
-            for j in gridj_start..gridj_start+3 {
-                if i == row1 && j ==column1 {
+        for i in gridi_start..gridi_start + 3 {
+            for j in gridj_start..gridj_start + 3 {
+                if i == row1 && j == column1 {
                     continue;
                 }
                 if i == row2 && j == column2 {
@@ -2779,28 +2745,22 @@ mod tests {
                 if j == column1 {
                     if k == candidate1 || k == candidate2 {
                         puzzle.cells[row][j].set_possible(k, true);
-                    }
-                    else {
+                    } else {
                         puzzle.cells[row][j].set_possible(k, false);
                     }
-                }
-                else if j == column2 {
+                } else if j == column2 {
                     if k == candidate2 || k == candidate3 {
                         puzzle.cells[row][j].set_possible(k, true);
-                    }
-                    else {
+                    } else {
                         puzzle.cells[row][j].set_possible(k, false);
                     }
-                }
-                else if j == column3 {
+                } else if j == column3 {
                     if k == candidate1 || k == candidate2 || k == candidate3 {
                         puzzle.cells[row][j].set_possible(k, true);
-                    }
-                    else {
+                    } else {
                         puzzle.cells[row][j].set_possible(k, false);
-                    }                    
-                }
-                else {
+                    }
+                } else {
                     puzzle.cells[row][j].set_possible(k, true);
                 }
             }
@@ -2812,11 +2772,10 @@ mod tests {
         for j in 0..9 {
             if j == column1 || j == column2 || j == column3 {
                 continue;
-            }
-            else {
+            } else {
                 assert_eq!(puzzle.cells[row][j].is_possible(candidate1), false);
                 assert_eq!(puzzle.cells[row][j].is_possible(candidate2), false);
-                assert_eq!(puzzle.cells[row][j].is_possible(candidate3), false);                
+                assert_eq!(puzzle.cells[row][j].is_possible(candidate3), false);
             }
         }
     }
@@ -2847,28 +2806,22 @@ mod tests {
                 if i == row1 {
                     if k == candidate1 || k == candidate2 {
                         puzzle.cells[i][column].set_possible(k, true);
-                    }
-                    else {
+                    } else {
                         puzzle.cells[i][column].set_possible(k, false);
                     }
-                }
-                else if i == row2 {
+                } else if i == row2 {
                     if k == candidate2 || k == candidate3 {
                         puzzle.cells[i][column].set_possible(k, true);
-                    }
-                    else {
+                    } else {
                         puzzle.cells[i][column].set_possible(k, false);
                     }
-                }
-                else if i == row3 {
+                } else if i == row3 {
                     if k == candidate1 || k == candidate2 || k == candidate3 {
                         puzzle.cells[i][column].set_possible(k, true);
-                    }
-                    else {
+                    } else {
                         puzzle.cells[i][column].set_possible(k, false);
-                    }                    
-                }
-                else {
+                    }
+                } else {
                     puzzle.cells[i][column].set_possible(k, true);
                 }
             }
@@ -2877,12 +2830,10 @@ mod tests {
         let found = puzzle.find_naked_triples();
         assert_eq!(found, true);
 
-
         for i in 0..9 {
             if i == row1 || i == row2 || i == row3 {
                 continue;
-            }
-            else {
+            } else {
                 assert_eq!(puzzle.cells[i][column].is_possible(candidate1), false);
                 assert_eq!(puzzle.cells[i][column].is_possible(candidate2), false);
                 assert_eq!(puzzle.cells[i][column].is_possible(candidate3), false);
@@ -2915,39 +2866,33 @@ mod tests {
         // for cell(6, 6), (1 2 3) are only possibles.
         let gridi_start: usize = (row1 / 3) * 3;
         let gridj_start: usize = (column1 / 3) * 3;
-        for i in gridi_start..gridi_start+3 {
-            for j in gridj_start..gridj_start+3 {
+        for i in gridi_start..gridi_start + 3 {
+            for j in gridj_start..gridj_start + 3 {
                 if i == row1 && j == column1 {
                     for k in 0..9 {
                         if k == candidate1 || k == candidate2 {
                             puzzle.cells[i][j].set_possible(k, true);
-                        }
-                        else {
+                        } else {
                             puzzle.cells[i][j].set_possible(k, false);
                         }
                     }
-                }
-                else if i == row2 && j == column2 {
+                } else if i == row2 && j == column2 {
                     for k in 0..9 {
                         if k == candidate2 || k == candidate3 {
                             puzzle.cells[i][j].set_possible(k, true);
-                        }
-                        else {
+                        } else {
                             puzzle.cells[i][j].set_possible(k, false);
                         }
                     }
-                }
-                else if i == row3 && j == column3 {
+                } else if i == row3 && j == column3 {
                     for k in 0..9 {
                         if k == candidate1 || k == candidate2 || k == candidate3 {
                             puzzle.cells[i][j].set_possible(k, true);
-                        }
-                        else {
+                        } else {
                             puzzle.cells[i][j].set_possible(k, false);
                         }
                     }
-                }
-                else {
+                } else {
                     puzzle.cells[i][j].set_possible(candidate1, true);
                     puzzle.cells[i][j].set_possible(candidate2, true);
                     puzzle.cells[i][j].set_possible(candidate3, true);
@@ -2960,18 +2905,15 @@ mod tests {
 
         let gridi_start: usize = (row1 / 3) * 3;
         let gridj_start: usize = (column1 / 3) * 3;
-        for i in gridi_start..gridi_start+3 {
-            for j in gridj_start..gridj_start+3 {
+        for i in gridi_start..gridi_start + 3 {
+            for j in gridj_start..gridj_start + 3 {
                 if i == row1 && j == column1 {
                     continue;
-                }
-                else if i == row2 && j == column2 {
+                } else if i == row2 && j == column2 {
                     continue;
-                }
-                else if i == row3 && j == column3 {
+                } else if i == row3 && j == column3 {
                     continue;
-                }
-                else {
+                } else {
                     assert_eq!(puzzle.cells[i][j].is_possible(candidate1), false);
                     assert_eq!(puzzle.cells[i][j].is_possible(candidate2), false);
                     assert_eq!(puzzle.cells[i][j].is_possible(candidate3), false);
@@ -2984,7 +2926,7 @@ mod tests {
     fn test_find_naked_quads_row() {
         // naked quad (1 2 3 4) in row 7
         //     (1 2)     in cell(7, 1)
-        //     (2 3)     in cell(7, 4) 
+        //     (2 3)     in cell(7, 4)
         //     (3 4)     in cell(7, 6)
         //     (1 2 3 4) in cell(7, 9)
         let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
@@ -3010,36 +2952,28 @@ mod tests {
                 if j == column1 {
                     if k == candidate1 || k == candidate2 {
                         puzzle.cells[row][j].set_possible(k, true);
-                    }
-                    else {
+                    } else {
                         puzzle.cells[row][j].set_possible(k, false);
                     }
-                }
-                else if j == column2 {
+                } else if j == column2 {
                     if k == candidate2 || k == candidate3 {
                         puzzle.cells[row][j].set_possible(k, true);
-                    }
-                    else {
+                    } else {
                         puzzle.cells[row][j].set_possible(k, false);
                     }
-                }
-                else if j == column3 {
+                } else if j == column3 {
                     if k == candidate3 || k == candidate4 {
                         puzzle.cells[row][j].set_possible(k, true);
-                    }
-                    else {
+                    } else {
                         puzzle.cells[row][j].set_possible(k, false);
-                    }                    
-                }
-                else if j == column4 {
-                    if  k == candidate1 || k == candidate2 || k == candidate3 || k == candidate4 {
+                    }
+                } else if j == column4 {
+                    if k == candidate1 || k == candidate2 || k == candidate3 || k == candidate4 {
                         puzzle.cells[row][j].set_possible(k, true);
-                    }
-                    else {
+                    } else {
                         puzzle.cells[row][j].set_possible(k, false);
-                    }                    
-                }
-                else {
+                    }
+                } else {
                     puzzle.cells[row][j].set_possible(k, true);
                 }
             }
@@ -3052,17 +2986,13 @@ mod tests {
             for k in 0..9 {
                 if j == column1 {
                     continue;
-                }
-                else if j == column2 {
+                } else if j == column2 {
                     continue;
-                }
-                else if j == column3 {
+                } else if j == column3 {
                     continue;
-                }
-                else if j == column4 {
+                } else if j == column4 {
                     continue;
-                }
-                else {
+                } else {
                     assert_eq!(puzzle.cells[row][j].is_possible(candidate1), false);
                     assert_eq!(puzzle.cells[row][j].is_possible(candidate2), false);
                     assert_eq!(puzzle.cells[row][j].is_possible(candidate3), false);
@@ -3076,7 +3006,7 @@ mod tests {
     fn test_find_naked_quads_column() {
         // naked quad (1 2 3 4) in column 7
         //     (1 2)     in cell(1, 7)
-        //     (2 3)     in cell(4, 7) 
+        //     (2 3)     in cell(4, 7)
         //     (3 4)     in cell(6, 7)
         //     (1 2 3 4) in cell(9, 7)
         let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
@@ -3102,36 +3032,28 @@ mod tests {
                 if i == row1 {
                     if k == candidate1 || k == candidate2 {
                         puzzle.cells[i][column].set_possible(k, true);
-                    }
-                    else {
+                    } else {
                         puzzle.cells[i][column].set_possible(k, false);
                     }
-                }
-                else if i == row2 {
+                } else if i == row2 {
                     if k == candidate2 || k == candidate3 {
                         puzzle.cells[i][column].set_possible(k, true);
-                    }
-                    else {
+                    } else {
                         puzzle.cells[i][column].set_possible(k, false);
                     }
-                }
-                else if i == row3 {
+                } else if i == row3 {
                     if k == candidate3 || k == candidate4 {
                         puzzle.cells[i][column].set_possible(k, true);
-                    }
-                    else {
+                    } else {
                         puzzle.cells[i][column].set_possible(k, false);
-                    }                    
-                }
-                else if i == row4 {
-                    if  k == candidate1 || k == candidate2 || k == candidate3 || k == candidate4 {
+                    }
+                } else if i == row4 {
+                    if k == candidate1 || k == candidate2 || k == candidate3 || k == candidate4 {
                         puzzle.cells[i][column].set_possible(k, true);
-                    }
-                    else {
+                    } else {
                         puzzle.cells[i][column].set_possible(k, false);
-                    }                    
-                }
-                else {
+                    }
+                } else {
                     puzzle.cells[i][column].set_possible(k, true);
                 }
             }
@@ -3144,17 +3066,13 @@ mod tests {
             for k in 0..9 {
                 if i == row1 {
                     continue;
-                }
-                else if i == row2 {
+                } else if i == row2 {
                     continue;
-                }
-                else if i == row3 {
+                } else if i == row3 {
                     continue;
-                }
-                else if i == row4 {
+                } else if i == row4 {
                     continue;
-                }
-                else {
+                } else {
                     assert_eq!(puzzle.cells[i][column].is_possible(candidate1), false);
                     assert_eq!(puzzle.cells[i][column].is_possible(candidate2), false);
                     assert_eq!(puzzle.cells[i][column].is_possible(candidate3), false);
@@ -3169,7 +3087,7 @@ mod tests {
     fn test_find_naked_quads_grid() {
         // naked quad (1 2 3 4) in grid(2, 2)
         //     (1 2)     in cell(4, 4)
-        //     (2 3)     in cell(4, 6) 
+        //     (2 3)     in cell(4, 6)
         //     (3 4)     in cell(6, 4)
         //     (1 2 3 4) in cell(6, 6)
         let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
@@ -3195,49 +3113,41 @@ mod tests {
         // for cell(6, 6), (1 2 3 4) are only possibles.
         let gridi_start: usize = (row1 / 3) * 3;
         let gridj_start: usize = (column1 / 3) * 3;
-        for i in gridi_start..gridi_start+3 {
-            for j in gridj_start..gridj_start+3 {
+        for i in gridi_start..gridi_start + 3 {
+            for j in gridj_start..gridj_start + 3 {
                 if i == row1 && j == column1 {
                     for k in 0..9 {
                         if k == candidate1 || k == candidate2 {
                             puzzle.cells[i][j].set_possible(k, true);
-                        }
-                        else {
+                        } else {
                             puzzle.cells[i][j].set_possible(k, false);
                         }
                     }
-                }
-                else if i == row2 && j == column2 {
+                } else if i == row2 && j == column2 {
                     for k in 0..9 {
                         if k == candidate2 || k == candidate3 {
                             puzzle.cells[i][j].set_possible(k, true);
-                        }
-                        else {
+                        } else {
                             puzzle.cells[i][j].set_possible(k, false);
                         }
                     }
-                }
-                else if i == row3 && j == column3 {
+                } else if i == row3 && j == column3 {
                     for k in 0..9 {
                         if k == candidate3 || k == candidate4 {
                             puzzle.cells[i][j].set_possible(k, true);
-                        }
-                        else {
+                        } else {
                             puzzle.cells[i][j].set_possible(k, false);
                         }
                     }
-                }
-                else if i == row4 && j == column4 {
+                } else if i == row4 && j == column4 {
                     for k in 0..9 {
                         if k == candidate1 || k == candidate2 || k == candidate3 || k == candidate4 {
                             puzzle.cells[i][j].set_possible(k, true);
-                        }
-                        else {
+                        } else {
                             puzzle.cells[i][j].set_possible(k, false);
                         }
                     }
-                }
-                else {
+                } else {
                     puzzle.cells[i][j].set_possible(candidate1, true);
                     puzzle.cells[i][j].set_possible(candidate2, true);
                     puzzle.cells[i][j].set_possible(candidate3, true);
@@ -3251,21 +3161,17 @@ mod tests {
 
         let gridi_start: usize = (row1 / 3) * 3;
         let gridj_start: usize = (column1 / 3) * 3;
-        for i in gridi_start..gridi_start+3 {
-            for j in gridj_start..gridj_start+3 {
+        for i in gridi_start..gridi_start + 3 {
+            for j in gridj_start..gridj_start + 3 {
                 if i == row1 && j == column1 {
                     continue;
-                }
-                else if i == row2 && j == column2 {
+                } else if i == row2 && j == column2 {
                     continue;
-                }
-                else if i == row3 && j == column3 {
+                } else if i == row3 && j == column3 {
                     continue;
-                }
-                else if i == row4 && j == column4 {
+                } else if i == row4 && j == column4 {
                     continue;
-                }
-                else {
+                } else {
                     assert_eq!(puzzle.cells[i][j].is_possible(candidate1), false);
                     assert_eq!(puzzle.cells[i][j].is_possible(candidate2), false);
                     assert_eq!(puzzle.cells[i][j].is_possible(candidate3), false);
@@ -3356,15 +3262,13 @@ mod tests {
         // for grid (2, 2), all non-candidate cells need to exclude candidates
         let gridi_start: usize = (row1 / 3) * 3;
         let gridj_start: usize = (column1 / 3) * 3;
-        for i in gridi_start..gridi_start+3 {
-            for j in gridj_start..gridj_start+3 {
+        for i in gridi_start..gridi_start + 3 {
+            for j in gridj_start..gridj_start + 3 {
                 if i == row1 && j == column1 {
                     // do nothing
-                }
-                else if i == row2 && j == column2 {
+                } else if i == row2 && j == column2 {
                     // do nothing
-                }
-                else {
+                } else {
                     puzzle.cells[i][j].set_possible(candidate1, false);
                     puzzle.cells[i][j].set_possible(candidate2, false);
                 }
@@ -3483,22 +3387,19 @@ mod tests {
         // for grid(2, 2), all non-candidate cells need to exclude candidates
         let gridi_start: usize = (row1 / 3) * 3;
         let gridj_start: usize = (column1 / 3) * 3;
-        for i in gridi_start..gridi_start+3 {
-            for j in gridj_start..gridj_start+3 {
+        for i in gridi_start..gridi_start + 3 {
+            for j in gridj_start..gridj_start + 3 {
                 if i == row1 && j == column1 {
                     puzzle.cells[i][j].set_possible(candidate1, true);
                     puzzle.cells[i][j].set_possible(candidate2, true);
-                }
-                else if i == row2 && j == column2 {
+                } else if i == row2 && j == column2 {
                     puzzle.cells[i][j].set_possible(candidate2, true);
                     puzzle.cells[i][j].set_possible(candidate3, true);
-                }
-                else if i == row3 && j == column3 {
+                } else if i == row3 && j == column3 {
                     puzzle.cells[i][j].set_possible(candidate1, true);
                     puzzle.cells[i][j].set_possible(candidate2, true);
                     puzzle.cells[i][j].set_possible(candidate3, true);
-                }
-                else {
+                } else {
                     puzzle.cells[i][j].set_possible(candidate1, false);
                     puzzle.cells[i][j].set_possible(candidate2, false);
                     puzzle.cells[i][j].set_possible(candidate3, false);
@@ -3632,27 +3533,23 @@ mod tests {
         // for grid(2, 2), all non-candidate cells need to exclude candidates
         let gridi_start: usize = (row1 / 3) * 3;
         let gridj_start: usize = (column1 / 3) * 3;
-        for i in gridi_start..gridi_start+3 {
-            for j in gridj_start..gridj_start+3 {
+        for i in gridi_start..gridi_start + 3 {
+            for j in gridj_start..gridj_start + 3 {
                 if i == row1 && j == column1 {
                     puzzle.cells[i][j].set_possible(candidate1, true);
                     puzzle.cells[i][j].set_possible(candidate2, true);
-                }
-                else if i == row2 && j == column2 {
+                } else if i == row2 && j == column2 {
                     puzzle.cells[i][j].set_possible(candidate2, true);
                     puzzle.cells[i][j].set_possible(candidate3, true);
-                }
-                else if i == row3 && j == column3 {
+                } else if i == row3 && j == column3 {
                     puzzle.cells[i][j].set_possible(candidate3, true);
                     puzzle.cells[i][j].set_possible(candidate4, true);
-                }
-                else if i == row4 && j == column4 {
+                } else if i == row4 && j == column4 {
                     puzzle.cells[i][j].set_possible(candidate1, true);
                     puzzle.cells[i][j].set_possible(candidate2, true);
                     puzzle.cells[i][j].set_possible(candidate3, true);
                     puzzle.cells[i][j].set_possible(candidate4, true);
-                }
-                else {
+                } else {
                     puzzle.cells[i][j].set_possible(candidate1, false);
                     puzzle.cells[i][j].set_possible(candidate2, false);
                     puzzle.cells[i][j].set_possible(candidate3, false);

@@ -10,5 +10,11 @@ fn main() {
 
     let solved: bool = sudoku::solve_puzzle(&mut sudoku_puzzle);
     sudoku_puzzle.display();
-    println!("game has been {}.", {if solved {"solved"} else {"not solved"}});
+    println!("game has been {}.", {
+        if solved {
+            "solved"
+        } else {
+            "not solved"
+        }
+    });
 }

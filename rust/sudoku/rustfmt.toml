@@ -1,0 +1,8 @@
+# See https://rust-lang.github.io/rustfmt/
+
+max_width = 120
+
+# unstable features are only available in nightly channel
+control_brace_style = "ClosingNextLine"
+spaces_around_ranges = true
+
