@@ -27,6 +27,9 @@
 // 9. private struct methods can not be unit tested (without some thunk code)
 // since they are not visible outside of the struct???
 //
+// 10. rust does not support OO inheritance or polymorphism.
+// rust supports structs with methods.
+//
 
 #[derive(Debug)] // adding so pretty print will work ... {:#?} for pretty-print
 pub struct SudokuGame {
