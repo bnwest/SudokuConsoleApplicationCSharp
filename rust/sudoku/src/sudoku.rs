@@ -2314,6 +2314,7 @@ mod tests {
     fn test_find_naked_singles_negative() {
         let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
 
+        // puzzle.display();
         let found = puzzle.find_naked_singles();
         assert_eq!(found, false);
 
@@ -2344,6 +2345,7 @@ mod tests {
         }
         // 4 is a naked single in cell(3, 7) in grid(2, 3).
 
+        // puzzle.display();
         let found = puzzle.find_naked_singles();
         assert_eq!(found, true);
 
@@ -2354,6 +2356,7 @@ mod tests {
     fn test_find_hidden_singles_negative() {
         let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
 
+        // puzzle.display();
         let found = puzzle.find_hidden_singles();
         assert_eq!(found, false);
 
@@ -2387,6 +2390,7 @@ mod tests {
         }
         // 4 is a hidden single in cell(3, 7) in grid(2, 3).
 
+        // puzzle.display();
         let found = puzzle.find_hidden_singles();
         assert_eq!(found, true);
 
@@ -2411,6 +2415,7 @@ mod tests {
         }
         // 4 is a hidden single in cell(3, 7) in grid(2, 3).
 
+        // puzzle.display();
         let found = puzzle.find_hidden_singles();
         assert_eq!(found, true);
 
@@ -2439,6 +2444,7 @@ mod tests {
         }
         // 4 is a hidden single in cell(3, 7) in grid(2, 3).
 
+        // puzzle.display();
         let found = puzzle.find_hidden_singles();
         assert_eq!(found, true);
 
@@ -2468,6 +2474,7 @@ mod tests {
             }
         }
 
+        // puzzle.display();
         let found = puzzle.find_locked_candidate();
         assert_eq!(found, true);
 
@@ -2504,6 +2511,7 @@ mod tests {
             }
         }
 
+        // puzzle.display();
         let found = puzzle.find_locked_candidate();
         assert_eq!(found, true);
 
@@ -2537,6 +2545,7 @@ mod tests {
             }
         }
 
+        // puzzle.display();
         let found = puzzle.find_locked_candidate();
         assert_eq!(found, true);
 
@@ -2573,6 +2582,7 @@ mod tests {
             }
         }
 
+        // puzzle.display();
         let found = puzzle.find_locked_candidate();
         assert_eq!(found, true);
 
@@ -2619,6 +2629,7 @@ mod tests {
             }
         }
 
+        // puzzle.display();
         let found = puzzle.find_naked_pairs();
         assert_eq!(found, true);
 
@@ -2661,6 +2672,7 @@ mod tests {
             }
         }
 
+        // puzzle.display();
         let found = puzzle.find_naked_pairs();
         assert_eq!(found, true);
 
@@ -2703,6 +2715,7 @@ mod tests {
             }
         }
 
+        // puzzle.display();
         let found = puzzle.find_naked_pairs();
         assert_eq!(found, true);
 
@@ -2769,6 +2782,7 @@ mod tests {
             }
         }
 
+        // puzzle.display();
         let found = puzzle.find_naked_triples();
         assert_eq!(found, true);
 
@@ -2830,6 +2844,7 @@ mod tests {
             }
         }
 
+        // puzzle.display();
         let found = puzzle.find_naked_triples();
         assert_eq!(found, true);
 
@@ -2903,6 +2918,7 @@ mod tests {
             }
         }
 
+        // puzzle.display();
         let found = puzzle.find_naked_triples();
         assert_eq!(found, true);
 
@@ -2982,6 +2998,7 @@ mod tests {
             }
         }
 
+        // puzzle.display();
         let found = puzzle.find_naked_quads();
         assert_eq!(found, true);
 
@@ -3062,6 +3079,7 @@ mod tests {
             }
         }
 
+        // puzzle.display();
         let found = puzzle.find_naked_quads();
         assert_eq!(found, true);
 
@@ -3159,6 +3177,7 @@ mod tests {
             }
         }
 
+        // puzzle.display();
         let found = puzzle.find_naked_quads();
         assert_eq!(found, true);
 
@@ -3198,12 +3217,19 @@ mod tests {
 
         // for row 3, all non-candidate cells need to exclude candidates
         for j in 0..9 {
-            if j != column1 && j != column2 {
+            if j == column1 {
+                puzzle.cells[row][j].set_possible(candidate1, true);
+                puzzle.cells[row][j].set_possible(candidate2, true);
+            } else if j == column2 {
+                puzzle.cells[row][j].set_possible(candidate1, true);
+                puzzle.cells[row][j].set_possible(candidate2, true);
+            } else {
                 puzzle.cells[row][j].set_possible(candidate1, false);
                 puzzle.cells[row][j].set_possible(candidate2, false);
             }
         }
 
+        // puzzle.display();
         let found = puzzle.find_hidden_pairs();
         assert_eq!(found, true);
 
@@ -3230,12 +3256,19 @@ mod tests {
 
         // for column 3, all non-candidate cells need to exclude candidates
         for i in 0..9 {
-            if i != row1 && i != row2 {
+            if i == row1 {
+                puzzle.cells[i][column].set_possible(candidate1, true);
+                puzzle.cells[i][column].set_possible(candidate2, true);
+            } else if i == row2 {
+                puzzle.cells[i][column].set_possible(candidate1, true);
+                puzzle.cells[i][column].set_possible(candidate2, true);
+            } else {
                 puzzle.cells[i][column].set_possible(candidate1, false);
                 puzzle.cells[i][column].set_possible(candidate2, false);
             }
         }
 
+        // puzzle.display();
         let found = puzzle.find_hidden_pairs();
         assert_eq!(found, true);
 
@@ -3268,9 +3301,11 @@ mod tests {
         for i in gridi_start..gridi_start + 3 {
             for j in gridj_start..gridj_start + 3 {
                 if i == row1 && j == column1 {
-                    // do nothing
+                    puzzle.cells[i][j].set_possible(candidate1, true);
+                    puzzle.cells[i][j].set_possible(candidate2, true);
                 } else if i == row2 && j == column2 {
-                    // do nothing
+                    puzzle.cells[i][j].set_possible(candidate1, true);
+                    puzzle.cells[i][j].set_possible(candidate2, true);
                 } else {
                     puzzle.cells[i][j].set_possible(candidate1, false);
                     puzzle.cells[i][j].set_possible(candidate2, false);
@@ -3278,6 +3313,7 @@ mod tests {
             }
         }
 
+        // puzzle.display();
         let found = puzzle.find_hidden_pairs();
         assert_eq!(found, true);
 
@@ -3309,13 +3345,26 @@ mod tests {
 
         // for row 3, all non-candidate cells need to exclude candidates
         for j in 0..9 {
-            if j != column1 && j != column2 && j != column3 {
+            if j == column1 {
+                puzzle.cells[row][j].set_possible(candidate1, true);
+                puzzle.cells[row][j].set_possible(candidate2, true);
+                puzzle.cells[row][j].set_possible(candidate3, false);
+            } else if j == column2 {
+                puzzle.cells[row][j].set_possible(candidate1, false);
+                puzzle.cells[row][j].set_possible(candidate2, true);
+                puzzle.cells[row][j].set_possible(candidate3, true);
+            } else if j == column3 {
+                puzzle.cells[row][j].set_possible(candidate1, true);
+                puzzle.cells[row][j].set_possible(candidate2, true);
+                puzzle.cells[row][j].set_possible(candidate3, true);
+            } else {
                 puzzle.cells[row][j].set_possible(candidate1, false);
                 puzzle.cells[row][j].set_possible(candidate2, false);
                 puzzle.cells[row][j].set_possible(candidate3, false);
             }
         }
 
+        // puzzle.display();
         let found = puzzle.find_hidden_triples();
         assert_eq!(found, true);
 
@@ -3348,13 +3397,26 @@ mod tests {
 
         // for column 3, all non-candidate cells need to exclude candidates
         for i in 0..9 {
-            if i != row1 && i != row2 && i != row3 {
+            if i == row1 {
+                puzzle.cells[i][column].set_possible(candidate1, true);
+                puzzle.cells[i][column].set_possible(candidate2, true);
+                puzzle.cells[i][column].set_possible(candidate3, false);
+            } else if i == row2 {
+                puzzle.cells[i][column].set_possible(candidate1, false);
+                puzzle.cells[i][column].set_possible(candidate2, true);
+                puzzle.cells[i][column].set_possible(candidate3, true);
+            } else if i == row3 {
+                puzzle.cells[i][column].set_possible(candidate1, true);
+                puzzle.cells[i][column].set_possible(candidate2, true);
+                puzzle.cells[i][column].set_possible(candidate3, true);
+            } else {
                 puzzle.cells[i][column].set_possible(candidate1, false);
                 puzzle.cells[i][column].set_possible(candidate2, false);
                 puzzle.cells[i][column].set_possible(candidate3, false);
             }
         }
 
+        // puzzle.display();
         let found = puzzle.find_hidden_triples();
         assert_eq!(found, true);
 
@@ -3395,7 +3457,9 @@ mod tests {
                 if i == row1 && j == column1 {
                     puzzle.cells[i][j].set_possible(candidate1, true);
                     puzzle.cells[i][j].set_possible(candidate2, true);
+                    puzzle.cells[i][j].set_possible(candidate3, false);
                 } else if i == row2 && j == column2 {
+                    puzzle.cells[i][j].set_possible(candidate1, false);
                     puzzle.cells[i][j].set_possible(candidate2, true);
                     puzzle.cells[i][j].set_possible(candidate3, true);
                 } else if i == row3 && j == column3 {
@@ -3410,6 +3474,7 @@ mod tests {
             }
         }
 
+        // puzzle.display();
         let found = puzzle.find_hidden_triples();
         assert_eq!(found, true);
 
@@ -3444,7 +3509,27 @@ mod tests {
 
         // for row 3, all non-candidate cells need to exclude candidates
         for j in 0..9 {
-            if j != column1 && j != column2 && j != column3 && j != column4 {
+            if j == column1 {
+                puzzle.cells[row][j].set_possible(candidate1, true);
+                puzzle.cells[row][j].set_possible(candidate2, true);
+                puzzle.cells[row][j].set_possible(candidate3, false);
+                puzzle.cells[row][j].set_possible(candidate4, false);
+            } else if j == column2 {
+                puzzle.cells[row][j].set_possible(candidate1, false);
+                puzzle.cells[row][j].set_possible(candidate2, true);
+                puzzle.cells[row][j].set_possible(candidate3, true);
+                puzzle.cells[row][j].set_possible(candidate4, false);
+            } else if j == column3 {
+                puzzle.cells[row][j].set_possible(candidate1, false);
+                puzzle.cells[row][j].set_possible(candidate2, false);
+                puzzle.cells[row][j].set_possible(candidate3, true);
+                puzzle.cells[row][j].set_possible(candidate4, true);
+            } else if j == column4 {
+                puzzle.cells[row][j].set_possible(candidate1, true);
+                puzzle.cells[row][j].set_possible(candidate2, true);
+                puzzle.cells[row][j].set_possible(candidate3, true);
+                puzzle.cells[row][j].set_possible(candidate4, true);
+            } else {
                 puzzle.cells[row][j].set_possible(candidate1, false);
                 puzzle.cells[row][j].set_possible(candidate2, false);
                 puzzle.cells[row][j].set_possible(candidate3, false);
@@ -3452,6 +3537,7 @@ mod tests {
             }
         }
 
+        // puzzle.display();
         let found = puzzle.find_hidden_quads();
         assert_eq!(found, true);
 
@@ -3488,7 +3574,27 @@ mod tests {
 
         // for column 3, all non-candidate cells need to exclude candidates
         for i in 0..9 {
-            if i != row1 && i != row2 && i != row3 && i != row4 {
+            if i == row1 {
+                puzzle.cells[i][column].set_possible(candidate1, true);
+                puzzle.cells[i][column].set_possible(candidate2, true);
+                puzzle.cells[i][column].set_possible(candidate3, false);
+                puzzle.cells[i][column].set_possible(candidate4, false);
+            } else if i == row2 {
+                puzzle.cells[i][column].set_possible(candidate1, false);
+                puzzle.cells[i][column].set_possible(candidate2, true);
+                puzzle.cells[i][column].set_possible(candidate3, true);
+                puzzle.cells[i][column].set_possible(candidate4, false);
+            } else if i == row3 {
+                puzzle.cells[i][column].set_possible(candidate1, false);
+                puzzle.cells[i][column].set_possible(candidate2, false);
+                puzzle.cells[i][column].set_possible(candidate3, true);
+                puzzle.cells[i][column].set_possible(candidate4, true);
+            } else if i == row4 {
+                puzzle.cells[i][column].set_possible(candidate1, true);
+                puzzle.cells[i][column].set_possible(candidate2, true);
+                puzzle.cells[i][column].set_possible(candidate3, true);
+                puzzle.cells[i][column].set_possible(candidate4, true);
+            } else {
                 puzzle.cells[i][column].set_possible(candidate1, false);
                 puzzle.cells[i][column].set_possible(candidate2, false);
                 puzzle.cells[i][column].set_possible(candidate3, false);
@@ -3496,6 +3602,7 @@ mod tests {
             }
         }
 
+        // puzzle.display();
         let found = puzzle.find_hidden_quads();
         assert_eq!(found, true);
 
@@ -3541,10 +3648,16 @@ mod tests {
                 if i == row1 && j == column1 {
                     puzzle.cells[i][j].set_possible(candidate1, true);
                     puzzle.cells[i][j].set_possible(candidate2, true);
+                    puzzle.cells[i][j].set_possible(candidate3, false);
+                    puzzle.cells[i][j].set_possible(candidate4, false);
                 } else if i == row2 && j == column2 {
+                    puzzle.cells[i][j].set_possible(candidate1, false);
                     puzzle.cells[i][j].set_possible(candidate2, true);
                     puzzle.cells[i][j].set_possible(candidate3, true);
+                    puzzle.cells[i][j].set_possible(candidate4, false);
                 } else if i == row3 && j == column3 {
+                    puzzle.cells[i][j].set_possible(candidate1, false);
+                    puzzle.cells[i][j].set_possible(candidate2, false);
                     puzzle.cells[i][j].set_possible(candidate3, true);
                     puzzle.cells[i][j].set_possible(candidate4, true);
                 } else if i == row4 && j == column4 {
@@ -3561,6 +3674,7 @@ mod tests {
             }
         }
 
+        // puzzle.display();
         let found = puzzle.find_hidden_quads();
         assert_eq!(found, true);
 
