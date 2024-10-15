@@ -1459,49 +1459,21 @@ impl SudokuPuzzle {
                     if !puzzle.cells[row][column].is_solved() {
                         if puzzle.cells[row][column].is_possible(t1) {
                             puzzle.cells[row][column].set_possible(t1, false);
-                            println!(
-                                "    update {} in cell({}, {}) {}.",
-                                t1 + 1,
-                                row + 1,
-                                column + 1,
-                                description
-                            );
                             num_changes_for_quad += 1;
                             num_changes += 1;
                         }
                         if puzzle.cells[row][column].is_possible(t2) {
                             puzzle.cells[row][column].set_possible(t2, false);
-                            println!(
-                                "    update {} in cell({}, {}) {}.",
-                                t2 + 1,
-                                row + 1,
-                                column + 1,
-                                description
-                            );
                             num_changes_for_quad += 1;
                             num_changes += 1;
                         }
                         if puzzle.cells[row][column].is_possible(t3) {
                             puzzle.cells[row][column].set_possible(t3, false);
-                            println!(
-                                "    update {} in cell({}, {}) {}.",
-                                t3 + 1,
-                                row + 1,
-                                column + 1,
-                                description
-                            );
                             num_changes_for_quad += 1;
                             num_changes += 1;
                         }
                         if puzzle.cells[row][column].is_possible(t4) {
                             puzzle.cells[row][column].set_possible(t4, false);
-                            println!(
-                                "    update {} in cell({}, {}) {}.",
-                                t4 + 1,
-                                row + 1,
-                                column + 1,
-                                description
-                            );
                             num_changes_for_quad += 1;
                             num_changes += 1;
                         }
@@ -2374,6 +2346,7 @@ mod tests {
 
     #[test]
     fn test_find_hidden_singles_row_positive() {
+        // found hidden single 4 in cell(3, 7) for row 3.
         let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
         let row: usize = 2;
         let column: usize = 6;
@@ -2399,6 +2372,7 @@ mod tests {
 
     #[test]
     fn test_find_hidden_singles_column_positive() {
+        // found hidden single 4 in cell(3, 7) for column 7.
         let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
         let row: usize = 2;
         let column: usize = 6;
@@ -2424,6 +2398,7 @@ mod tests {
 
     #[test]
     fn test_find_hidden_singles_grid_positive() {
+        // found hidden single 4 in cell(3, 7) for grid(1, 3).
         let mut puzzle: SudokuPuzzle = create_empty_sudoku_puzzle();
         let row: usize = 2;
         let column: usize = 6;
