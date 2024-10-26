@@ -61,8 +61,18 @@ impl SudokuGame {
 
                 // https://hodoku.sourceforge.net/en/tech_fishb.php
                 // row x-wing
+                // found x-wing exclusion for fish candidate 5 from cell(4, 5), given base set cells(2, 5) cells(2, 8) cells(5, 5) cells(5, 8).
                 // ".41729.3.769..34.2.3264.7194.39..17.6.7..49.319537..24214567398376.9.541958431267",
                 // column x-wing
+                // found x-wing exclusion for fish candidate 1 from cell(5, 3), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+                // found x-wing exclusion for fish candidate 1 from cell(2, 4), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+                // found x-wing exclusion for fish candidate 1 from cell(5, 4), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+                // found x-wing exclusion for fish candidate 1 from cell(2, 7), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+                // found x-wing exclusion for fish candidate 1 from cell(5, 7), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+                // found x-wing exclusion for fish candidate 1 from cell(2, 8), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+                // found x-wing exclusion for fish candidate 1 from cell(5, 8), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+                // found x-wing exclusion for fish candidate 1 from cell(2, 9), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+                // found x-wing exclusion for fish candidate 1 from cell(5, 9), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
                 "98..62753.65..3...327.5...679..3.5...5...9...832.45..9673591428249.87..5518.2...7",
 
                 // found naked triple (2 4 6) for row 2
@@ -235,6 +245,10 @@ impl SudokuGame {
                 // failed to solve - xy-wing
                 // "......1.6...8....3..19.........3...4..9......2.87......3..6...........9......5.8."
                 // failed to solve x-wing
+                // found x-wing exclusion for fish candidate 3 from cell(3, 6), given base set cells(3, 1) cells(3, 4) cells(4, 1) cells(4, 4).
+                // found x-wing exclusion for fish candidate 3 from cell(4, 6), given base set cells(3, 1) cells(3, 4) cells(4, 1) cells(4, 4).
+                // found x-wing exclusion for fish candidate 3 from cell(3, 8), given base set cells(3, 1) cells(3, 4) cells(4, 1) cells(4, 4).
+                // found x-wing exclusion for fish candidate 3 from cell(3, 9), given base set cells(3, 1) cells(3, 4) cells(4, 1) cells(4, 4).
                 // "1..46.......8......2....7............97..2..........414......6......927...3......"
                 // "2.69.............8.......5.....85.7.....1....7.....9...........58..3..1....6..2.."
                 // "..8.5...........2..4.....317.9..8...5...........3....4.1.2..........95........9.."
