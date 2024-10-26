@@ -2004,7 +2004,7 @@ impl SudokuPuzzle {
                             num_changes_this_xwing += 1;
                             self.cells[row][column1].set_possible(fish_candidate, false);
                             println!(
-                                "found xwing exclusion for fish candidate {} from cell({}, {}), given base set cells({}, {}) cells({}, {}) cells({}, {}) cells({}, {}).",
+                                "found x-wing exclusion for fish candidate {} from cell({}, {}), given base set cells({}, {}) cells({}, {}) cells({}, {}) cells({}, {}).",
                                 fish_candidate + 1,
                                 row + 1, column1 + 1,
                                 row1 + 1, column1 + 1,
@@ -2018,7 +2018,7 @@ impl SudokuPuzzle {
                             num_changes_this_xwing += 1;
                             self.cells[row][column2].set_possible(fish_candidate, false);
                             println!(
-                                "found xwing exclusion for fish candidate {} from cell({}, {}), given base set cells({}, {}) cells({}, {}) cells({}, {}) cells({}, {}).",
+                                "found x-wing exclusion for fish candidate {} from cell({}, {}), given base set cells({}, {}) cells({}, {}) cells({}, {}) cells({}, {}).",
                                 fish_candidate + 1,
                                 row + 1, column2 + 1,
                                 row1 + 1, column1 + 1,
@@ -2084,7 +2084,7 @@ impl SudokuPuzzle {
                             num_changes_this_xwing += 1;
                             self.cells[row1][column].set_possible(fish_candidate, false);
                             println!(
-                                "found xwing exclusion for fish candidate {} from cell({}, {}), given base set cells({}, {}) cells({}, {}) cells({}, {}) cells({}, {}).",
+                                "found x-wing exclusion for fish candidate {} from cell({}, {}), given base set cells({}, {}) cells({}, {}) cells({}, {}) cells({}, {}).",
                                 fish_candidate + 1,
                                 row1 + 1, column + 1,
                                 row1 + 1, column1 + 1,
@@ -2098,7 +2098,7 @@ impl SudokuPuzzle {
                             num_changes_this_xwing += 1;
                             self.cells[row2][column].set_possible(fish_candidate, false);
                             println!(
-                                "found xwing exclusion for fish candidate {} from cell({}, {}), given base set cells({}, {}) cells({}, {}) cells({}, {}) cells({}, {}).",
+                                "found x-wing exclusion for fish candidate {} from cell({}, {}), given base set cells({}, {}) cells({}, {}) cells({}, {}) cells({}, {}).",
                                 fish_candidate + 1,
                                 row2 + 1, column + 1,
                                 row1 + 1, column1 + 1,
@@ -2232,9 +2232,11 @@ impl SudokuPuzzle {
         // 7. hidden pairs
         // 8. hidden triples
         // 9. hidden quads (exceptionally rare)
+        // Expert
+        // 10. x-wing (fish x 2)
         //----- do not plan to implement the methods below -----
         // Expert
-        // x-wing, y-wing, swordfish, et al
+        // y-wing, swordfish (fish x 3), jellyfish (fish x 4) et al
         //
 
         loop {
@@ -3845,7 +3847,7 @@ mod tests {
 
     #[test]
     fn test_find_xwing_rows() {
-        // found xwing exclusion for fish candidate 5 from cell(4, 5), given base set cells(2, 5) cells(2, 8) cells(5, 5) cells(5, 8).
+        // found x-wing exclusion for fish candidate 5 from cell(4, 5), given base set cells(2, 5) cells(2, 8) cells(5, 5) cells(5, 8).
         //
         //     fish candidate: 5
         //     base set:
@@ -3869,15 +3871,15 @@ mod tests {
 
     #[test]
     fn test_find_xwing_columns() {
-        // found xwing exclusion for fish candidate 1 from cell(5, 3), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
-        // found xwing exclusion for fish candidate 1 from cell(2, 4), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
-        // found xwing exclusion for fish candidate 1 from cell(5, 4), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
-        // found xwing exclusion for fish candidate 1 from cell(2, 7), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
-        // found xwing exclusion for fish candidate 1 from cell(5, 7), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
-        // found xwing exclusion for fish candidate 1 from cell(2, 8), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
-        // found xwing exclusion for fish candidate 1 from cell(5, 8), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
-        // found xwing exclusion for fish candidate 1 from cell(2, 9), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
-        // found xwing exclusion for fish candidate 1 from cell(5, 9), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+        // found x-wing exclusion for fish candidate 1 from cell(5, 3), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+        // found x-wing exclusion for fish candidate 1 from cell(2, 4), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+        // found x-wing exclusion for fish candidate 1 from cell(5, 4), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+        // found x-wing exclusion for fish candidate 1 from cell(2, 7), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+        // found x-wing exclusion for fish candidate 1 from cell(5, 7), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+        // found x-wing exclusion for fish candidate 1 from cell(2, 8), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+        // found x-wing exclusion for fish candidate 1 from cell(5, 8), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+        // found x-wing exclusion for fish candidate 1 from cell(2, 9), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+        // found x-wing exclusion for fish candidate 1 from cell(5, 9), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
         //
         //     fish candidate: 1
         //     base set:
