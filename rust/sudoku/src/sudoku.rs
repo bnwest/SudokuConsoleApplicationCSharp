@@ -30,6 +30,8 @@
 // 10. rust does not support OO inheritance or polymorphism.
 // rust supports structs with methods.
 //
+// 11. test driven development has first class support.
+//
 
 #[derive(Debug)] // adding so pretty print will work ... {:#?} for pretty-print
 pub struct SudokuGame {
@@ -44,7 +46,7 @@ impl SudokuGame {
             // db_game is a 81 character string, with the solved numbers present.
             db_game: String::from(
                 // found hidden triple (3 6 7) at cell(5, 4) and cell(5, 6) and cell(5, 7), for row 5
-                "4....8.....753...8.9..6.41353....2.7.........7.6....81954.1..3.3...751.....9....5",
+                // "4....8.....753...8.9..6.41353....2.7.........7.6....81954.1..3.3...751.....9....5",
                 // 4..  ..8  ...
                 // ..7  53.  ..8
                 // .9.  .6.  413
@@ -56,6 +58,12 @@ impl SudokuGame {
                 // 954  .1.  .3.
                 // 3..  .75  1..
                 // ...  9..  ..5
+
+                // https://hodoku.sourceforge.net/en/tech_fishb.php
+                // row x-wing
+                // ".41729.3.769..34.2.3264.7194.39..17.6.7..49.319537..24214567398376.9.541958431267",
+                // column x-wing
+                "98..62753.65..3...327.5...679..3.5...5...9...832.45..9673591428249.87..5518.2...7",
 
                 // found naked triple (2 4 6) for row 2
                 // found naked triple (2 3 6) for row 8
@@ -1947,6 +1955,173 @@ impl SudokuPuzzle {
         return self.find_exclusions(SudokuPuzzle::find_hidden_quads_assist);
     }
 
+    fn find_xwing_rows(&mut self) -> bool {
+        let mut num_changes = 0;
+
+        for fish_candidate in 0..9 {
+            for row1 in 0..9 {
+                let mut num_row1_possibles_for_fish: usize = 0;
+                let mut row1_columns: [usize; 9] = [SudokuPuzzleCell::NOT_FOUND; 9];
+                for column in 0..9 {
+                    if self.cells[row1][column].is_possible(fish_candidate) {
+                        row1_columns[num_row1_possibles_for_fish] = column;
+                        num_row1_possibles_for_fish += 1;
+                    }
+                }
+                if num_row1_possibles_for_fish != 2 {
+                    continue;
+                }
+
+                for row2 in row1 + 1..9 {
+                    let mut num_row2_possibles_for_fish: usize = 0;
+                    let mut row2_columns: [usize; 9] = [SudokuPuzzleCell::NOT_FOUND; 9];
+                    for column in 0..9 {
+                        if self.cells[row2][column].is_possible(fish_candidate) {
+                            row2_columns[num_row2_possibles_for_fish] = column;
+                            num_row2_possibles_for_fish += 1;
+                        }
+                    }
+                    if num_row2_possibles_for_fish != 2 {
+                        continue;
+                    }
+
+                    if row1_columns[0] != row2_columns[0] || row1_columns[1] != row2_columns[1] {
+                        continue;
+                    }
+
+                    let column1: usize = row1_columns[0];
+                    let column2: usize = row1_columns[1];
+
+                    let mut num_changes_this_xwing = 0;
+                    // look for exclusions in cover sets, column1 and column2.
+                    for row in 0..9 {
+                        if row == row1 || row == row2 {
+                            // skip base set rows.
+                            continue;
+                        }
+                        if self.cells[row][column1].is_possible(fish_candidate) {
+                            num_changes += 1;
+                            num_changes_this_xwing += 1;
+                            self.cells[row][column1].set_possible(fish_candidate, false);
+                            println!(
+                                "found xwing exclusion for fish candidate {} from cell({}, {}), given base set cells({}, {}) cells({}, {}) cells({}, {}) cells({}, {}).",
+                                fish_candidate + 1,
+                                row + 1, column1 + 1,
+                                row1 + 1, column1 + 1,
+                                row1 + 1, column2 + 1,
+                                row2 + 1, column1 + 1,
+                                row2 + 1, column2 + 1,
+                            );
+                        }
+                        if self.cells[row][column2].is_possible(fish_candidate) {
+                            num_changes += 1;
+                            num_changes_this_xwing += 1;
+                            self.cells[row][column2].set_possible(fish_candidate, false);
+                            println!(
+                                "found xwing exclusion for fish candidate {} from cell({}, {}), given base set cells({}, {}) cells({}, {}) cells({}, {}) cells({}, {}).",
+                                fish_candidate + 1,
+                                row + 1, column2 + 1,
+                                row1 + 1, column1 + 1,
+                                row1 + 1, column2 + 1,
+                                row2 + 1, column1 + 1,
+                                row2 + 1, column2 + 1,
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+        return num_changes > 0;
+    }
+
+    fn find_xwing_columns(&mut self) -> bool {
+        let mut num_changes = 0;
+
+        for fish_candidate in 0..9 {
+            for column1 in 0..9 {
+                let mut num_column1_possibles_for_fish: usize = 0;
+                let mut column1_rows: [usize; 9] = [SudokuPuzzleCell::NOT_FOUND; 9];
+                for row in 0..9 {
+                    if self.cells[row][column1].is_possible(fish_candidate) {
+                        column1_rows[num_column1_possibles_for_fish] = row;
+                        num_column1_possibles_for_fish += 1;
+                    }
+                }
+                if num_column1_possibles_for_fish != 2 {
+                    continue;
+                }
+
+                for column2 in column1 + 1..9 {
+                    let mut num_column2_possibles_for_fish: usize = 0;
+                    let mut column2_rows: [usize; 9] = [SudokuPuzzleCell::NOT_FOUND; 9];
+                    for row in 0..9 {
+                        if self.cells[row][column2].is_possible(fish_candidate) {
+                            column2_rows[num_column2_possibles_for_fish] = row;
+                            num_column2_possibles_for_fish += 1;
+                        }
+                    }
+                    if num_column2_possibles_for_fish != 2 {
+                        continue;
+                    }
+
+                    if column1_rows[0] != column2_rows[0] || column1_rows[1] != column2_rows[1] {
+                        continue;
+                    }
+
+                    let row1: usize = column1_rows[0];
+                    let row2: usize = column1_rows[1];
+
+                    let mut num_changes_this_xwing = 0;
+                    // look for exclusions in cover sets, column1 and column2.
+                    for column in 0..9 {
+                        if column == column1 || column == column2 {
+                            // skip base set columns.
+                            continue;
+                        }
+                        if self.cells[row1][column].is_possible(fish_candidate) {
+                            num_changes += 1;
+                            num_changes_this_xwing += 1;
+                            self.cells[row1][column].set_possible(fish_candidate, false);
+                            println!(
+                                "found xwing exclusion for fish candidate {} from cell({}, {}), given base set cells({}, {}) cells({}, {}) cells({}, {}) cells({}, {}).",
+                                fish_candidate + 1,
+                                row1 + 1, column + 1,
+                                row1 + 1, column1 + 1,
+                                row1 + 1, column2 + 1,
+                                row2 + 1, column1 + 1,
+                                row2 + 1, column2 + 1,
+                            );
+                        }
+                        if self.cells[row2][column].is_possible(fish_candidate) {
+                            num_changes += 1;
+                            num_changes_this_xwing += 1;
+                            self.cells[row2][column].set_possible(fish_candidate, false);
+                            println!(
+                                "found xwing exclusion for fish candidate {} from cell({}, {}), given base set cells({}, {}) cells({}, {}) cells({}, {}) cells({}, {}).",
+                                fish_candidate + 1,
+                                row2 + 1, column + 1,
+                                row1 + 1, column1 + 1,
+                                row1 + 1, column2 + 1,
+                                row2 + 1, column1 + 1,
+                                row2 + 1, column2 + 1,
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+        return num_changes > 0;
+    }
+
+    fn find_xwing(&mut self) -> bool {
+        let mut found_xwing: bool = false;
+        found_xwing |= self.find_xwing_rows();
+        found_xwing |= self.find_xwing_columns();
+        return found_xwing;
+    }
+
     fn solve_cell(&mut self, i: usize, j: usize, k: usize) {
         self.cells[i][j].found = k;
 
@@ -2112,6 +2287,11 @@ impl SudokuPuzzle {
             }
 
             let did_something: bool = self.find_hidden_quads();
+            if did_something {
+                continue;
+            }
+
+            let did_something: bool = self.find_xwing();
             if did_something {
                 continue;
             }
@@ -3661,5 +3841,80 @@ mod tests {
                 assert_eq!(puzzle.cells[row4][column4].is_possible(k), false);
             }
         }
+    }
+
+    #[test]
+    fn test_find_xwing_rows() {
+        // found xwing exclusion for fish candidate 5 from cell(4, 5), given base set cells(2, 5) cells(2, 8) cells(5, 5) cells(5, 8).
+        //
+        //     fish candidate: 5
+        //     base set:
+        //         row 2: cell(2, 5) and cell(2, 8)
+        //         row 5: cell(5, 5) and cell(5, 8)
+        //     cover set:
+        //         column 5: cell(4, 5)
+        let game: SudokuGame = SudokuGame {
+            db_game: String::from(".41729.3.769..34.2.3264.7194.39..17.6.7..49.319537..24214567398376.9.541958431267"),
+        };
+        let mut puzzle: SudokuPuzzle = create_puzzle(&game);
+
+        let fish_candidate: usize = 4;
+
+        // puzzle.display();
+        let found = puzzle.find_xwing();
+        assert_eq!(found, true);
+
+        assert_eq!(puzzle.cells[3][4].is_possible(fish_candidate), false);
+    }
+
+    #[test]
+    fn test_find_xwing_columns() {
+        // found xwing exclusion for fish candidate 1 from cell(5, 3), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+        // found xwing exclusion for fish candidate 1 from cell(2, 4), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+        // found xwing exclusion for fish candidate 1 from cell(5, 4), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+        // found xwing exclusion for fish candidate 1 from cell(2, 7), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+        // found xwing exclusion for fish candidate 1 from cell(5, 7), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+        // found xwing exclusion for fish candidate 1 from cell(2, 8), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+        // found xwing exclusion for fish candidate 1 from cell(5, 8), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+        // found xwing exclusion for fish candidate 1 from cell(2, 9), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+        // found xwing exclusion for fish candidate 1 from cell(5, 9), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
+        //
+        //     fish candidate: 1
+        //     base set:
+        //         column 1: cell(2, 1) and cell(5, 1)
+        //         column 5: cell(2, 5) and cell(5, 5)
+        //     cover set:
+        //         row 2: cell(2, 4)
+        //         row 2: cell(2, 7)
+        //         row 2: cell(2, 8)
+        //         row 2: cell(2, 9)
+        //         row 5: cell(5, 3)
+        //         row 5: cell(5, 4)
+        //         row 5: cell(5, 7)
+        //         row 5: cell(5, 8)
+        //         row 5: cell(5, 9)
+
+        let game: SudokuGame = SudokuGame {
+            db_game: String::from("98..62753.65..3...327.5...679..3.5...5...9...832.45..9673591428249.87..5518.2...7"),
+        };
+        let mut puzzle: SudokuPuzzle = create_puzzle(&game);
+
+        let fish_candidate: usize = 0;
+
+        // puzzle.display();
+        let found = puzzle.find_xwing();
+        assert_eq!(found, true);
+
+        // check cover set
+        assert_eq!(puzzle.cells[1][3].is_possible(fish_candidate), false);
+        assert_eq!(puzzle.cells[1][6].is_possible(fish_candidate), false);
+        assert_eq!(puzzle.cells[1][7].is_possible(fish_candidate), false);
+        assert_eq!(puzzle.cells[1][8].is_possible(fish_candidate), false);
+
+        assert_eq!(puzzle.cells[4][2].is_possible(fish_candidate), false);
+        assert_eq!(puzzle.cells[4][3].is_possible(fish_candidate), false);
+        assert_eq!(puzzle.cells[4][6].is_possible(fish_candidate), false);
+        assert_eq!(puzzle.cells[4][7].is_possible(fish_candidate), false);
+        assert_eq!(puzzle.cells[4][8].is_possible(fish_candidate), false);
     }
 }
