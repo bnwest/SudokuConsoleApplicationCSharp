@@ -73,7 +73,20 @@ impl SudokuGame {
                 // found x-wing exclusion for fish candidate 1 from cell(5, 8), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
                 // found x-wing exclusion for fish candidate 1 from cell(2, 9), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
                 // found x-wing exclusion for fish candidate 1 from cell(5, 9), given base set cells(2, 1) cells(2, 5) cells(5, 1) cells(5, 5).
-                "98..62753.65..3...327.5...679..3.5...5...9...832.45..9673591428249.87..5518.2...7",
+                // "98..62753.65..3...327.5...679..3.5...5...9...832.45..9673591428249.87..5518.2...7",
+
+                // https://www.livesudoku.com/en/tutorial-xy-wing.php
+                // xy wing
+                // found xy wing: pivot cell(7, 1) pair(7, 9) wing1 cell(2, 1) pair(3, 7) wing2 cell(9, 3) pair(3, 9), (x, y) is (7, 9), z is 3
+                //     remove 3 from cell(2, 3)
+                //     remove 3 from cell(3, 3)
+                // found xy wing: pivot cell(9, 8) pair(3, 9) wing1 cell(5, 8) pair(4, 9) wing2 cell(8, 9) pair(3, 4), (x, y) is (3, 9), z is 4
+                //     remove 4 from cell(6, 9)
+                //     remove 4 from cell(5, 9)
+                "5..23.867.8.9....22..8.......1.9.25..273651....518237...2..3.816.8.19.2.14..28..5",
+                // found xy wing: pivot cell(5, 5) pair(6, 9) wing1 cell(5, 2) pair(6, 7) wing2 cell(8, 5) pair(7, 9), (x, y) is (6, 9), z is 7
+                //    remove 7 from cell(8, 2)
+                // "647915382395284761.2.3..549....3...6...5.1...9...4.....86.5..235.26.3....39.28675",
 
                 // found naked triple (2 4 6) for row 2
                 // found naked triple (2 3 6) for row 8
@@ -242,8 +255,15 @@ impl SudokuGame {
                 // ".....9.......1..2.5..3...........3.4.26.8.....1...........2..6.39.4............1."
                 // good one
                 // ".2...........4..65.7......8.3............17.29.6...........2.....4....9....8.3..."
-                // failed to solve - xy-wing
+
+                // xy-wing
+                // found xy wing: pivot cell(8, 1) pair(1, 5) wing1 cell(8, 9) pair(2, 5) wing2 cell(9, 2) pair(1, 2), (x, y) is (1, 5), z is 2
+                //     remove 2 from cell(8, 3)
+                //     remove 2 from cell(9, 9)
+                // found xy wing: pivot cell(9, 2) pair(1, 2) wing1 cell(2, 2) pair(2, 5) wing2 cell(8, 1) pair(1, 5), (x, y) is (1, 2), z is 5
+                //     remove 5 from cell(2, 1)
                 // "......1.6...8....3..19.........3...4..9......2.87......3..6...........9......5.8."
+
                 // failed to solve x-wing
                 // found x-wing exclusion for fish candidate 3 from cell(3, 6), given base set cells(3, 1) cells(3, 4) cells(4, 1) cells(4, 4).
                 // found x-wing exclusion for fish candidate 3 from cell(4, 6), given base set cells(3, 1) cells(3, 4) cells(4, 1) cells(4, 4).
@@ -2136,6 +2156,287 @@ impl SudokuPuzzle {
         return found_xwing;
     }
 
+    fn find_xywing(&mut self) -> bool {
+        // a whole lot of squeeze, for just a little juice.
+
+        let mut num_changes: u32 = 0;
+
+        let mut pairs: Vec<(usize, usize, usize, usize)> = Vec::new();
+        for row in 0..9 {
+            for column in 0..9 {
+                // determine cell(row, column) contains a pair
+                let mut num_possibles = 0;
+                let mut pair: Vec<usize> = Vec::new();
+                for k in 0..9 {
+                    if self.cells[row][column].is_possible(k) {
+                        num_possibles += 1;
+                        pair.push(k);
+                    }
+                }
+                if num_possibles == 2 {
+                    pairs.push((row, column, pair[0], pair[1]));
+                }
+            }
+        }
+
+        // must have at least 3 pairs to find a xy wing
+        if pairs.len() < 3 {
+            return false;
+        }
+
+        //
+        // +-------+ +-------+ +-------+  +-------+ +-------+ +-------+
+        // | 1 2 3 | |       | | 1   3 |  |       | |       | | 1     |
+        // |       | | 4     | |       |  |   5   | |       | |       |
+        // |       | |       | |       |  |       | |     9 | | 7     |
+        // +-------+ +-------+ +-------+  +-------+ +-------+ +-------+
+        // +-------+ +-------+ +-------+  +-------+ +-------+ +-------+
+        // |       | |       | |       |  |   2   | |       | | 1     |
+        // |   5   | |       | |       |  |     6 | |       | |     6 |
+        // |       | |     9 | | 7     |  |       | |    8  | |       |
+        // +-------+ +-------+ +-------+  +-------+ +-------+ +-------+
+        // +-------+ +-------+ +-------+  +-------+ +-------+ +-------+
+        // | 1 2   | |       | |       |  |   2   | |     3 | |       |
+        // |       | |     6 | |       |  |       | |       | | 4     |
+        // |       | |       | |   8   |  | 7     | |       | |       |
+        // +-------+ +-------+ +-------+  +-------+ +-------+ +-------+
+        //
+        // xy wing:
+        //     cell(3, 1) - wing1, shares a row with the pivot
+        //     cell(3, 4) - pivot
+        //     cell(1, 6) - wing2, shares a grid with the pivot
+        //
+        // pivot intersects with wing1 and wing2.
+        // wing1 and wing2 do not intersect.
+        //
+        // one wing contains the pivot's 2
+        // the other wing contains the pivot's 7
+        //
+        // if pivot is 7, wing2 is 1.
+        // if pivot is 2, wing1 is 1.
+        // => the cells which intersect with both wing1 and wing2 can not be 1.
+        // the intersect cells, cell(1, 1) and cell(1, 3), can exclude 1.
+        //
+        // wing1 intersects with wing2's grid => cells(3, 4..6) can not be 1
+        // wing2 intersects with wing1's grid => cells(1, 1..3) can not be 1
+        // if wing1 and wing2 do not intersect each other's grid,
+        // wing1 row and wing2 column intersect cell(3, 6) .. and
+        // wing1 column and wing2 row intersect cell(1, 1).
+        //
+
+        for pivot_index in 0..pairs.len() {
+            let pivot: (usize, usize, usize, usize) = pairs[pivot_index];
+            for wing1_index in 0..pairs.len() {
+                if wing1_index == pivot_index {
+                    continue;
+                }
+                let wing1: (usize, usize, usize, usize) = pairs[wing1_index];
+                for wing2_index in wing1_index + 1..pairs.len() {
+                    if wing2_index == pivot_index {
+                        continue;
+                    }
+                    let wing2: (usize, usize, usize, usize) = pairs[wing2_index];
+
+                    // determine if pivot, wing1 and wing2 pairs fit xy ing pattern
+                    // pivot pair is (x, y) and wing1 pair is (x, z) and pair pair is (y, z)
+                    // x is only one of wing1 and wing2
+                    // y is only one of wing1 and wing2
+                    // z is in both wing1 and wing2
+
+                    let x: usize = pivot.2;
+                    let y: usize = pivot.3;
+
+                    let x_in_wing1: bool = (wing1.2 == x || wing1.3 == x);
+                    let x_in_wing2: bool = (wing2.2 == x || wing2.3 == x);
+                    let y_in_wing1: bool = (wing1.2 == y || wing1.3 == y);
+                    let y_in_wing2: bool = (wing2.2 == y || wing2.3 == y);
+
+                    let x_only_in_one_wing: bool = (x_in_wing1 && !x_in_wing2) || (!x_in_wing1 && x_in_wing2);
+                    let y_only_in_one_wing: bool = (y_in_wing1 && !y_in_wing2) || (!y_in_wing1 && y_in_wing2);
+                    if !(x_only_in_one_wing && y_only_in_one_wing) {
+                        continue;
+                    }
+
+                    let mut z_in_wing1: usize = SudokuPuzzleCell::NOT_FOUND;
+                    if wing1.2 != x && wing1.2 != y {
+                        z_in_wing1 = wing1.2;
+                    } else if wing1.3 != x && wing1.3 != y {
+                        z_in_wing1 = wing1.3;
+                    }
+                    if z_in_wing1 == SudokuPuzzleCell::NOT_FOUND {
+                        // can't happen ...
+                        continue;
+                    }
+
+                    let mut z_in_wing2: usize = SudokuPuzzleCell::NOT_FOUND;
+                    if wing2.2 != x && wing2.2 != y {
+                        z_in_wing2 = wing2.2;
+                    } else if wing2.3 != x && wing2.3 != y {
+                        z_in_wing2 = wing2.3;
+                    }
+                    if z_in_wing2 == SudokuPuzzleCell::NOT_FOUND {
+                        // can't happen ...
+                        continue;
+                    }
+
+                    if z_in_wing1 != z_in_wing2 {
+                        continue;
+                    }
+
+                    let z: usize = z_in_wing1;
+
+                    // pivot and wing1 must share row/column/grid
+                    // pivot and wing2 must share row/column/grid
+                    // wing1 and wing2 must not share row/column/grid
+
+                    let pivot_and_wing1_share_row: bool = pivot.0 == wing1.0;
+                    let pivot_and_wing1_share_column: bool = pivot.1 == wing1.1;
+
+                    let pivot_grid_first_row: usize = pivot.0 / 3 * 3;
+                    let pivot_grid_first_column: usize = pivot.1 / 3 * 3;
+
+                    let wing1_grid_first_row: usize = wing1.0 / 3 * 3;
+                    let wing1_grid_first_column: usize = wing1.1 / 3 * 3;
+                    let pivot_and_wing1_share_grid: bool = (pivot_grid_first_row == wing1_grid_first_row
+                        && pivot_grid_first_column == wing1_grid_first_column);
+
+                    let pivot_and_wing2_share_row: bool = pivot.0 == wing2.0;
+                    let pivot_and_wing2_share_column: bool = pivot.1 == wing2.1;
+
+                    let wing2_grid_first_row: usize = wing2.0 / 3 * 3;
+                    let wing2_grid_first_column: usize = wing2.1 / 3 * 3;
+                    let pivot_and_wing2_share_grid: bool = pivot_grid_first_row == wing2_grid_first_row
+                        && pivot_grid_first_column == wing2_grid_first_column;
+
+                    let wing1_and_wing2_share_row: bool = wing1.0 == wing2.0;
+                    let wing1_and_wing2_share_column: bool = wing1.1 == wing2.1;
+
+                    let wing1_and_wing2_share_grid: bool = wing1_grid_first_row == wing2_grid_first_row
+                        && wing1_grid_first_column == wing2_grid_first_column;
+
+                    let pivot_and_wing1_are_compliant: bool =
+                        pivot_and_wing1_share_row || pivot_and_wing1_share_column || pivot_and_wing1_share_grid;
+                    let pivot_and_wing2_are_compliant: bool =
+                        pivot_and_wing2_share_row || pivot_and_wing2_share_column || pivot_and_wing2_share_grid;
+                    let wing1_and_wing2_are_compliant: bool =
+                        !wing1_and_wing2_share_row && !wing1_and_wing2_share_column && !wing1_and_wing2_share_grid;
+
+                    if !pivot_and_wing1_are_compliant {
+                        continue;
+                    }
+                    if !pivot_and_wing2_are_compliant {
+                        continue;
+                    }
+                    if !wing1_and_wing2_are_compliant {
+                        continue;
+                    }
+
+                    // expect xy wing like:
+                    //     pivot cell(7, 1) pair (7, 9)
+                    //     wing1 cell(2, 1) pair (3, 7)
+                    //     wing2 cell(9, 3) pair (3, 9)
+                    //	   (x, y) is (7, 9), z is 3
+
+                    // locate the cells where wing1 and wing2 intersect
+                    // wing1 row/column may intersect with wing2 grid - three cells
+                    // wing2 row/column may intersect with wing1 grid - three cells
+                    // wing1 column may intersect with wing2 row
+                    // wing1 row may intersect with wing2 column
+
+                    // use a set since the set does not allow duplicates
+                    // and no explicit effort is made to manually keep things unique.
+                    use std::collections::HashSet; // stand-in for python set.
+
+                    let mut intercept_cells: HashSet<(/*row*/ usize, /*column*/ usize)> = HashSet::new();
+
+                    let wing1_row_intercepts_wing2_grid: bool =
+                        wing2_grid_first_row <= wing1.0 && wing1.0 < wing2_grid_first_row + 3;
+                    if wing1_row_intercepts_wing2_grid {
+                        intercept_cells.insert((wing1.0, wing2_grid_first_column));
+                        intercept_cells.insert((wing1.0, wing2_grid_first_column + 1));
+                        intercept_cells.insert((wing1.0, wing2_grid_first_column + 2));
+                    }
+
+                    let wing1_column_intercepts_wing2_grid: bool =
+                        wing2_grid_first_column <= wing1.1 && wing1.1 < wing2_grid_first_column + 3;
+                    if wing1_column_intercepts_wing2_grid {
+                        intercept_cells.insert((wing2_grid_first_row, wing1.1));
+                        intercept_cells.insert((wing2_grid_first_row + 1, wing1.1));
+                        intercept_cells.insert((wing2_grid_first_row + 2, wing1.1));
+                    }
+
+                    let wing2_row_intercepts_wing1_grid: bool =
+                        wing1_grid_first_row <= wing2.0 && wing2.0 < wing1_grid_first_row + 3;
+                    if wing2_row_intercepts_wing1_grid {
+                        intercept_cells.insert((wing2.0, wing1_grid_first_column));
+                        intercept_cells.insert((wing2.0, wing1_grid_first_column + 1));
+                        intercept_cells.insert((wing2.0, wing1_grid_first_column + 2));
+                    }
+
+                    let wing2_column_intercepts_wing1_grid: bool =
+                        wing1_grid_first_column <= wing2.1 && wing2.1 < wing1_grid_first_column + 3;
+                    if wing1_column_intercepts_wing2_grid {
+                        intercept_cells.insert((wing1_grid_first_row, wing2.1));
+                        intercept_cells.insert((wing1_grid_first_row + 1, wing2.1));
+                        intercept_cells.insert((wing1_grid_first_row + 2, wing2.1));
+                    }
+
+                    // wing1_column_intersects_wing2_row
+                    intercept_cells.insert((wing2.0, wing1.1));
+
+                    // wing1_row_intersects_wing2_column
+                    intercept_cells.insert((wing1.0, wing2.1));
+
+                    //
+                    // z can be excluded from the intersect cells
+                    //
+
+                    let mut num_changes_per_xy_wing_candidate = 0;
+                    for cell in &intercept_cells {
+                        let row: usize = cell.0;
+                        let column: usize = cell.1;
+                        if self.cells[row][column].is_possible(z) {
+                            num_changes_per_xy_wing_candidate += 1;
+                        }
+                    }
+
+                    if num_changes_per_xy_wing_candidate > 0 {
+                        println!(
+                            "found xy wing: pivot cell({}, {}) pair({}, {}) wing1 cell({}, {}) pair({}, {}) wing2 cell({}, {}) pair({}, {}), (x, y) is ({}, {}), z is {}",
+                            pivot.0+1, pivot.1+1, pivot.2+1, pivot.3+1,
+                            wing1.0+1, wing1.1+1, wing1.2+1, wing1.3+1,
+                            wing2.0+1, wing2.1+1, wing2.2+1, wing2.3+1,
+                            x+1, y+1, z+1,
+                        );
+                        for cell in intercept_cells {
+                            let row: usize = cell.0;
+                            let column: usize = cell.1;
+                            if self.cells[row][column].is_possible(z) {
+                                println!("    remove {} from cell({}, {})", z + 1, row + 1, column + 1);
+                                self.cells[row][column].set_possible(z, false);
+                                num_changes += 1;
+                            }
+                            // else {
+                            //     println!("    xxx remove {} from cell({}, {})", z+1, row+1, column+1);
+                            //     self.cells[row][column].set_possible(z, false);
+                            // }
+                        }
+                    } else {
+                        println!(
+                            "xxx found xy wing: pivot cell({}, {}) pair({}, {}) wing1 cell({}, {}) pair({}, {}) wing2 cell({}, {}) pair({}, {}), (x, y) is ({}, {}), z is {}",
+                            pivot.0+1, pivot.1+1, pivot.2+1, pivot.3+1,
+                            wing1.0+1, wing1.1+1, wing1.2+1, wing1.3+1,
+                            wing2.0+1, wing2.1+1, wing2.2+1, wing2.3+1,
+                            x+1, y+1, z+1,
+                        );
+                    }
+                }
+            }
+        }
+
+        return num_changes > 0;
+    }
+
     fn solve_cell(&mut self, i: usize, j: usize, k: usize) {
         self.cells[i][j].found = k;
 
@@ -2228,6 +2529,7 @@ impl SudokuPuzzle {
     }
 
     fn solve(&mut self) -> bool {
+
         //
         // Solve the puzzle using the easiest to hardest methods.
         // Restart after every change
@@ -2238,7 +2540,6 @@ impl SudokuPuzzle {
         // Standard/Moderate
         // 3. locked candidates type 1 and 2
         // 4. naked pairs
-
         // Hard
         // 5. naked triples
         // 6. naked quads
@@ -2248,9 +2549,10 @@ impl SudokuPuzzle {
         // 9. hidden quads (exceptionally rare)
         // Expert
         // 10. x-wing (fish x 2)
+        // 11. xy-wing
         //----- do not plan to implement the methods below -----
         // Expert
-        // y-wing, swordfish (fish x 3), jellyfish (fish x 4) et al
+        // swordfish (fish x 3), jellyfish (fish x 4), coloring et al
         //
 
         loop {
@@ -2307,7 +2609,14 @@ impl SudokuPuzzle {
                 continue;
             }
 
+            // Expert
+
             let did_something: bool = self.find_xwing();
+            if did_something {
+                continue;
+            }
+
+            let did_something: bool = self.find_xywing();
             if did_something {
                 continue;
             }
@@ -3932,5 +4241,31 @@ mod tests {
         assert_eq!(puzzle.cells[4][6].is_possible(fish_candidate), false);
         assert_eq!(puzzle.cells[4][7].is_possible(fish_candidate), false);
         assert_eq!(puzzle.cells[4][8].is_possible(fish_candidate), false);
+    }
+
+    #[test]
+    fn test_find_xywing() {
+        // found xy wing: pivot cell(7, 1) pair(7, 9) wing1 cell(2, 1) pair(3, 7) wing2 cell(9, 3) pair(3, 9), (x, y) is (7, 9), z is 3
+        //     remove 3 from cell(2, 3)
+        //     remove 3 from cell(3, 3)
+        // found xy wing: pivot cell(9, 8) pair(3, 9) wing1 cell(5, 8) pair(4, 9) wing2 cell(8, 9) pair(3, 4), (x, y) is (3, 9), z is 4
+        //     remove 4 from cell(5, 9)
+        //     remove 4 from cell(4, 9)
+
+        let game: SudokuGame = SudokuGame {
+            db_game: String::from("5..23.867.8.9....22..8.......1.9.25..273651....518237...2..3.816.8.19.2.14..28..5"),
+        };
+        let mut puzzle: SudokuPuzzle = create_puzzle(&game);
+
+        puzzle.find_locked_candidate(); // add in some exclusions, to find xy wings
+
+        puzzle.display();
+        let found = puzzle.find_xywing();
+        assert_eq!(found, true);
+
+        assert_eq!(puzzle.cells[1][2].is_possible(2), false);
+        assert_eq!(puzzle.cells[2][2].is_possible(2), false);
+        assert_eq!(puzzle.cells[3][8].is_possible(3), false);
+        assert_eq!(puzzle.cells[4][8].is_possible(3), false);
     }
 }
