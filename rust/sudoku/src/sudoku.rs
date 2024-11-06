@@ -88,6 +88,18 @@ impl SudokuGame {
                 //    remove 7 from cell(8, 2)
                 // "647915382395284761.2.3..549....3...6...5.1...9...4.....86.5..235.26.3....39.28675",
 
+                // https://www.sudoku9x9.com/techniques/xywing/
+                // "81524736939..5842.4.2..9.586849712359..525816521..39742...965..7.9......1......9.",
+                // found xy wing: pivot cell(6, 2) pair(5, 7) wing1 cell(5, 1) pair(7, 8) wing2 cell(6, 5) pair(5, 8), (x, y) is (5, 7), z is 8
+                //     remove 8 from cell(5, 5)
+                //     remove 8 from cell(6, 3)
+                // "2859.643....342....435.89269.42..1.8.216..3.43..4.1.92..276........25...5.7...2..",
+                // found xy wing: pivot cell(8, 5) pair(4, 8) wing1 cell(6, 5) pair(3, 4) wing2 cell(7, 6) pair(3, 8), (x, y) is (4, 8), z is 3
+                //     remove 3 from cell(5, 6)
+                //     remove 3 from cell(9, 5)
+                //     remove 3 from cell(6, 6)
+                // "...3672.13.2.14..771......3.8....324.4..2...527....189.21.5.....379.65125........",
+
                 // found naked triple (2 4 6) for row 2
                 // found naked triple (2 3 6) for row 8
                 // found naked triple (2 7 9) for grid(3, 3)
