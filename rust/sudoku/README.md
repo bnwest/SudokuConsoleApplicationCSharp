@@ -1,7 +1,7 @@
-#Introduction
+## Introduction
 Solves sudoku puzzles via a rust console app.
 
-#Getting Started
+## Getting Started
 Need rust.
 
 See:
@@ -11,7 +11,7 @@ https://doc.rust-lang.org/book/ch01-01-installation.html
 $ curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
 ```
 
-#Build and Test
+## Build and Test
 
 To compile/build the rust code:
 ```commandline
