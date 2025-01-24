@@ -11,6 +11,20 @@ https://doc.rust-lang.org/book/ch01-01-installation.html
 $ curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
 ```
 
+## Creating a New Project Using Cargo
+
+```commandline
+% cd $repo-head
+% cd rust
+% cargo new sudoku
+% cd sudoku
+% ls
+Cargo.toml
+src
+% ls src
+main.rs
+```
+
 ## Build and Test
 
 To compile/build the rust code:

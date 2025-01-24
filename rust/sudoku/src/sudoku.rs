@@ -2688,6 +2688,17 @@ pub fn solve_puzzle(puzzle: &mut SudokuPuzzle) -> bool {
 // in each file to contain the test functions and to annotate the module
 // with cfg(test).
 //
+// Should unit tests really be put in the same file as the source?
+// https://users.rust-lang.org/t/should-unit-tests-really-be-put-in-the-same-file-as-the-source/62153
+//
+//  The following is a fairly common way of doing this:
+//
+//     src/
+//         ...
+//         ops.rs
+//         ops/
+//             tests.rs
+//
 
 #[cfg(test)]
 mod tests {
