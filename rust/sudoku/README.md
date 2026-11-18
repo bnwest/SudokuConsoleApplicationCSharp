@@ -13,7 +13,7 @@ $ curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
 
 Select "Proceed with standard installation" option.
 
-rust commands are located: `~/.cargo/bin`
+rust commands are located: `~/.cargo/bin`. `~/.bash_profile ` was updates.
 
 ## Creating a New Project Using Cargo
 
